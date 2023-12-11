@@ -1,0 +1,29 @@
+<!-- login.html (strona logowania) -->
+
+
+{% extends 'base.html' %}
+{% block title %} Imperial Bank - Login {% endblock %}
+
+
+{% block content %}
+<h3>Login</h3>
+
+
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      {% for message in messages %}
+        <p>{{ message }}</p>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+<form method="POST" action="{{ url_for('login') }}">
+  {{ form.hidden_tag() }}
+  <label for="username">Username:</label>
+  {{ form.username(class="form-control", id="username") }}
+  <label for="password">Password:</label>
+  {{ form.password(class="form-control", id="password") }}
+  <button type="submit" class="btn btn-primary">Login</button>
+</form>
+{% endblock %}
+

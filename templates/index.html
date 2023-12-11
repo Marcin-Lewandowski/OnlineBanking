@@ -1,0 +1,55 @@
+<!-- index.html (strona główna) -->
+
+{% extends 'base.html' %}
+
+
+{% block title %}Imperial Bank - Online Banking{% endblock %}
+
+
+
+
+{% block content %}
+
+Tu coś napisze - strona główna
+<br>
+{% with messages = get_flashed_messages() %}
+    {% if messages %}
+      {% for message in messages %}
+        <p>{{ message }}</p>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+<br><br>
+
+
+<div class="container">
+  <div class="left">
+    <!-- Zawartość kontenera po lewej stronie -->
+    <div>
+      <h2>Tytuł strony1</h2>
+      <p>To jest paragraf tekstu1.</p>
+      <ul>
+        <li>Element listy 1</li>
+        <li>Element listy 2</li>
+      </ul>
+    </div>
+
+  </div>
+  <div class="right">
+    <!-- Zawartość kontenera po prawej stronie -->
+    <div>
+      <h2>Tytuł strony2</h2>
+      <p>To jest paragraf tekstu2.</p>
+      <ul>
+        <li>Element listy 3</li>
+        <li>Element listy 4</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<br><br>
+
+
+{% endblock %}

@@ -1,0 +1,212 @@
+<!--  admin_dashboard.html (strona administracyjna) -->
+
+<!-- HTML template for admin dashboard -->
+
+{% extends 'base_admin.html' %}
+
+
+{% block content %}
+  <h2>Admin Dashboard</h2>
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      {% for message in messages %}
+        <p>{{ message }}</p>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+  <p>Welcome, {{ current_user.username }}!</p>
+  <br><br>
+
+
+  <div class="container">
+    <div class="left">
+      <!-- Zawartość kontenera po lewej stronie -->
+      <div>
+        <h3>Menu:</h3>
+        <a href="contact_us" class="link">Customer Management</a> <br>
+        Creating new customer profiles.<br>
+        creating a bank account for the client<br>
+        Managing access rights for clients.<br>
+        deleting profiles<br><br>
+
+
+        <a href="contact_us" class="link">Customer Account Management:</a> <br>
+        Overview and search of all customer accounts.<br>
+        Ability to block or unblock accounts.<br>
+        Editing customer information.<br>
+        Managing access rights for clients.<br><br>
+
+
+        <a href="contact_us" class="link">Transaction Management:</a> <br>
+        Transaction history overview.<br>
+        Possibility to filter transactions according to various criteria.<br>
+        Performing operations on transactions such as voids.<br><br>
+
+
+        <a href="contact_us" class="link">Communication with clients:</a> <br>
+        Notification and message system for customers.<br>
+        Managing announcements and messages for customers.<br><br>
+
+
+        <a href="contact_us" class="link">Team</a> <br>
+        Info about Bank employee, Board Members and Management<br><br>
+
+
+        <a href="contact_us" class="link">Reports and Statistics:</a> <br>
+        Generating reports on customer activity and transactions.<br>
+        Presentation of statistics about users and accounts.<br><br>
+
+
+        <a href="contact_us" class="link">Product and Service Management:</a> <br>
+        Adding new financial products.<br>
+        Configuration of interest rates and fees.<br>
+        Configuration of product parameters, such as limits and fees.<br><br>
+
+
+        <a href="contact_us" class="link">Safety settings:</a> <br>
+        Configuring and monitoring security features such as encryption protocols.<br>
+        Managing the identity verification and authorization process.<br><br>
+
+
+        <a href="contact_us" class="link">Technical Support Panel:</a> <br>
+        Reporting problems and current questions from customers.<br>
+        Manage tickets and track their resolution progress.<br><br>
+
+
+
+        <hr>
+        
+        <a href="{{ url_for('logout') }}" class="link">Log out</a> <br>
+        
+      </div>
+  
+    </div>
+    <div class="right">
+      <!-- Zawartość kontenera po prawej stronie -->
+      <div>
+        <h2>mały overwiev:</h2>
+        
+        
+        {% set clients = namespace(c = 0) %}
+        
+
+        <table border="1">
+          
+          <tbody>
+           
+            {% for user in all_users %}
+              {% if user.role == 'client' %}
+                {% set clients.c = clients.c + 1 %}
+              
+                <tr>
+                  <td>{{ user.id }}</td>
+                  <td>{{ user.username }}</td>
+                  <td>{{ user.role }}</td>
+                  <td>{{ user.email }}</td>
+                  <td>{{ user.phone_number }}</td>
+                  <td>{{ user.country }}</td>
+                  <td>{{ clients.c }}</td>   
+        
+                  <!-- Add more rows with user data as needed -->
+                </tr> 
+                
+              {% endif %}
+
+            {% endfor %}
+
+
+            
+            
+
+          </tbody>
+        </table>
+             
+      </div>
+    </div>
+  </div>
+
+
+  <br><br
+  
+  >
+  <!-- Dodaj tutaj logikę wyświetlania informacji o wszystkich kontach klientów -->
+  <!-- Przykładowo, tabelka z danymi o klientach -->
+
+  <!-- Table with customer information -->
+  <table border="1">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Role</th>
+        <th>Email</th>
+        <th>Phone number</th>
+        <th>Country</th>
+        <!-- Add more columns as needed -->
+      </tr>
+    </thead>
+    <tbody>
+      {% for user in all_users %}
+        <tr>
+          <td>{{ user.id }}</td>
+          <td>{{ user.username }}</td>
+          <td>{{ user.role }}</td>
+          <td>{{ user.email }}</td>
+          <td>{{ user.phone_number }}</td>
+          <td>{{ user.country }}</td>
+
+
+          <!-- Add more rows with user data as needed -->
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <hr width="90%" align="center">
+
+
+  <h3>Add New Customer</h3>
+
+  
+
+  <form action="{{ url_for('add_customer') }}" method="post" role="form">
+
+    
+    <label for="username">Username:</label>
+    <input type="text" id="username" name="username" required><br>
+
+    <label for="password">Password:</label>
+    <input type="password" id="password" name="password" required><br>  <!-- moze być błąd type - text? -->
+    
+    <!-- Wstaw ukryte pole z tokenem CSRF -->
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+    <label for="role">Role:</label>
+    <select id="role" name="role" required>
+      <option value="client">Client</option>
+      <option value="bank_emploee">Bank employee</option>
+      <option value="board_member">Board Member</option>
+      <option value="management">Management</option>
+
+      <!-- Add more role options if needed -->
+    </select><br>
+
+    <label for="email">Email:</label>
+    <input type="text" id="email" name="email" required><br>
+
+    <label for="phone_number">Phone number:</label>
+    <input type="text" id="phone_number" name="phone_number" required><br>
+
+
+    <label for="country">Country:</label>
+    <input type="text" id="country" name="country" required><br>
+    
+
+    <input type="submit" value="Add Customer">
+    
+    
+  </form>
+  <br><br><br><br><br><br>
+
+{% endblock %}
+

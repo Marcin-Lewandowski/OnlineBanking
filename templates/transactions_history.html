@@ -1,0 +1,28 @@
+<!--  transactions_history.html (strona historii transakcji) -->
+
+
+<!-- HTML template for displaying transaction history -->
+{% extends 'base.html' %}
+
+{% block content %}
+  <h2>Transaction History</h2>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Amount</th>
+        <th>Recipient</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for transaction in transactions %}
+        <tr>
+          <td>{{ transaction.date }}</td>
+          <td>{{ transaction.amount }}</td>
+          <td>{{ transaction.recipient_account }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}
+
