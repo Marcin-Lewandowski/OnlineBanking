@@ -10,8 +10,8 @@ from flask_migrate import Migrate
 
 
 from flask_wtf import FlaskForm
-from wtforms import StringField, FloatField, SubmitField, PasswordField, SelectField
-from wtforms.validators import DataRequired, Length, EqualTo
+from wtforms import StringField, FloatField, SubmitField, PasswordField, SelectField, DateField
+from wtforms.validators import DataRequired, Length, EqualTo, NumberRange
 
     
 class MyForm(FlaskForm):
@@ -31,10 +31,15 @@ class LoginForm(FlaskForm):
     
     
 class TransferForm(FlaskForm):
-    recipient_account = StringField('Recipient Account', validators=[DataRequired()])
+    recipient_sort_code = StringField('Recipient Sort Code', validators=[DataRequired()])
+    recipient_account_number = StringField('Recipient Account Number', validators=[DataRequired()])
     amount = FloatField('Amount', validators=[DataRequired()])
-    confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
+    transaction_description = StringField('Description', validators=[DataRequired()])
+    confirm_password = PasswordField('Confirm Password', validators=[DataRequired()])
     submit = SubmitField('Transfer')
+    
+ 
+    
     
 class AddCustomerForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
@@ -43,6 +48,26 @@ class AddCustomerForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired()])
     phone_number = StringField('Phone number', validators=[DataRequired()])
     country = StringField('Country', validators=[DataRequired()])
+    
+    
+    
+class CreateTransactionForm(FlaskForm):
+    user_id = SelectField('User', coerce=int, validators=[DataRequired()])
+    transaction_date = DateField('Transaction Date', format='%Y-%m-%d', validators=[DataRequired()])
+    transaction_type = SelectField('Transaction Type', choices=[('DEB', 'Debit'), ('DD', 'Direct Debit'), ('SAL', 'Salary'), ('CSH', 'Cash'), ('SO', 'Standing Order'), ('FPI', 'Faster Payment Incoming'), ('FPO', 'Faster Payment Outgoing'), ('MTG', 'Mortgage')], validators=[DataRequired()])
+    sort_code = StringField('Sort Code', validators=[DataRequired(), Length(min=6, max=10)])
+    account_number = StringField('Account Number', validators=[DataRequired(), Length(min=5, max=20)])
+    transaction_description = StringField('Description', validators=[DataRequired()])
+    debit_amount = FloatField('Debit Amount', validators=[NumberRange(min=0)])
+    credit_amount = FloatField('Credit Amount', validators=[NumberRange(min=0)])
+    balance = FloatField('Balance', validators=[NumberRange(min=0)])
+    submit = SubmitField('Create Transaction')
+    
+
+class DeleteUserForm(FlaskForm):
+    username = StringField('Nazwa Użytkownika', validators=[DataRequired()])
+    submit = SubmitField('Usuń Użytkownika')
+
 
 app = Flask(__name__)
 
@@ -129,7 +154,7 @@ def create_sample_client():
     existing_client = Users.query.filter_by(username='Janek').first()
 
     if not existing_client:
-        client = Users(username='Janek', role='client', email='janek@serwis.pl', phone_number='+48606672541', country='Poland')
+        client = Users(username='Janek', role='client', email='janek@serwis.pl', phone_number='+48606675555', country='Poland')
         client.set_password('haslo')
         db.session.add(client)
         db.session.commit()
@@ -207,8 +232,6 @@ def login():
 
 
 
-
-
 @app.route('/logout')
 @login_required
 def logout():
@@ -216,10 +239,17 @@ def logout():
     flash('Zostałeś wylogowany.', 'success')
     return redirect(url_for('index'))
 
+
+
+
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    return render_template('dashboard.html', user=current_user)
+    
+    user_transactions = Transaction.query.filter_by(user_id=current_user.id).all()
+    return render_template('dashboard.html', user=current_user, all_transactions=user_transactions)
+
+
 
 
 
@@ -238,11 +268,205 @@ def admin_dashboard():
     return render_template('admin_dashboard.html', all_users=all_users)
 
 
+@app.route('/admin_dashboard_cm')
+@login_required
+def admin_dashboard_cm():
+    if current_user.role != 'admin':
+        return 'Access denied'
+    
+    # Tutaj dodaj logikę wyświetlania informacji o wszystkich kontach klientów
+    # Możesz pobierać dane z bazy danych przy użyciu SQLAlchemy
+    # Pobierz wszystkich użytkowników z bazy danych
+    all_users = Users.query.all()
+    all_transactions = Transaction.query.all()
+
+    # Renderuj szablon, przekazując dane o użytkownikach
+    return render_template('admin_dashboard_cm.html', all_users=all_users, all_transactions=all_transactions)
+    
+
+
+@app.route('/create_transaction', methods=['GET', 'POST'])
+@login_required
+def create_transaction():
+    if current_user.role != 'admin':
+        return 'Access denied'
+    
+    all_users = Users.query.all()
+    all_transactions = Transaction.query.all()
+    form = CreateTransactionForm()
+    print(1)
+
+    # Ładowanie użytkowników do wyboru
+    form.user_id.choices = [(user.id, user.username) for user in Users.query.all()]
+
+    if form.validate_on_submit():
+        # Tworzenie obiektu transakcji
+        print(2)
+        new_transaction = Transaction(user_id=form.user_id.data,
+                                        transaction_date=form.transaction_date.data,
+                                        transaction_type=form.transaction_type.data,
+                                        sort_code=form.sort_code.data,
+                                        account_number=form.account_number.data,
+                                        transaction_description=form.transaction_description.data,
+                                        debit_amount=form.debit_amount.data,
+                                        credit_amount=form.credit_amount.data,
+                                        balance=form.balance.data)
+
+        db.session.add(new_transaction)
+        db.session.commit()
+
+        flash('Transaction created successfully!', 'success')
+        print(3)
+        return redirect(url_for('admin_dashboard_cm'))  # Przekierowanie do odpowiedniej strony
+
+    print(4)
+    return render_template('admin_dashboard_cm.html', all_users=all_users, form=form, all_transactions=all_transactions)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@app.route('/transfer', methods=['GET', 'POST'])
+@login_required
+def transfer():
+    form = TransferForm()
+    print(1)
+
+    if form.validate_on_submit():
+        print(2)
+        recipient_sort_code = form.recipient_sort_code.data
+        recipient_account_number = form.recipient_account_number.data
+        amount = form.amount.data
+        transaction_description = form.transaction_description.data
+        confirm_password = form.confirm_password.data
+        
+        # Sprawdź, czy hasło jest poprawne
+        if not current_user.check_password(confirm_password):
+            print(3)
+            flash('Invalid password.', 'danger')
+            return redirect(url_for('dashboard')) 
+        
+        
+        # Sprawdź, czy odbiorca istnieje, sprawdza po sort code i account number
+        recipient = Users.query.join(Transaction).filter(Transaction.account_number == recipient_account_number, Transaction.sort_code == recipient_sort_code).first()
+        if not recipient:
+            print(4)
+            flash('Recipient account not found.', 'danger')
+            return redirect(url_for('dashboard')) 
+
+        
+        
+        # Pobierz ostatnią transakcję nadawcy, aby sprawdzić jego saldo
+        last_sender_transaction = Transaction.query.filter_by(user_id=current_user.id).order_by(Transaction.transaction_date.desc()).first()
+        if not last_sender_transaction or last_sender_transaction.balance < amount:
+            print(5)
+            flash('Insufficient funds.', 'danger')
+            return redirect(url_for('dashboard')) 
+        
+        # Logika wykonania przelewu
+        try:
+            print(6)
+            # Przygotowanie wspólnych danych dla transakcji
+            transaction_date = date.today()
+            
+            
+            # Aktualizacja salda nadawcy
+            last_sender_balance = last_sender_transaction.balance - amount
+            new_sender_transaction = Transaction(user_id=current_user.id, 
+                                                transaction_date=transaction_date,
+                                                transaction_type='FPO',
+                                                sort_code=last_sender_transaction.sort_code,
+                                                account_number=last_sender_transaction.account_number,
+                                                transaction_description=transaction_description,
+                                                debit_amount=amount,
+                                                credit_amount = 0,
+                                                balance=last_sender_balance)
+            db.session.add(new_sender_transaction)
+            
+            
+            
+
+            # Znajdź ostatnią transakcję odbiorcy
+            last_recipient_transaction = Transaction.query.filter_by(user_id=recipient.id).order_by(Transaction.transaction_date.desc()).first()
+            last_recipient_balance = last_recipient_transaction.balance
+            # last_recipient_balance = last_recipient_transaction.balance if last_recipient_transaction else 0
+            
+            # Aktualizacja salda odbiorcy
+            new_recipient_transaction = Transaction(user_id=recipient.id, 
+                                                    transaction_date=transaction_date,
+                                                    transaction_type='FPI',
+                                                    sort_code=last_recipient_transaction.sort_code,
+                                                    account_number=last_recipient_transaction.account_number,
+                                                    transaction_description=transaction_description,
+                                                    debit_amount = 0,
+                                                    credit_amount=amount,
+                                                    balance=last_recipient_balance + amount
+            )
+            db.session.add(new_recipient_transaction)
+            
+
+            # Zatwierdzenie zmian w bazie danych
+            db.session.commit()
+            flash('Transfer successful!', 'success')
+            return redirect(url_for('dashboard'))
+        
+        except Exception as e:
+            print(7)
+            db.session.rollback()
+            flash('An error occurred. Transfer failed.', 'danger')
+            return render_template('transfer.html', form=form)
+
+        # Obsługa procesu przesyłania środków
+        # Sprawdzenie dostępności środków: Przed zrealizowaniem transferu należy sprawdzić, czy nadawca ma wystarczające środki na swoim koncie do wykonania przelewu.
+        # Walidacja danych odbiorcy: Upewnij się, że dane odbiorcy (np. numer konta) są poprawne i istnieje w systemie.
+        # Sprawdzenie kwoty przelewu: Sprawdź, czy kwota przelewu jest dodatnia i nie przekracza ustalonych limitów i jest niższa niż saldo konta
+        # Walidacja hasła: Jeśli w formularzu jest pole do potwierdzenia hasła, upewnij się, że hasło jest poprawne przed zatwierdzeniem transakcji.
+        #  zaktualizuj saldo,
+        #   dodaj transakcję do bazy danych danego klienta
+    
+    else:
+        print(form.errors)   
+    print(8)    
+    user_transactions = Transaction.query.filter_by(user_id=current_user.id).all()
+    return render_template('dashboard.html', user=current_user, all_transactions=user_transactions)    
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
 # Dodaj trasę do obsługi formularza dodawania klienta
 @app.route('/add_customer', methods=['GET', 'POST'])
+@login_required
 def add_customer():
     
     if current_user.role != 'admin':
@@ -274,10 +498,38 @@ def add_customer():
             db.session.commit()
 
             flash('User added successfully.', 'success')
-            return redirect(url_for('admin_dashboard'))
+            return redirect(url_for('admin_dashboard_cm'))
     
     # Jeśli formularz nie jest poprawny, ponów renderowanie strony z błędami
     #return render_template('admin_dashboard', form=form)
+
+
+
+@app.route('/delete_user', methods=['GET', 'POST'])
+@login_required
+def delete_user():
+    all_users = Users.query.all()
+    if current_user.role != 'admin':
+        flash('Brak uprawnień do wykonania tej operacji.', 'danger')
+        return redirect(url_for('index'))
+
+    form = DeleteUserForm()
+    if form.validate_on_submit():
+        username = form.username.data
+        user_to_delete = Users.query.filter_by(username=username).first()
+
+        if user_to_delete:
+            db.session.delete(user_to_delete)
+            db.session.commit()
+            flash('Użytkownik został pomyślnie usunięty.', 'success')
+        else:
+            flash('Użytkownik nie został znaleziony.', 'danger')
+
+        return redirect(url_for('admin_dashboard_cm'))
+
+    return render_template('admin_dashboard_cm.html', form=form, all_users=all_users)
+
+
 
 
 @app.route('/branch_locator', methods=['GET', 'POST'])
@@ -303,18 +555,7 @@ def contact_us():
     return render_template('contact_us.html')
 
 
-@app.route('/transfer', methods=['GET', 'POST'])
-@login_required
-def transfer():
-    form = TransferForm()
 
-    if form.validate_on_submit():
-        # Obsługa procesu przesyłania środków
-        # Sprawdź dostępność środków na koncie nadawcy, zaktualizuj saldo, dodaj transakcję, itp.
-        flash('Transfer successful!', 'success')
-        return redirect(url_for('dashboard'))
-
-    return render_template('transfer.html', form=form)
 
 '''
 Nagłówki Bezpieczeństwa:
