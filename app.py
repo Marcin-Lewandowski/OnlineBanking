@@ -3,7 +3,7 @@ from flask_wtf.csrf import CSRFProtect
 from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user, login_required
 from werkzeug.security import generate_password_hash, check_password_hash
 from forms.forms import LoginForm, TransferForm, AddCustomerForm, CreateTransactionForm, DeleteUserForm, EditUserForm, ChangePasswordForm, AddRecipientForm
-from datetime import timedelta
+from datetime import timedelta, date
 
 from routes.transfer import transfer_bp, login_bp
 from models.models import Users, Transaction, db, Recipient
@@ -136,16 +136,171 @@ def add_recipient():
     return render_template('add_recipient.html', form=form, user=current_user, all_transactions=user_transactions, last_transaction=last_transaction, all_recipients=user_recipients)
 
 
+ 
+        
+    
+    
+    
+def handle_grocery_transaction(amount, recipient_id, description, description2):
+    # Twoja istniejąca logika sprawdzania salda i transakcji
+    #user_transactions = Transaction.query.filter_by(user_id=current_user.id).all()
+    
+    # Pobierz ostatnią transakcję kupującego, aby sprawdzić jego saldo
+    last_transaction = Transaction.query.filter_by(user_id=current_user.id).order_by(Transaction.id.desc()).first()
+    
+    if last_transaction.balance < amount:
+            flash('Insufficient funds.', 'danger')
+            return redirect(url_for('online_shop'))
+        
+    else:    
+        # Logika wykonania przelewu
+        try:
+            # Przygotowanie wspólnych danych dla transakcji
+            transaction_date = date.today()
+            
+            # Aktualizacja salda nadawcy
+            sender_balance = last_transaction.balance - amount
+            new_sender_transaction = Transaction(user_id=current_user.id, 
+                                                transaction_date=transaction_date,
+                                                transaction_type='DD',
+                                                sort_code=last_transaction.sort_code,
+                                                account_number=last_transaction.account_number,
+                                                transaction_description=description,
+                                                debit_amount=amount,
+                                                credit_amount = 0,
+                                                balance=sender_balance)
+            db.session.add(new_sender_transaction)
+            
+            # Znajdź ostatnią transakcję odbiorcy - sklepu FreshFood
+            last_recipient_transaction = Transaction.query.filter_by(user_id=recipient_id).order_by(Transaction.id.desc()).first()
+            
+            recipient_balance = last_recipient_transaction.balance + amount
+            
+            new_recipient_transaction = Transaction(user_id=recipient_id,
+                                                        transaction_date=transaction_date,
+                                                        transaction_type='FPI',
+                                                        sort_code=last_recipient_transaction.sort_code,
+                                                        account_number=last_recipient_transaction.account_number,
+                                                        transaction_description=description2,
+                                                        debit_amount = 0,
+                                                        credit_amount=amount,
+                                                        balance=recipient_balance)
+            db.session.add(new_recipient_transaction)
+            
+            # Zatwierdzenie zmian w bazie danych
+            db.session.commit()
+            flash('Purchase completed successfully!', 'success')
+            return redirect(url_for('online_shop'))
+        
+        except Exception as e:
+                print(7)
+                db.session.rollback()
+                flash('An error occurred. Purchase failed.', 'danger')
+                return render_template('online_shop.html', user=current_user, last_transaction=last_transaction)
+            
+            
+ 
+    
+    
+    
+    
+    
+    
+@app.route('/grocery1', methods=['GET', 'POST'])
+@login_required
+def grocery1():
+    amount = 65
+    recipient_id = 16
+    description = 'Grocery - Dairy purchase'
+    description2 = 'Grocery - Dairy sale'
+    
+    return handle_grocery_transaction(amount, recipient_id, description, description2)
+
+   
+@app.route('/grocery2', methods=['GET', 'POST'])
+@login_required
+def grocery2():
+    amount = 50
+    recipient_id = 16 
+    description = 'Grocery - Fruits & veggies purchase'
+    description2 = 'Grocery - Fruits & veggies sale'
+    
+    return handle_grocery_transaction(amount, recipient_id, description, description2)    
+
+@app.route('/grocery3', methods=['GET', 'POST'])
+@login_required
+def grocery3():
+    amount = 45
+    recipient_id = 16  
+    description = 'Grocery - Fish & meat purchase'
+    description2 = 'Grocery - Fish & meat sale'
+    
+    return handle_grocery_transaction(amount, recipient_id, description, description2)
 
 
+@app.route('/grocery4', methods=['GET', 'POST'])
+@login_required
+def grocery4():
+    amount = 25
+    recipient_id = 16  
+    description = 'Grocery - Bread and rolls purchase'
+    description2 = 'Grocery - Bread and rolls sale'
+    
+    return handle_grocery_transaction(amount, recipient_id, description, description2)
 
 
+@app.route('/gas', methods=['GET', 'POST'])
+@login_required
+def gas():
+    amount = 50
+    recipient_id = 18  
+    description = 'Gas purchase'
+    description2 = 'Gas sale'
+    
+    return handle_grocery_transaction(amount, recipient_id, description, description2)
 
 
+@app.route('/power', methods=['GET', 'POST'])
+@login_required
+def power():
+    amount = 60
+    recipient_id = 18  
+    description = 'Electric purchase'
+    description2 = 'Electric sale'
+    
+    return handle_grocery_transaction(amount, recipient_id, description, description2)
 
 
+@app.route('/water', methods=['GET', 'POST'])
+@login_required
+def water():
+    amount = 110
+    recipient_id = 17  
+    description = 'Water purchase'
+    description2 = 'Water sale'
+    
+    return handle_grocery_transaction(amount, recipient_id, description, description2)
+
+@app.route('/clothes', methods=['GET', 'POST'])
+@login_required
+def clothes():
+    amount = 150
+    recipient_id = 22
+    description = 'Clothes purchase'
+    description2 = 'Clothes sale'
+    
+    return handle_grocery_transaction(amount, recipient_id, description, description2)
 
 
+@app.route('/petrol', methods=['GET', 'POST'])
+@login_required
+def petrol():
+    amount = 120
+    recipient_id = 21
+    description = 'Petrol purchase'
+    description2 = 'Petrol sale'
+    
+    return handle_grocery_transaction(amount, recipient_id, description, description2)
 
 
 
@@ -213,7 +368,7 @@ def admin_dashboard_cm():
     
 
 
-@app.route('/create_transaction', methods=['GET', 'POST'])
+@app.route('/create_transaction', methods=['GET', 'POST'])      # nie ma zabezpieczenia , sprawdzic czy istnieje już taki sam sort code i account number
 @login_required
 def create_transaction():
     if current_user.role != 'admin':
@@ -266,12 +421,16 @@ def add_customer():
         # Uzyskaj dane z formularza
         username = form.username.data
         password = form.password.data
+        email = form.email.data
         password_hash = generate_password_hash(password, method='pbkdf2:sha256')
         
         # Sprawdź, czy użytkownik o podanym username lub email już istnieje
-        existing_user = Users.query.filter((Users.username == username) | (Users.password_hash == password_hash)).first()
+        existing_user = Users.query.filter((Users.username == username) | (Users.email == email)).first()
 
         if existing_user:
+            
+            # Użytkownik o podanym username lub email już istnieje
+            flash('User with given username or email already exists.', 'error')
             return render_template('user_exist.html')
         else:
             # Utwórz nowego użytkownika i dodaj go do bazy danych
@@ -411,15 +570,7 @@ def contact_us():
 
 '''
 
-@app.route('/add_recipient', methods=['GET', 'POST'])
-@login_required
-def add_recipient():
-    
-    
-    user_transactions = Transaction.query.filter_by(user_id=current_user.id).all()
-    last_transaction = Transaction.query.filter_by(user_id=current_user.id).order_by(Transaction.id.desc()).first()
-
-    return render_template('add_recipient.html', user=current_user, all_transactions=user_transactions, last_transaction=last_transaction)
+520
 '''
 
 if __name__ == "__main__":
