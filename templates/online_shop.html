@@ -1,0 +1,121 @@
+
+<!--  dashboard.html (strona główna klienta, pracownika banku, członka zarządu, menadżera) -->
+
+
+{% extends 'base2.html' %}
+
+
+{% block title %} Imperial Bank - user dashboard Add new recipient {% endblock %}
+
+
+{% block precontent %}
+
+
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+{% for message in messages %}
+    <p>Your fast messages: {{ message }}</p>
+{% endfor %}
+{% endif %}
+{% if not messages %}
+    <p>Your fast messages: ---</p>
+{% endif %}
+{% endwith %}
+
+<br>
+<h4>Tu bedzie symulacja sklepu online zakupy, opłaty rent,  auto:  ubezpieczenie, road tax, MOT,  itp</h4><br>
+
+<div class="container100">
+    <div class="center">
+        <img src="static/grocery1.jpg"> <br>
+
+        <a href="{{ url_for('grocery1') }}"> £ 65 Buy</a>
+    </div>
+
+    <div class="center">
+        <img src="static/grocery2.jpg"> <br>
+
+        <a href="{{ url_for('grocery2') }}"> £ 50 Buy</a>
+
+
+    </div>
+
+    <div class="center">
+        <img src="static/grocery3.jpg"> <br>
+        
+        <a href="{{ url_for('grocery3') }}"> £ 45 Buy</a>
+    </div>
+
+    <div class="center">
+        <img src="static/grocery4.jpg"> <br>
+
+        <a href="{{ url_for('grocery4') }}"> £ 25 Buy</a>
+    </div>
+</div>
+
+<div class="container100">
+    <div class="center">
+        <img src="static/gas.jpg"> <br> 
+
+        <a href="{{ url_for('gas') }}"> £ 50 Buy</a>
+
+    </div>
+
+    <div class="center">
+        <img src="static/power.jpg"> <br>
+
+        <a href="{{ url_for('power') }}"> £ 60 Buy</a>
+    </div>
+
+    <div class="center">
+        <img src="static/water.jpg"> <br>
+
+        <a href="{{ url_for('water') }}"> £ 110 Buy</a>
+    </div>
+
+    <div class="center">
+        <img src="static/clothes.jpg"> <br>
+
+        <a href="{{ url_for('clothes') }}"> £ 150 Buy</a>
+    </div>
+</div>
+
+<div class="container100">
+    <div class="center">
+        <img src="static/petrol.jpg"> <br> 
+
+        <a href="{{ url_for('petrol') }}"> £ 120 Buy</a>
+
+    </div>
+
+    <div class="center">
+        <img src="static/power.jpg"> <br>
+
+        <a href="{{ url_for('power') }}"> £ 60 Buy</a>
+    </div>
+
+    <div class="center">
+        <img src="static/water.jpg"> <br>
+
+        <a href="{{ url_for('water') }}"> £ 110 Buy</a>
+    </div>
+
+    <div class="center">
+        <img src="static/clothes.jpg"> <br>
+
+        <a href="{{ url_for('clothes') }}"> £ 150 Buy</a>
+    </div>
+</div>
+
+    
+{% endblock %}
+
+
+
+{% block content %}
+
+
+
+
+{% endblock %}
+

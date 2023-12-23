@@ -1,0 +1,91 @@
+
+<!--  dashboard.html (strona główna klienta, pracownika banku, członka zarządu, menadżera) -->
+
+
+{% extends 'base2.html' %}
+
+
+{% block title %} Imperial Bank - user dashboard Add new recipient {% endblock %}
+
+
+{% block precontent %}
+
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+{% for message in messages %}
+    <p>Your fast messages: {{ message }}</p>
+{% endfor %}
+{% endif %}
+{% if not messages %}
+    <p>Your fast messages: ---</p>
+{% endif %}
+{% endwith %}
+
+<h4>Recipients</h4>
+
+<table border="1" class="center-table">
+  <thead>
+      <tr>
+          
+          <th>Name</th>
+          <th>Sort Code</th>
+          <th>Account Number</th>
+          
+      </tr>
+  </thead>
+  <tbody>
+      {% for recipient in all_recipients %}
+        
+          <tr>
+              <td>{{ recipient.name }}</td>
+              <td>{{ recipient.sort_code }}</td>
+              <td>{{ recipient.account_number }}</td>
+              
+          </tr>
+      {% endfor %}
+  </tbody>
+</table>
+
+<h2>Add New Recipient</h2>
+    
+
+    <form action="{{ url_for('add_recipient') }}" method="post" role="form">
+
+      <p><label for="name">Name</label>
+      <input type="text" id="name" name="name" required></p>
+
+      <p><label for="sort_code">Sort Code:</label>
+      <input type="text" id="sort_code" name="sort_code" required></p>
+      
+      <p><label for="account_number">Account Number:</label>
+      <input type="text" id="account_number" name="account_number" required></p>
+
+      <!-- Wstaw ukryte pole z tokenem CSRF -->
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+      <input type="submit" value="Add Recipient"><br>
+
+
+    </form>
+
+    
+
+
+
+
+
+
+
+
+
+
+{% endblock %}
+
+
+
+
+{% block content %}
+
+
+{% endblock %}
+

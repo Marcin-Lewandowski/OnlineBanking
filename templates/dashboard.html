@@ -1,56 +1,59 @@
 
 <!--  dashboard.html (strona główna klienta, pracownika banku, członka zarządu, menadżera) -->
 
-<center>
-{% extends 'base.html' %}
+
+{% extends 'base2.html' %}
 
 
 {% block title %} Imperial Bank - user dashboard {% endblock %}
 
 
-{% block content %}
-  {% with messages = get_flashed_messages() %}
-    {% if messages %}
-      {% for message in messages %}
-        <p>{{ message }}</p>
-      {% endfor %}
-    {% endif %}
-  {% endwith %}
-  <h3>Welcome {{ current_user.username }}</h3>
-  <br>
-  
-  <table border="1">
-    <thead>
+{% block precontent %}
+
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+{% for message in messages %}
+    <p>Your fast messages: {{ message }}</p>
+{% endfor %}
+{% endif %}
+{% if not messages %}
+    <p>Your fast messages: ---</p>
+{% endif %}
+{% endwith %}
+
+<h3>Your account statement: </h3>
+<table border="1" class="center-table">
+  <thead>
       <tr>
-        <th>ID</th>
-        <th>Name</th>
-        <th>Email</th>
-        <th>Role</th>
-        <th>Country</th>
-        
-        <!-- Add more columns as needed -->
-      </tr>
-    </thead>
-    <tbody>
-      
-        <tr>
-          <td>{{ user.id }}</td>
-          <td>{{ user.username }}</td>
-          <td>{{ user.email }}</td>
-          <td>{{ user.role }}</td>
-          <td>{{ user.country }}</td>
-
-
           
-        </tr>
-      
-    </tbody>
-  </table>
-
-  <br>
-  <a href="{{ url_for('logout') }}"><img src="static/logout.jpg"> </a>
-
-  <br><br
+          <th>Date</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Debit Amount</th>
+          <th>Credit Amount</th>
+          <th>Balance</th>
+      </tr>
+  </thead>
+  <tbody>
+      {% for transaction in all_transactions %}
+        
+          <tr>
+              <td>{{ transaction.transaction_date }}</td>
+              <td>{{ transaction.transaction_type }}</td>
+              <td>{{ transaction.transaction_description }}</td>
+              <td>{{ transaction.debit_amount }}</td>
+              <td>{{ transaction.credit_amount }}</td>
+              <td>{{ transaction.balance }}</td>
+          </tr>
+      {% endfor %}
+  </tbody>
+</table>
 {% endblock %}
 
-</center>
+
+
+
+{% block content %}
+ 
+{% endblock %}
+

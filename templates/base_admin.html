@@ -25,14 +25,96 @@
     </nav>
 
 
-    <div id="content">
-        {% block content %}
-        
-        {% endblock %}
-    </div>
+    
 
     <main>
         <!-- main -->
+        <h2>Admin Dashboard  {% block subtitle %}{% endblock %}</h2>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+            {% for message in messages %}
+                <p>{{ message }}</p>
+            {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <p>Welcome, {{ current_user.username }}!</p>
+        <br><br>
+
+
+        <div class="container">
+            <div class="left">
+            <!-- Zawartość kontenera po lewej stronie -->
+            <div>
+                <a href="{{ url_for('admin_dashboard') }}" class="link">Main Dashboard</a> <br><br>
+
+
+
+                <a href="{{ url_for('admin_dashboard_cm') }}" class="link">Customer Management</a> <br>
+                Creating new customer profiles.<br>
+                creating a bank account for the client<br>
+                Managing access rights for clients.<br>
+                deleting profiles<br><br>
+
+
+                <a href="contact_us" class="link">Customer Account Management:</a> <br>
+                Overview and search of all customer accounts.<br>
+                Ability to block or unblock accounts.<br>
+                Editing customer information.<br>
+                Managing access rights for clients.<br><br>
+
+
+                <a href="contact_us" class="link">Transaction Management:</a> <br>
+                Transaction history overview.<br>
+                Possibility to filter transactions according to various criteria.<br>
+                Performing operations on transactions such as voids.<br><br>
+
+
+                <a href="contact_us" class="link">Communication with clients:</a> <br>
+                Notification and message system for customers.<br>
+                Managing announcements and messages for customers.<br><br>
+
+
+                <a href="{{ url_for('team') }}" class="link">Team</a> <br>
+                Info about Bank employee, Board Members and Management<br><br>
+
+
+                <a href="contact_us" class="link">Reports and Statistics:</a> <br>
+                Generating reports on customer activity and transactions.<br>
+                Presentation of statistics about users and accounts.<br><br>
+
+
+                <a href="contact_us" class="link">Product and Service Management:</a> <br>
+                Adding new financial products.<br>
+                Configuration of interest rates and fees.<br>
+                Configuration of product parameters, such as limits and fees.<br><br>
+
+
+                <a href="contact_us" class="link">Safety settings:</a> <br>
+                Configuring and monitoring security features such as encryption protocols.<br>
+                Managing the identity verification and authorization process.<br><br>
+
+
+                <a href="contact_us" class="link">Technical Support Panel:</a> <br>
+                Reporting problems and current questions from customers.<br>
+                Manage tickets and track their resolution progress.<br><br>
+
+
+
+                <hr>
+                
+                <a href="{{ url_for('logout') }}" class="link">Log out</a> <br>
+                
+            </div>
+        
+            </div>
+            <div class="right">
+                {% block content %}
+                
+                {% endblock %}
+        
+            
+            </div>
+        </div>
     </main>
 
     <footer>

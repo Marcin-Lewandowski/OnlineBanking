@@ -1,0 +1,166 @@
+<!--   -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %}</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">  
+    
+</head>
+<body>
+    <header>
+        <!-- Nagłówek strony -->
+       
+        <div class="container5">
+            <div class="left4">
+                <img src="static/imperial-bank-2.jpg" alt="Imperial Bank">
+
+            </div>
+
+            <div class="right4">
+                <p>Welcome, {{ current_user.username }}!</p>
+                
+            </div>
+            <div class="right4">
+                <a href="{{ url_for('logout') }}"><img src="static/logout.jpg"> </a>
+
+            </div>
+        </div>
+        
+    </header>
+
+    <nav>
+        
+    </nav>
+
+    <main>
+        <!-- main -->
+        <div class="container5">
+            <div class="left5">
+                <div class="container100">
+
+                    <div class="visa">
+                        <img src="static/visa.jpg">
+        
+                    </div>
+                    <div class="visa2">
+                        <h3>Standard Save & Spend Account</h3>
+                        <h4>Sort code: {{ last_transaction.sort_code }}  <br>
+                        Account number: {{ last_transaction.account_number }}</h4>
+
+    
+    
+                    </div>
+
+                    <div class="visa3">
+                        <h3>Funds available:</h3>
+                        <h2> £ {{ last_transaction.balance }}</h2>
+                    </div>
+
+                </div>
+
+                <div class="container100">
+
+                    <h3><a href="{{ url_for('dashboard') }}"> Statement</a>  &nbsp | &nbsp
+
+                    <a href="{{ url_for('make_payment') }}"> Make a payment</a>  &nbsp | &nbsp
+
+                    <a href="{{ url_for('add_recipient') }}"> Add new recipient</a>  &nbsp | &nbsp
+
+                    <a href="{{ url_for('online_shop') }}"> Online shop</a>  &nbsp | &nbsp &nbsp
+
+                    <a href="{{ url_for('account_data') }}"> Account data</a>  &nbsp
+
+                
+                
+                </h3>
+
+
+                    
+
+
+                </div>
+                <div class="center">
+                    {% block precontent%}
+
+                    {%  endblock %}
+
+                </div>
+
+
+
+
+                
+                
+
+            </div>
+
+
+
+
+            <div class="right5">
+                <div class="center">
+                    Inbox: <br><br>
+                    You have X messages. Please view your Inbox now<br>
+                    <hr>
+                    Savings: <br><br>
+                    Bank deposit <br>
+                    <hr>
+                    Borrowing: <br><br>
+                    Loans <br>
+                    Credit cards <br>
+                    Overdraft <br>
+                    Mortgage <br>
+                    <hr> <br>
+                    <p>Help and support center</p>
+
+
+
+                </div>
+                
+
+
+            </div>
+        </div>
+
+        {% block content %}
+            
+        {% endblock %}
+        
+
+
+
+    </main>
+
+    <footer>
+        <!-- Stopka strony -->
+        <table class="footer">
+            <tr>
+                <td  class="center2">
+                    Branch Locator
+                </td>
+                <td class="center2">
+                    Service status
+                </td>
+                <td class="center2">
+                    Cookies
+                </td>
+                <td class="center2">
+                    Privacy
+                </td>
+                <td class="center2">
+                    Careers
+                </td>
+                <td class="center2">
+                    <a href="contact_us" class="link">Contact us</a>  
+                </td>
+            </tr>
+        </table>
+    </footer>
+   
+</body>
+</html>
