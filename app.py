@@ -141,13 +141,18 @@ def add_recipient():
     
     
     
-def handle_grocery_transaction(amount, recipient_id, description, description2):
+def handle_grocery_transaction(amount, recipient_id, description, description2, description3):
     # Twoja istniejąca logika sprawdzania salda i transakcji
     #user_transactions = Transaction.query.filter_by(user_id=current_user.id).all()
     
     # Pobierz ostatnią transakcję kupującego, aby sprawdzić jego saldo
     last_transaction = Transaction.query.filter_by(user_id=current_user.id).order_by(Transaction.id.desc()).first()
     
+    if current_user.id == recipient_id:
+        flash('You cannot buy your own products and services !!!', 'danger') 
+        return redirect(url_for('online_shop'))
+        
+        
     if last_transaction.balance < amount:
             flash('Insufficient funds.', 'danger')
             return redirect(url_for('online_shop'))
@@ -189,7 +194,8 @@ def handle_grocery_transaction(amount, recipient_id, description, description2):
             
             # Zatwierdzenie zmian w bazie danych
             db.session.commit()
-            flash('Purchase completed successfully!', 'success')
+            
+            flash(f'{description3} purchase completed successfully!', 'success')
             return redirect(url_for('online_shop'))
         
         except Exception as e:
@@ -213,8 +219,9 @@ def grocery1():
     recipient_id = 16
     description = 'Grocery - Dairy purchase'
     description2 = 'Grocery - Dairy sale'
+    description3 = 'Dairy'
     
-    return handle_grocery_transaction(amount, recipient_id, description, description2)
+    return handle_grocery_transaction(amount, recipient_id, description, description2, description3)
 
    
 @app.route('/grocery2', methods=['GET', 'POST'])
@@ -224,8 +231,9 @@ def grocery2():
     recipient_id = 16 
     description = 'Grocery - Fruits & veggies purchase'
     description2 = 'Grocery - Fruits & veggies sale'
+    description3 = 'Fruits & veggies'
     
-    return handle_grocery_transaction(amount, recipient_id, description, description2)    
+    return handle_grocery_transaction(amount, recipient_id, description, description2, description3)    
 
 @app.route('/grocery3', methods=['GET', 'POST'])
 @login_required
@@ -234,8 +242,9 @@ def grocery3():
     recipient_id = 16  
     description = 'Grocery - Fish & meat purchase'
     description2 = 'Grocery - Fish & meat sale'
+    description3 = 'Fish & meat'
     
-    return handle_grocery_transaction(amount, recipient_id, description, description2)
+    return handle_grocery_transaction(amount, recipient_id, description, description2, description3)
 
 
 @app.route('/grocery4', methods=['GET', 'POST'])
@@ -245,8 +254,9 @@ def grocery4():
     recipient_id = 16  
     description = 'Grocery - Bread and rolls purchase'
     description2 = 'Grocery - Bread and rolls sale'
+    description3 = 'Bread & rolls'
     
-    return handle_grocery_transaction(amount, recipient_id, description, description2)
+    return handle_grocery_transaction(amount, recipient_id, description, description2, description3)
 
 
 @app.route('/gas', methods=['GET', 'POST'])
@@ -256,8 +266,9 @@ def gas():
     recipient_id = 18  
     description = 'Gas purchase'
     description2 = 'Gas sale'
+    description3 = 'Gas'
     
-    return handle_grocery_transaction(amount, recipient_id, description, description2)
+    return handle_grocery_transaction(amount, recipient_id, description, description2, description3)
 
 
 @app.route('/power', methods=['GET', 'POST'])
@@ -267,8 +278,9 @@ def power():
     recipient_id = 18  
     description = 'Electric purchase'
     description2 = 'Electric sale'
+    description3 = 'Electric '
     
-    return handle_grocery_transaction(amount, recipient_id, description, description2)
+    return handle_grocery_transaction(amount, recipient_id, description, description2, description3)
 
 
 @app.route('/water', methods=['GET', 'POST'])
@@ -278,8 +290,9 @@ def water():
     recipient_id = 17  
     description = 'Water purchase'
     description2 = 'Water sale'
+    description3 = 'Water'
     
-    return handle_grocery_transaction(amount, recipient_id, description, description2)
+    return handle_grocery_transaction(amount, recipient_id, description, description2, description3)
 
 @app.route('/clothes', methods=['GET', 'POST'])
 @login_required
@@ -288,8 +301,9 @@ def clothes():
     recipient_id = 22
     description = 'Clothes purchase'
     description2 = 'Clothes sale'
+    description3 = 'Clothes'
     
-    return handle_grocery_transaction(amount, recipient_id, description, description2)
+    return handle_grocery_transaction(amount, recipient_id, description, description2, description3)
 
 
 @app.route('/petrol', methods=['GET', 'POST'])
@@ -299,8 +313,9 @@ def petrol():
     recipient_id = 21
     description = 'Petrol purchase'
     description2 = 'Petrol sale'
+    description3 = 'Petrol'
     
-    return handle_grocery_transaction(amount, recipient_id, description, description2)
+    return handle_grocery_transaction(amount, recipient_id, description, description2, description3)
 
 
 
