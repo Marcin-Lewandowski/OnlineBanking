@@ -11,8 +11,17 @@ body {
   .center {
     margin-left: auto;
     margin-right: auto;
-    align-self: center;
+    padding-left: 20px;
+    padding-top: 15px;
+    text-align: center;
   }
+
+  .center-table {
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+    width: 80%; /* lub inna wartość, zależnie od potrzeb */
+}
 
   .center2 {
     padding-left: 30px;
@@ -88,12 +97,45 @@ body {
     color: white;
     font-size: 20px;
     transition: color 2s ease;
-    /* Dodaj inne style według potrzeb */
+    text-decoration: none;
 }
   .link:hover{
     color: orange;
     font-size: 20px;
   }
+
+  .link2 {
+    color: brown;
+    font-size: 20px;
+    text-decoration: none;
+}
+
+.link2:hover{
+  color: red;
+  font-size: 20px;
+}
+
+.link3 {
+  color: navy;
+  font-size: 22px;
+  text-decoration: none;
+}
+
+.link3:hover{
+color: blue;
+font-size: 22px;
+}
+
+
+
+
+
+
+
+
+
+
+
 
 .container {
   display: flex;
@@ -101,8 +143,6 @@ body {
   margin: 0 auto;
   max-width: 90%;
 }
-
-
 
 .left {
   flex: 1;
@@ -117,4 +157,138 @@ body {
   flex: 2;
   border-color: black; 
   border-style: solid; 
+}
+
+
+.container2 {
+  height: 300px;
+  display: flex;
+  justify-content: space-between;
+  margin: 0 auto;
+  max-width: 98%;
+}
+
+.left2 {
+  flex: 2;
+  border-color: grey; 
+  border-style: solid;
+  text-align: center;
+}
+
+.right2 {
+  flex: 3;
+  border-color: blue; 
+  border-style: solid; 
+  text-align: center;
+  justify-content: center;
+  overflow: auto;
+}
+
+.right2 table {
+  margin: auto; /* Automatyczne marginesy dla wyśrodkowania tabeli */
+}
+
+.container2 {
+  height: 350px;
+  display: flex;
+  justify-content: space-between;
+  margin: 0 auto;
+  max-width: 98%;
+}
+
+
+.left3 {
+  flex: 2;
+  border-color: grey; 
+  border-style: solid;
+  text-align: center;
+}
+
+.right3 {
+  flex: 5;
+  border-color: blue; 
+  border-style: solid; 
+  text-align: center;
+  justify-content: center;
+  overflow: auto;
+}
+
+.left3 table{
+  margin: auto;
+}
+.right3 table {
+  margin: auto; /* Automatyczne marginesy dla wyśrodkowania tabeli */
+}
+
+.center-div{
+  
+  text-align: center;
+  height: 100vh;
+  
+}
+.left4 {
+  flex: 6;
+  text-align: left;
+  padding-top: 20px;
+}
+
+.right4 {
+  flex: 1;
+  text-align: right;
+  justify-content: right;
+  overflow: auto;
+  padding-top: 20px;
+  font-size: 20px;
+}
+
+.container5 {
+  display: flex;
+  justify-content: space-between;
+  margin: 0 auto;
+  max-width: 75%;
+  border-color: orange; 
+  border-style: solid;
+
+}
+.left5 {
+  flex: 3;
+  text-align: left;
+  padding-top: 30px;
+  padding-left: 30px;
+  padding-bottom: 40px;
+  border-color: blue; 
+  border-style: solid;
+}
+
+.right5 {
+  flex: 1;
+  text-align: right;
+  justify-content: right;
+  overflow: auto;
+  padding-top: 20px;
+  font-size: 20px;
+  border-color: grey; 
+  border-style: solid;
+}
+
+.container100 {
+  display: flex;
+  justify-content: space-between;
+  margin: 0 auto;
+  max-width: 95%;
+  border-color: orange; 
+  border-style: solid;
+  padding-bottom: 10px;
+
+}
+.visa {
+  flex: 1;
+}
+
+.visa2 {
+  flex: 4;
+}
+
+.visa3 {
+  flex: 4;
 }

@@ -12,6 +12,7 @@ body {
     margin-left: auto;
     margin-right: auto;
     align-self: center;
+    text-align: center;
   }
 
   .center2 {
@@ -99,7 +100,7 @@ body {
   display: flex;
   justify-content: space-between;
   margin: 0 auto;
-  max-width: 96%;
+  max-width: 98%;
 }
 
 
@@ -115,4 +116,57 @@ body {
   flex: 3;
   border-color: black; 
   border-style: solid; 
+  text-align: center;
+}
+
+
+.container2 {
+  height: 300px;
+  display: flex;
+  justify-content: space-between;
+  margin: 0 auto;
+  max-width: 98%;
+}
+
+
+.left2 {
+  flex: 2;
+  border-color: grey; 
+  border-style: solid;
+  text-align: center;
+}
+
+.right2 {
+  flex: 3;
+  border-color: blue; 
+  border-style: solid; 
+  text-align: center;
+  justify-content: center;
+  overflow: auto;
+}
+
+.right2 table {
+  margin: auto; /* Automatyczne marginesy dla wyśrodkowania tabeli */
+}
+
+.container3 {
+  display: flex;
+  justify-content: center;
+  margin: 0 auto;
+  max-width: 98%;
+  font-size: medium;
+}
+
+.large-font-table {
+  font-size: 28px; /* Możesz dostosować rozmiar według potrzeb */
+  font-style: normal;
+  color: navy;
+}
+
+.center-div{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  height: 100vh;
 }
