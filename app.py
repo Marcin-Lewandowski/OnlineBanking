@@ -1,12 +1,12 @@
-from flask import Flask, render_template, flash, request, url_for, redirect, session
+from flask import Flask, render_template, flash, request, url_for, redirect, session, abort
 from flask_wtf.csrf import CSRFProtect
 from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user, login_required
 from werkzeug.security import generate_password_hash, check_password_hash
 from forms.forms import LoginForm, TransferForm, AddCustomerForm, CreateTransactionForm, DeleteUserForm, EditUserForm, ChangePasswordForm, AddRecipientForm
 from datetime import timedelta, date
-
 from routes.transfer import transfer_bp, login_bp
 from models.models import Users, Transaction, db, Recipient
+from functools import wraps
 
 login_manager = LoginManager()
 login_manager.login_view = 'login_bp.login'
@@ -69,6 +69,14 @@ def create_sample_user():
         admin.set_password('admin_password')
         db.session.add(admin)
         db.session.commit()  
+        
+def admin_required(func):
+    @wraps(func)
+    def decorated_view(*args, **kwargs):
+        if not current_user.is_authenticated or current_user.role != 'admin':
+            abort(403)  # Zwraca błąd 403 Forbidden, jeśli użytkownik nie jest adminem
+        return func(*args, **kwargs)
+    return decorated_view
     
 
 @app.route('/', methods=['GET', 'POST'])
@@ -352,7 +360,7 @@ def register():
 
 
 @app.route('/admin_dashboard', methods=['GET', 'POST'])
-@login_required
+@admin_required
 def admin_dashboard():
     if current_user.role != 'admin':
         return 'Access denied'
@@ -367,7 +375,7 @@ def admin_dashboard():
 
 
 @app.route('/admin_dashboard_cm', methods=['GET', 'POST'])
-@login_required
+@admin_required
 def admin_dashboard_cm():
     if current_user.role != 'admin':
         return 'Access denied'
@@ -384,10 +392,8 @@ def admin_dashboard_cm():
 
 
 @app.route('/create_transaction', methods=['GET', 'POST'])      # nie ma zabezpieczenia , sprawdzic czy istnieje już taki sam sort code i account number
-@login_required
+@admin_required
 def create_transaction():
-    if current_user.role != 'admin':
-        return 'Access denied'
     
     all_users = Users.query.all()
     all_transactions = Transaction.query.all()
@@ -424,11 +430,8 @@ def create_transaction():
 
 # Dodaj trasę do obsługi formularza dodawania klienta
 @app.route('/add_customer', methods=['GET', 'POST'])
-@login_required
+@admin_required
 def add_customer():
-    
-    if current_user.role != 'admin':
-        return 'Access denied'
 
     form = AddCustomerForm(request.form)
     
@@ -468,7 +471,7 @@ def add_customer():
 
 
 @app.route('/delete_user', methods=['GET', 'POST'])
-@login_required
+@admin_required
 def delete_user():
     all_users = Users.query.all()
     if current_user.role != 'admin':
@@ -522,12 +525,10 @@ def edit_profile():
 
 
 @app.route('/team', methods=['GET', 'POST'])
-@login_required
+@admin_required
 def team():
-    if current_user.role != 'admin':
-        return 'Access denied'
     
-    # Tutaj dodaj logikę wyświetlania informacji o wszystkich kontach klientów
+    # Widok wyświetla członków zarządu, management, pracowników banku, logika na stronie html
     # Pobierz wszystkich użytkowników z bazy danych
     all_users = Users.query.all()
     
@@ -535,15 +536,14 @@ def team():
     
 
 @app.route('/admin/users')
-@login_required
+@admin_required
 def list_users():
     all_users = Users.query.all()
     return render_template('list_users.html', all_users=all_users)
 
 
 @app.route('/admin/change-password/<int:user_id>', methods=['GET', 'POST'])
-@login_required  # Upewnij się, że tylko administratorzy mają dostęp
-
+@admin_required
 def change_password(user_id):
     user = Users.query.get_or_404(user_id)
     form = ChangePasswordForm()
@@ -591,4 +591,3 @@ def contact_us():
 if __name__ == "__main__":
     initialize_app()
     app.run(debug=True)
-
