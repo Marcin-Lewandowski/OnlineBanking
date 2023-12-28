@@ -2,10 +2,10 @@ from flask import Flask, render_template, flash, request, url_for, redirect, ses
 from flask_wtf.csrf import CSRFProtect
 from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user, login_required
 from werkzeug.security import generate_password_hash, check_password_hash
-from forms.forms import LoginForm, TransferForm, AddCustomerForm, CreateTransactionForm, DeleteUserForm, EditUserForm, ChangePasswordForm, AddRecipientForm
+from forms.forms import LoginForm, TransferForm, AddCustomerForm, CreateTransactionForm, DeleteUserForm, EditUserForm, ChangePasswordForm, AddRecipientForm, DDSOForm
 from datetime import timedelta, date
 from routes.transfer import transfer_bp, login_bp
-from models.models import Users, Transaction, db, Recipient
+from models.models import Users, Transaction, db, Recipient, DDSO
 from functools import wraps
 
 login_manager = LoginManager()
@@ -29,8 +29,6 @@ def create_app():
     # ... Rejestracja Blueprintów, inne konfiguracje ...
     app.register_blueprint(transfer_bp)
     app.register_blueprint(login_bp)
-
-    
 
     return app
 
@@ -329,6 +327,57 @@ def petrol():
 
 
 
+@app.route('/direct_debit_standing_orders', methods=['GET', 'POST'])
+@login_required
+def ddso():
+    
+    user_transactions = Transaction.query.filter_by(user_id=current_user.id).all()
+    user_dd_so = DDSO.query.filter_by(user_id=current_user.id).all()
+    last_transaction = Transaction.query.filter_by(user_id=current_user.id).order_by(Transaction.id.desc()).first()
+    
+    form = DDSOForm()
+    
+    if form.validate_on_submit():
+        
+        confirm_password = form.confirm_password.data
+        
+        # Sprawdź, czy hasło jest poprawne
+        if not current_user.check_password(confirm_password):
+            print(3)
+            flash('Invalid password.', 'danger')
+            return redirect(url_for('dashboard'))
+        
+        # Sprawdź, czy odbiorca istnieje, po username
+        recipient_exist = Users.query.filter_by(username=form.recipient.data).first()
+        
+        
+        if not recipient_exist:
+            print(4)
+            flash('Recipient account not found.', 'danger')
+            return redirect(url_for('dashboard')) 
+        
+        
+        # Tworzenie nowego zlecenia na podstawie danych z formularza
+        new_dd_so = DDSO(
+                        user_id=current_user.id,  
+                        recipient=form.recipient.data,
+                        reference_number=form.reference_number.data,
+                        amount=form.amount.data,
+                        next_payment_date=form.next_payment_date.data,
+                        transaction_type=form.transaction_type.data,
+                        frequency=form.frequency.data)
+        
+        db.session.add(new_dd_so)
+        db.session.commit()
+        flash('New Direct Debit / Standing Order added successfully!')
+        return redirect(url_for('dashboard'))  # Przekierowanie do strony głównej lub innej strony
+
+    return render_template('ddso.html', form=form, user=current_user, all_transactions=user_transactions, all_dd_so=user_dd_so,  last_transaction=last_transaction)
+    
+
+
+
+
 
 
 
@@ -362,8 +411,7 @@ def register():
 @app.route('/admin_dashboard', methods=['GET', 'POST'])
 @admin_required
 def admin_dashboard():
-    if current_user.role != 'admin':
-        return 'Access denied'
+    
     
     # Tutaj dodaj logikę wyświetlania informacji o wszystkich kontach klientów
     # Możesz pobierać dane z bazy danych przy użyciu SQLAlchemy
@@ -377,8 +425,6 @@ def admin_dashboard():
 @app.route('/admin_dashboard_cm', methods=['GET', 'POST'])
 @admin_required
 def admin_dashboard_cm():
-    if current_user.role != 'admin':
-        return 'Access denied'
     
     # Tutaj dodaj logikę wyświetlania informacji o wszystkich kontach klientów
     # Możesz pobierać dane z bazy danych przy użyciu SQLAlchemy
@@ -585,9 +631,10 @@ def contact_us():
 
 '''
 
-520
+593
 '''
 
 if __name__ == "__main__":
     initialize_app()
+    
     app.run(debug=True)
