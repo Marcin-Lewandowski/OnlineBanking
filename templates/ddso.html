@@ -1,0 +1,94 @@
+
+
+{% extends 'base2.html' %}
+
+
+{% block title %} Imperial Bank - user dashboard - standing orders {% endblock %}
+
+
+{% block precontent %}
+
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+{% for message in messages %}
+    <p>Your fast messages: {{ message }}</p>
+{% endfor %}
+{% endif %}
+{% if not messages %}
+    <p>Your fast messages: ---</p>
+{% endif %}
+{% endwith %}
+
+<h3>Your standing orders: </h3>
+
+<table border="1" class="center-table">
+    <thead>
+    <tr>
+        <th>Recipient name</th>
+        <th>Ref number</th>
+        <th>Amount</th>
+        <th>Type</th>
+        <th>Frequency</th>
+        <th>Last paid</th>
+        <!-- Add more columns as needed -->
+    </tr>
+    </thead>
+    <tbody>
+    {% for dd_so in all_dd_so %}
+        <tr>
+        <td>{{ dd_so.recipient }}</td>
+        <td>{{ dd_so.reference_number }}</td>
+        <td>{{ dd_so.amount }}</td>
+        <td>{{ dd_so.transaction_type }}</td>
+        <td>{{ dd_so.frequency }}</td>
+        <td>{{ dd_so.next_payment_date }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<h3>Set direct debit or standing order:</h3>
+
+<form action="{{ url_for('ddso_bp.ddso') }}" method="post" role="form">
+
+    <label for="recipient">Recipient name:</label>
+    <input type="text" id="recipient" name="recipient" required><br>
+
+    <label for="reference_number">Reference number:</label>
+    <input type="text" id="reference_number" name="reference_number" required><br>
+
+    <label for="amount">Amount:</label>
+    <input type="number" step="0.01" id="amount" name="amount" required><br>
+
+
+    <label for="transaction_type">Transaction Type:</label>
+    <select id="transaction_type" name="transaction_type" def required>
+        <option value="DD">Direct Debit</option>
+        <option value="SO">Standing Order</option>
+    </select><br>
+
+    <label for="frequency">Frequency:</label>
+    <select id="frequency" name="frequency" def required>
+        <option value="daily">Daily</option>
+        <option value="monthly">Monthly</option>
+    </select><br>
+
+    <label for="next_payment_date">Transaction Date:</label>
+    <input type="date" id="next_payment_date" name="next_payment_date" required><br>
+
+
+
+
+    <label for="confirm_password">Confirm password:</label>
+    <input type="password" id="confirm_password" name="confirm_password" required><br>
+
+    <!-- Wstaw ukryte pole z tokenem CSRF -->
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+    <input type="submit" value="Set DD / SO"><br>
+
+  </form>
+
+
+
+{% endblock %}

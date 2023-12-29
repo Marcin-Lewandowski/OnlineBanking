@@ -17,7 +17,7 @@
         <p>Ala ma kota.</p>
         <h3>Add New Customer</h3>
 
-        <form action="{{ url_for('add_customer') }}" method="post" role="form">
+        <form action="{{ url_for('add_customer_bp.add_customer') }}" method="post" role="form">
 
             
             <label for="username">Username:</label>
@@ -128,14 +128,6 @@
 
 
 
-
-
-
-
-
-
-
-
 <hr>
 
 <!-- Table with created transactions -->
@@ -174,7 +166,7 @@
 
 <h3>Add New Transaction</h3>
 
-<form action="{{ url_for('create_transaction') }}" method="post" role="form">
+<form action="{{ url_for('create_transaction_bp.create_transaction') }}" method="post" role="form">
 
     <label for="user_id">User ID:</label>
     <input type="number" id="user_id" name="user_id" required><br>

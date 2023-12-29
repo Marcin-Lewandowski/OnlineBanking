@@ -29,7 +29,7 @@
 
     <main>
         <!-- main -->
-        <h2>Admin Dashboard  {% block subtitle %}{% endblock %}</h2>
+        <h2>Admin Dashboard  {% block subtitle %}{% endblock %} <a href="{{ url_for('logout') }}" class="link"> ----->> Log out  <<-----</a> <br></h2>
         {% with messages = get_flashed_messages() %}
             {% if messages %}
             {% for message in messages %}
@@ -46,7 +46,6 @@
             <!-- Zawartość kontenera po lewej stronie -->
             <div>
                 <a href="{{ url_for('admin_dashboard') }}" class="link">Main Dashboard</a> <br><br>
-
 
 
                 <a href="{{ url_for('admin_dashboard_cm') }}" class="link">Customer Management</a> <br>
@@ -99,10 +98,7 @@
                 Manage tickets and track their resolution progress.<br><br>
 
 
-
                 <hr>
-                
-                <a href="{{ url_for('logout') }}" class="link">Log out</a> <br>
                 
             </div>
         

@@ -1,9 +1,20 @@
-from flask import Blueprint, render_template, request, session, flash, url_for, redirect
+from flask import Blueprint, render_template, request, session, flash, url_for, redirect, abort
 
 from flask_login import current_user, login_required, login_user
-from forms.forms import TransferForm, LoginForm
+from forms.forms import TransferForm, LoginForm, DDSOForm, CreateTransactionForm, EditUserForm
 from datetime import date
-from models.models import Users, Transaction, db
+from models.models import Users, Transaction, db, DDSO
+from functools import wraps
+
+
+
+def admin_required(func):
+    @wraps(func)
+    def decorated_view(*args, **kwargs):
+        if not current_user.is_authenticated or current_user.role != 'admin':
+            abort(403)  # Zwraca błąd 403 Forbidden, jeśli użytkownik nie jest adminem
+        return func(*args, **kwargs)
+    return decorated_view
 
 
 
@@ -31,6 +42,8 @@ def transfer():
      
         # Sprawdź, czy odbiorca istnieje, sprawdza po sort code i account number
         recipient = Users.query.join(Transaction).filter(Transaction.account_number == recipient_account_number, Transaction.sort_code == recipient_sort_code).first()
+        
+        
         if not recipient:
             print(4)
             flash('Recipient account not found.', 'danger')
@@ -125,7 +138,6 @@ def login():
                 flash("Login succesful!")
                 print(user.username)
                 
-                
                 # Przekieruj do strony admin_dashboard dla administratora
                 if user.role == 'admin':
                     return redirect(url_for('admin_dashboard'))
@@ -147,3 +159,117 @@ def login():
 
 
     return render_template('login.html', form = form)
+
+
+ddso_bp = Blueprint('ddso_bp', __name__)
+
+@ddso_bp.route('/direct_debit_standing_orders', methods=['GET', 'POST'])
+@login_required
+def ddso():
+    
+    user_transactions = Transaction.query.filter_by(user_id=current_user.id).all()
+    user_dd_so = DDSO.query.filter_by(user_id=current_user.id).all()
+    last_transaction = Transaction.query.filter_by(user_id=current_user.id).order_by(Transaction.id.desc()).first()
+    
+    form = DDSOForm()
+    
+    if form.validate_on_submit():
+        
+        confirm_password = form.confirm_password.data
+        
+        # Sprawdź, czy hasło jest poprawne
+        if not current_user.check_password(confirm_password):
+            print(3)
+            flash('Invalid password.', 'danger')
+            return redirect(url_for('dashboard'))
+        
+        # Sprawdź, czy odbiorca istnieje, po username
+        recipient_exist = Users.query.filter_by(username=form.recipient.data).first()
+        
+        
+        if not recipient_exist:
+            print(4)
+            flash('Recipient account not found.', 'danger')
+            return redirect(url_for('dashboard')) 
+        
+        
+        # Tworzenie nowego zlecenia na podstawie danych z formularza
+        new_dd_so = DDSO(
+                        user_id=current_user.id,  
+                        recipient=form.recipient.data,
+                        reference_number=form.reference_number.data,
+                        amount=form.amount.data,
+                        next_payment_date=form.next_payment_date.data,
+                        transaction_type=form.transaction_type.data,
+                        frequency=form.frequency.data)
+        
+        db.session.add(new_dd_so)
+        db.session.commit()
+        flash('New Direct Debit / Standing Order added successfully!')
+        return redirect(url_for('dashboard'))  # Przekierowanie do strony głównej lub innej strony
+
+    return render_template('ddso.html', form=form, user=current_user, all_transactions=user_transactions, all_dd_so=user_dd_so,  last_transaction=last_transaction)
+    
+
+
+create_transaction_bp = Blueprint('create_transaction_bp', __name__)
+
+@create_transaction_bp.route('/create_transaction', methods=['GET', 'POST'])      # nie ma zabezpieczenia , sprawdzic czy istnieje już taki sam sort code i account number
+@admin_required
+def create_transaction():
+    
+    all_users = Users.query.all()
+    all_transactions = Transaction.query.all()
+    form = CreateTransactionForm()
+
+    # Ładowanie użytkowników do wyboru
+    form.user_id.choices = [(user.id, user.username) for user in Users.query.all()]
+
+    if form.validate_on_submit():
+        # Tworzenie obiektu transakcji
+        
+        new_transaction = Transaction(user_id=form.user_id.data,
+                                        transaction_date=form.transaction_date.data,
+                                        transaction_type=form.transaction_type.data,
+                                        sort_code=form.sort_code.data,
+                                        account_number=form.account_number.data,
+                                        transaction_description=form.transaction_description.data,
+                                        debit_amount=form.debit_amount.data,
+                                        credit_amount=form.credit_amount.data,
+                                        balance=form.balance.data)
+
+        db.session.add(new_transaction)
+        db.session.commit()
+
+        flash('Transaction created successfully!', 'success')
+        return redirect(url_for('admin_dashboard_cm')) 
+
+    return render_template('admin_dashboard_cm.html', all_users=all_users, form=form, all_transactions=all_transactions) 
+
+
+edit_profile_bp = Blueprint('edit_profile_bp', __name__)
+
+@edit_profile_bp.route('/edit_profile', methods=['GET', 'POST'])
+@login_required  
+def edit_profile():
+    form = EditUserForm()
+
+    if form.validate_on_submit():
+        current_user.email = form.email.data
+        current_user.phone_number = form.phone_number.data
+        current_user.country = form.country.data
+        
+        db.session.commit()
+        flash('Your profile has been updated.')
+        return redirect(url_for('dashboard'))
+
+    elif request.method == 'GET':
+        form.email.data = current_user.email
+        form.phone.data = current_user.phone
+        form.country.data = current_user.country
+        # Załaduj inne pola
+    else:
+        print(form.errors) 
+
+    user_transactions = Transaction.query.filter_by(user_id=current_user.id).all()
+    return render_template('dashboard.html', user=current_user, all_transactions=user_transactions)
