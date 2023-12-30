@@ -177,6 +177,7 @@ def register():
 
 
 @app.route('/admin_dashboard', methods=['GET', 'POST'])
+@login_required
 @admin_required
 def admin_dashboard():
     
@@ -191,18 +192,90 @@ def admin_dashboard():
 
 
 @app.route('/admin_dashboard_cm', methods=['GET', 'POST'])
+@login_required
 @admin_required
 def admin_dashboard_cm():
     
-    # Tutaj dodaj logikę wyświetlania informacji o wszystkich kontach klientów
-    # Możesz pobierać dane z bazy danych przy użyciu SQLAlchemy
-    # Pobierz wszystkich użytkowników z bazy danych
     all_users = Users.query.all()
     all_transactions = Transaction.query.all()
 
-    # Renderuj szablon, przekazując dane o użytkownikach
     return render_template('admin_dashboard_cm.html', all_users=all_users, all_transactions=all_transactions)
                       
+
+
+@app.route('/transaction_management', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def transaction_management():
+    
+    all_users = Users.query.all()
+    all_transactions = Transaction.query.all()
+
+    return render_template('transaction_management.html', all_users=all_users, all_transactions=all_transactions)
+
+    
+    
+@app.route('/transactions_filter', methods=['GET', 'POST'])
+@login_required
+@admin_required  
+def transactions_filter():
+    all_users = Users.query.all()
+    all_transactions = Transaction.query.all()
+    
+    if request.method == 'POST':
+        user_id = request.form.get('user_id')
+        date_from = request.form.get('date_from')
+        date_until = request.form.get('date_until')
+        transaction_type = request.form.get('transaction_type')
+
+        query = Transaction.query
+
+        # Filtracja po ID użytkownika, jeśli podano
+        if user_id:
+            query = query.filter(Transaction.user_id == user_id)
+
+        # Filtracja po zakresie dat
+        if date_from:
+            query = query.filter(Transaction.transaction_date >= date_from)
+        if date_until:
+            query = query.filter(Transaction.transaction_date <= date_until)
+
+        # Filtracja po typie transakcji, jeśli wybrano inny niż 'all'
+        if transaction_type and transaction_type != 'all':
+            query = query.filter(Transaction.transaction_type == transaction_type)
+
+        # Pobranie wyników
+        transactions = query.all()
+
+        return render_template('transaction_management.html', transactions=transactions)
+
+    return render_template('transaction_management.html', all_users=all_users, all_transactions=all_transactions)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
