@@ -252,31 +252,17 @@ def transactions_filter():
     return render_template('transaction_management.html', all_users=all_users, all_transactions=all_transactions)
 
 
+@app.route('/help_center', methods=['GET', 'POST']) # pracujemy Panie szanowny :]
+@login_required
+def help_center():
+    
+    return render_template('help_center.html')
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+@app.route('/query_sended', methods=['GET', 'POST']) # pracujemy mordo ;)
+@login_required
+def send_query():
+    
+    return render_template('help_center.html')
 
 
 @app.route('/delete_user', methods=['GET', 'POST'])
