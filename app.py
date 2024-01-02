@@ -2,11 +2,11 @@ from flask import Flask, render_template, flash, request, url_for, redirect, ses
 from flask_wtf.csrf import CSRFProtect
 from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user, login_required
 from werkzeug.security import generate_password_hash, check_password_hash
-from forms.forms import AddCustomerForm, DeleteUserForm, ChangePasswordForm, AddRecipientForm
-from datetime import timedelta, date
+from forms.forms import AddCustomerForm, DeleteUserForm, ChangePasswordForm, AddRecipientForm, SendQueryForm
+from datetime import timedelta, date, datetime
 from routes.transfer import transfer_bp, login_bp, ddso_bp, create_transaction_bp, edit_profile_bp
 from routes.my_routes import grocery1_bp, grocery2_bp, grocery3_bp, grocery4_bp, gas_bp, power_bp, petrol_bp, clothes_bp, water_bp, add_customer_bp
-from models.models import Users, Transaction, db, Recipient, DDSO
+from models.models import Users, Transaction, db, Recipient, DDSO, SupportTicket
 from functools import wraps
 
 login_manager = LoginManager()
@@ -190,6 +190,16 @@ def admin_dashboard():
     # Renderuj szablon, przekazując dane o użytkownikach
     return render_template('admin_dashboard.html', all_users=all_users)
 
+@app.route('/communication_with_clients', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def cwc():
+    all_queries = SupportTicket.query.all()
+
+    
+    return render_template('communication_with_clients.html', all_queries = all_queries)
+    
+
 
 @app.route('/admin_dashboard_cm', methods=['GET', 'POST'])
 @login_required
@@ -255,14 +265,74 @@ def transactions_filter():
 @app.route('/help_center', methods=['GET', 'POST']) # pracujemy Panie szanowny :]
 @login_required
 def help_center():
-    
-    return render_template('help_center.html')
+    user_queries = SupportTicket.query.filter_by(user_id=current_user.id).all()
 
-@app.route('/query_sended', methods=['GET', 'POST']) # pracujemy mordo ;)
+    
+    return render_template('help_center.html', all_queries = user_queries)
+
+
+
+
+
+
+
+@app.route('/query_sended', methods=['GET', 'POST']) 
 @login_required
 def send_query():
+    form = SendQueryForm()
     
-    return render_template('help_center.html')
+    if form.validate_on_submit():
+        print(1)
+        
+        if form.category.data == 'general' or form.category.data == 'service problem':
+            current_priority = 'normal'
+        elif form.category.data == 'money transfer':
+            current_priority = 'high'
+        elif form.category.data == 'fraud':
+            current_priority = 'urgent'
+            
+            
+            
+        # Pobierz liczbę istniejących rekordów w tabeli SupportTicket
+        last_query_number = SupportTicket.query.count()
+        new_query_number = last_query_number + 1
+        
+        # Sformatuj numer referencyjny do formatu z sześciomama cyframi (np. "000001", "000002")
+        formatted_reference_number = f'{new_query_number:06} - {current_user.username}'
+        
+        
+        new_query = SupportTicket(user_id = current_user.id,
+                                  title = form.title.data,
+                                  description = form.description.data,
+                                  category = form.category.data,
+                                  reference_number = formatted_reference_number,
+                                  created_at = datetime.utcnow(),
+                                  status = 'new',
+                                  priority = current_priority)
+        
+        db.session.add(new_query)
+        print(new_query)
+            
+        # Zatwierdzenie zmian w bazie danych
+        db.session.commit()
+        
+        flash('Message sent successfully!', 'success')
+        return redirect(url_for('help_center'))
+    
+    else:
+        print(form.errors)  # Wydrukuj błędy formularza
+    return render_template('help_center.html', form=form)
+        
+    
+
+
+
+
+
+
+
+
+
 
 
 @app.route('/delete_user', methods=['GET', 'POST'])
