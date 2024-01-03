@@ -8,6 +8,7 @@ from routes.transfer import transfer_bp, login_bp, ddso_bp, create_transaction_b
 from routes.my_routes import grocery1_bp, grocery2_bp, grocery3_bp, grocery4_bp, gas_bp, power_bp, petrol_bp, clothes_bp, water_bp, add_customer_bp
 from models.models import Users, Transaction, db, Recipient, DDSO, SupportTicket
 from functools import wraps
+from urllib.parse import quote
 
 login_manager = LoginManager()
 login_manager.login_view = 'login_bp.login'
@@ -284,7 +285,6 @@ def send_query():
     form = SendQueryForm()
     
     if form.validate_on_submit():
-        print(1)
         
         if form.category.data == 'general' or form.category.data == 'service problem':
             current_priority = 'normal'
@@ -296,11 +296,19 @@ def send_query():
             
             
         # Pobierz liczbę istniejących rekordów w tabeli SupportTicket
-        last_query_number = SupportTicket.query.count()
-        new_query_number = last_query_number + 1
+        # last_query_number = SupportTicket.query.count()
+        # new_query_number = last_query_number + 1
+        
+        
+        last_record = SupportTicket.query.order_by(SupportTicket.id.desc()).first()
+        
+        last_reference_number = int(last_record.reference_number)
+        new_reference_number = last_reference_number + 1
         
         # Sformatuj numer referencyjny do formatu z sześciomama cyframi (np. "000001", "000002")
-        formatted_reference_number = f'{new_query_number:06} - {current_user.username}'
+        formatted_reference_number = f'{new_reference_number:06}'
+        
+        
         
         
         new_query = SupportTicket(user_id = current_user.id,
@@ -327,40 +335,47 @@ def send_query():
         
     
 
-@app.route('/process_query/<int:query_id>', methods=['GET', 'POST'])
+@app.route('/process_query/<query_ref>', methods=['GET', 'POST'])
 @login_required
 @admin_required
-def process_query(query_id):
+def process_query(query_ref):
+    print("Received reference number:", query_ref)  # Wydruk kontrolny
     # Pobieranie zapytania z bazy danych za pomocą ID
-    query = SupportTicket.query.get_or_404(query_id)
+    query = SupportTicket.query.get_or_404(query_ref)
     
     # Jeśli metoda to GET, renderuj szablon z detalami zapytania do przetworzenia
     return render_template('processing_clients_query.html', query=query)
 
 
-@app.route('/send_message_for_query/<int:query_id>', methods=['GET', 'POST'])
+@app.route('/send_message_for_query/<query_ref>', methods=['GET', 'POST'])
 @login_required
 @admin_required
-def send_message_for_query(query_id):
+def send_message_for_query(query_ref):
+    
     # Pobieranie zapytania z bazy danych za pomocą ID
-    query = SupportTicket.query.get_or_404(query_id)
+    query = SupportTicket.query.get_or_404(query_ref)
 
     # Pobranie danych z formularza
     new_description = request.form['description']
     new_status = request.form['status']
 
     # Aktualizacja opisu (dodanie nowej wiadomości do istniejącego opisu)
-    #query.description += "<br><br> Reply from Admin: <br><br>" + new_description
-    query.description += "\n\nReply from Admin:\n" + new_description
+    query.description =  new_description
 
     # Aktualizacja statusu zapytania
     query.status = new_status
+    
+    
+    
+    db.session.delete(SupportTicket.query.get(3))  # - kasuje rekord o ID 9
+    
+    
 
     # Zapisanie zmian w bazie danych
     db.session.commit()
 
     flash('Your response has been sent successfully', 'success')
-    return redirect(url_for('process_query', query_id=query.id))
+    return redirect(url_for('process_query', query_ref=query.reference_number))
     #return render_template('communication_with_clients.html', query=query)  
 
 
