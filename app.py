@@ -46,6 +46,8 @@ def create_app():
     return app
 
 
+
+
 app = create_app()
   
 def initialize_app():
@@ -325,7 +327,41 @@ def send_query():
         
     
 
+@app.route('/process_query/<int:query_id>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def process_query(query_id):
+    # Pobieranie zapytania z bazy danych za pomocą ID
+    query = SupportTicket.query.get_or_404(query_id)
+    
+    # Jeśli metoda to GET, renderuj szablon z detalami zapytania do przetworzenia
+    return render_template('processing_clients_query.html', query=query)
 
+
+@app.route('/send_message_for_query/<int:query_id>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def send_message_for_query(query_id):
+    # Pobieranie zapytania z bazy danych za pomocą ID
+    query = SupportTicket.query.get_or_404(query_id)
+
+    # Pobranie danych z formularza
+    new_description = request.form['description']
+    new_status = request.form['status']
+
+    # Aktualizacja opisu (dodanie nowej wiadomości do istniejącego opisu)
+    #query.description += "<br><br> Reply from Admin: <br><br>" + new_description
+    query.description += "\n\nReply from Admin:\n" + new_description
+
+    # Aktualizacja statusu zapytania
+    query.status = new_status
+
+    # Zapisanie zmian w bazie danych
+    db.session.commit()
+
+    flash('Your response has been sent successfully', 'success')
+    return redirect(url_for('process_query', query_id=query.id))
+    #return render_template('communication_with_clients.html', query=query)  
 
 
 
@@ -336,6 +372,7 @@ def send_query():
 
 
 @app.route('/delete_user', methods=['GET', 'POST'])
+@login_required
 @admin_required
 def delete_user():
     all_users = Users.query.all()
@@ -362,6 +399,7 @@ def delete_user():
 
 
 @app.route('/team', methods=['GET', 'POST'])
+@login_required
 @admin_required
 def team():
     
@@ -373,6 +411,7 @@ def team():
     
 
 @app.route('/admin/users')
+@login_required
 @admin_required
 def list_users():
     all_users = Users.query.all()
@@ -380,6 +419,7 @@ def list_users():
 
 
 @app.route('/admin/change-password/<int:user_id>', methods=['GET', 'POST'])
+@login_required
 @admin_required
 def change_password(user_id):
     user = Users.query.get_or_404(user_id)
@@ -420,7 +460,7 @@ def contact_us():
 
 
 '''
-640 --> 300
+430
 '''
 
 if __name__ == "__main__":
