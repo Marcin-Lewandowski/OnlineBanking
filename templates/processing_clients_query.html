@@ -1,0 +1,75 @@
+    
+    
+<!--  processing_clients_query.html (strona administracyjna) -->
+
+<!-- HTML template for admin dashboard -->
+
+{% extends 'base_admin.html' %}
+{% block title %}Imperial Bank - Admin Dashboard - Communication with clients - processing clients query {% endblock %}
+{% block subtitle %} - communication with clients{% endblock %}
+
+
+{% block content %}
+
+<table border="1" class="center-table" >
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>User ID</th>
+            <th>Title</th>
+            <th>Description</th>
+            <th>Reference number</th>
+            <th>Category</th>
+            <th>Status</th>
+            <th>Priority</th>
+            <th>Created at</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for query in all_queries %}
+            <tr>
+                <td>{{ query.id }}</td>
+                <td>{{ query.user_id }}</td>
+                <td>{{ query.title }}</td>
+                <td>{{ query.description }}</td>
+                <td>{{ query.reference_number }}</td>
+                <td>{{ query.category }}</td>
+                <td>{{ query.status }}</td>
+                <td>{{ query.priority }}</td>
+                <td>{{ query.created_at }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<br><hr>
+
+
+
+
+<form action="{{ url_for('send_message_for_query' , query_ref=query.reference_number) }}" method="post" role="form"> <!-- było query_ref=reference_number -->
+
+    
+
+    <label for="description">Reply to message: </label> <br>
+    <textarea id="description" name="description" required rows="6" cols="60"></textarea> <br><br>
+
+
+    <label for="status">Change status:</label> <br>
+    <select type="text" id="status" name="status" def required>
+        <option value="in progres">In progress</option>
+        <option value="closed">Closed</option>
+        <option value="rejected">Rejected</option>
+    </select> <br><br>
+
+    <!-- Wstaw ukryte pole z tokenem CSRF -->
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+    <input type="submit" value="Send message"><br>
+
+</form>
+
+<a href="{{ url_for('process_query', query_ref=query.reference_number) }}" class="link"> Refresh page </a>
+
+
+{% endblock %}

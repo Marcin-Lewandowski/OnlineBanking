@@ -1,0 +1,92 @@
+<!--  help_center.html ( ) -->
+
+
+{% extends 'base3.html' %}
+
+
+{% block title %} Imperial Bank - Help and cupport center {% endblock %}
+
+{% block precontent%}
+
+
+<a href="{{ url_for('dashboard') }}" class="link3"> - - > Back to Dashboard < - - </a><br>
+<hr>
+
+
+
+<h3>Here you can send query:</h3> 
+
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+{% for message in messages %}
+    <p>Your fast messages: {{ message }}</p>
+{% endfor %}
+{% endif %}
+{% if not messages %}
+    <p>Your fast messages: ---</p>
+{% endif %}
+{% endwith %}
+<br>
+
+<form action="{{ url_for('send_query') }}" method="post" role="form">
+
+    <label for="title">Message title:</label> <br>
+    <input type="text" id="title" name="title" required> <br><br>
+
+    <label for="description">Your message: </label> <br>
+    <textarea id="description" name="description" required rows="4" cols="50"></textarea> <br><br>
+
+
+    <label for="category">Choose category:</label> <br>
+    <select type="text" id="category" name="category" def required>
+        <option value="general">General</option>
+        <option value="service problem">Service problem</option>
+        <option value="money transfer">Money transfer</option>
+        <option value="fraud">Fraud</option>
+    </select> <br><br>
+
+    <!-- Wstaw ukryte pole z tokenem CSRF -->
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+    <input type="submit" value="Send message"><br>
+
+</form>
+
+
+
+
+<h3>Your queries history: </h3>
+<table border="1" class="center-table" >
+  <thead>
+      <tr>
+          
+          <th>User ID</th>
+          <th>Username</th>
+          <th>Title</th>
+          <th>Reference number</th>
+          <th>Category</th>
+          <th>Status</th>
+          <th>Priority</th>
+          <th>Created at</th>
+      </tr>
+  </thead>
+  <tbody>
+      {% for query in all_queries %}
+        
+          <tr>
+              <td>{{ query.user_id }}</td>
+              <td>{{ current_user.username }}</td>
+              <td>{{ query.title }}</td>
+              <td>{{ query.reference_number }}</td>
+              <td>{{ query.category }}</td>
+              <td>{{ query.status }}</td>
+              <td>{{ query.priority }}</td>
+              <td>{{ query.created_at }}</td>
+          </tr>
+      {% endfor %}
+  </tbody>
+</table>
+
+
+{%  endblock %}
+

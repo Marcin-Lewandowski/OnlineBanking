@@ -1,3 +1,5 @@
+<!--  base3.html (template for help center) -->
+
 <!--   -->
 
 <!DOCTYPE html>
@@ -42,59 +44,17 @@
         <div class="container5">
             <div class="left5">
                 <div class="container100">
+                    <div class="center">
+                        {% block precontent%}
 
-                    <div class="visa">
-                        <img src="static/visa.jpg">
-        
-                    </div>
-                    <div class="visa2">
-                        <h3>Standard Save & Spend Account</h3>
-                        <h4>Sort code: {{ last_transaction.sort_code }}  <br>
-                        Account number: {{ last_transaction.account_number }}</h4>
-
-    
-    
-                    </div>
-
-                    <div class="visa3">
-                        <h3>Funds available:</h3>
-                        <h2> £ {{ last_transaction.balance }}</h2>
-                    </div>
-
-                </div>
-
-                <div class="container100">
-
-                    <h4><a href="{{ url_for('dashboard') }}"> Statement</a>  &nbsp | &nbsp
-
-                    <a href="{{ url_for('make_payment') }}"> Make a payment</a>  &nbsp | &nbsp
-
-                    <a href="{{ url_for('add_recipient') }}"> Add new recipient</a>  &nbsp | &nbsp
-
-                    <a href="{{ url_for('online_shop') }}"> Online shop</a>  &nbsp | &nbsp &nbsp
-
-                    <a href="{{ url_for('account_data') }}"> Account data</a>  &nbsp | &nbsp 
-
-                    <a href="{{ url_for('ddso_bp.ddso') }}"> Direct Debit & Standing orders</a>  &nbsp | &nbsp </h4>
-
-
+                        {%  endblock %}
                     
 
-
-                </div>
-                <div class="center">
-                    {% block precontent%}
-
-                    {%  endblock %}
-
-                </div>
-
-
-
-
-                
+                    </div>
                 
 
+
+                </div>
             </div>
 
 
@@ -114,7 +74,9 @@
                     Overdraft <br>
                     Mortgage <br>
                     <hr> <br>
+
                     <a href="{{ url_for('help_center') }}" > Help and support center</a>
+                    
 
 
 
@@ -125,9 +87,7 @@
             </div>
         </div>
 
-        {% block content %}
-            
-        {% endblock %}
+        
         
 
 
