@@ -6,9 +6,10 @@ from forms.forms import AddCustomerForm, DeleteUserForm, ChangePasswordForm, Add
 from datetime import timedelta, date, datetime
 from routes.transfer import transfer_bp, login_bp, ddso_bp, create_transaction_bp, edit_profile_bp
 from routes.my_routes import grocery1_bp, grocery2_bp, grocery3_bp, grocery4_bp, gas_bp, power_bp, petrol_bp, clothes_bp, water_bp, add_customer_bp
-from models.models import Users, Transaction, db, Recipient, DDSO, SupportTicket
+from models.models import Users, Transaction, db, Recipient, DDSO, SupportTickets
 from functools import wraps
 from urllib.parse import quote
+from flask_migrate import Migrate
 
 login_manager = LoginManager()
 login_manager.login_view = 'login_bp.login'
@@ -27,6 +28,7 @@ def create_app():
     
     # Inicjalizacja db z obiektem app
     db.init_app(app)
+    #migrate = Migrate(app, db)
 
     # ... Rejestracja Blueprintów, inne konfiguracje ...
     app.register_blueprint(transfer_bp)
@@ -197,7 +199,7 @@ def admin_dashboard():
 @login_required
 @admin_required
 def cwc():
-    all_queries = SupportTicket.query.all()
+    all_queries = SupportTickets.query.all()
 
     
     return render_template('communication_with_clients.html', all_queries = all_queries)
@@ -268,14 +270,10 @@ def transactions_filter():
 @app.route('/help_center', methods=['GET', 'POST']) # pracujemy Panie szanowny :]
 @login_required
 def help_center():
-    user_queries = SupportTicket.query.filter_by(user_id=current_user.id).all()
+    user_queries = SupportTickets.query.filter_by(user_id=current_user.id).all()
 
     
     return render_template('help_center.html', all_queries = user_queries)
-
-
-
-
 
 
 
@@ -295,15 +293,16 @@ def send_query():
             
             
             
-        # Pobierz liczbę istniejących rekordów w tabeli SupportTicket
-        # last_query_number = SupportTicket.query.count()
-        # new_query_number = last_query_number + 1
+        # Pobierz liczbę istniejących rekordów w tabeli SupportTickets
         
         
-        last_record = SupportTicket.query.order_by(SupportTicket.id.desc()).first()
+        last_record = SupportTickets.query.order_by(SupportTickets.id.desc()).first()
         
-        last_reference_number = int(last_record.reference_number)
-        new_reference_number = last_reference_number + 1
+        if last_record:
+            new_reference_number = SupportTickets.query.count() + 1
+            
+        else:    
+            new_reference_number = 1
         
         # Sformatuj numer referencyjny do formatu z sześciomama cyframi (np. "000001", "000002")
         formatted_reference_number = f'{new_reference_number:06}'
@@ -311,7 +310,7 @@ def send_query():
         
         
         
-        new_query = SupportTicket(user_id = current_user.id,
+        new_query = SupportTickets(user_id = current_user.id,
                                   title = form.title.data,
                                   description = form.description.data,
                                   category = form.category.data,
@@ -334,6 +333,19 @@ def send_query():
     return render_template('help_center.html', form=form)
         
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
 @app.route('/process_query/<query_ref>', methods=['GET', 'POST'])
 @login_required
@@ -341,42 +353,61 @@ def send_query():
 def process_query(query_ref):
     print("Received reference number:", query_ref)  # Wydruk kontrolny
     # Pobieranie zapytania z bazy danych za pomocą ID
-    query = SupportTicket.query.get_or_404(query_ref)
+    
+    user_queries = SupportTickets.query.filter_by(reference_number=query_ref).all()
+    last_query = SupportTickets.query.filter_by(reference_number=query_ref).order_by(SupportTickets.created_at.desc()).first()
     
     # Jeśli metoda to GET, renderuj szablon z detalami zapytania do przetworzenia
-    return render_template('processing_clients_query.html', query=query)
+    return render_template('processing_clients_query.html', all_queries=user_queries, query=last_query)
+
+
 
 
 @app.route('/send_message_for_query/<query_ref>', methods=['GET', 'POST'])
 @login_required
 @admin_required
 def send_message_for_query(query_ref):
+    print('query ref = ', query_ref)
     
     # Pobieranie zapytania z bazy danych za pomocą ID
-    query = SupportTicket.query.get_or_404(query_ref)
+    #query = SupportTickets.query.get_or_404(query_ref)
+    last_query = SupportTickets.query.filter_by(reference_number=query_ref).order_by(SupportTickets.created_at.desc()).first()
+    user_queries = SupportTickets.query.filter_by(reference_number=query_ref).all()
+    
+    
+    print("query znaleziony")
 
     # Pobranie danych z formularza
-    new_description = request.form['description']
-    new_status = request.form['status']
 
-    # Aktualizacja opisu (dodanie nowej wiadomości do istniejącego opisu)
-    query.description =  new_description
-
-    # Aktualizacja statusu zapytania
-    query.status = new_status
+    new_query = SupportTickets(user_id = last_query.user_id,
+                                title = last_query.title,
+                                description = request.form['description'],
+                                category = last_query.category,
+                                reference_number = last_query.reference_number,
+                                created_at = datetime.utcnow(),
+                                status = request.form['status'],
+                                priority = last_query.priority)
+        
+    db.session.add(new_query)
     
+    # db.session.delete(SupportTickets.query.get(3))  # - kasuje rekord o ID 3
     
-    
-    db.session.delete(SupportTicket.query.get(3))  # - kasuje rekord o ID 9
-    
-    
+   
 
     # Zapisanie zmian w bazie danych
     db.session.commit()
+    
 
     flash('Your response has been sent successfully', 'success')
-    return redirect(url_for('process_query', query_ref=query.reference_number))
-    #return render_template('communication_with_clients.html', query=query)  
+    #return render_template('processing_clients_query.html', all_queries=user_queries, query=last_query)
+    
+    return redirect(url_for('process_query', query_ref=last_query.reference_number))
+    # return redirect(url_for('process_query', all_queries=user_queries))
+    # return redirect(url_for('process_query', all_queries=user_queries, query=last_query))
+    
+    
+
+
 
 
 
