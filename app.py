@@ -10,6 +10,7 @@ from models.models import Users, Transaction, db, Recipient, DDSO, SupportTicket
 from functools import wraps
 from urllib.parse import quote
 from flask_migrate import Migrate
+from sqlalchemy import func
 
 login_manager = LoginManager()
 login_manager.login_view = 'login_bp.login'
@@ -270,10 +271,41 @@ def transactions_filter():
 @app.route('/help_center', methods=['GET', 'POST']) # pracujemy Panie szanowny :]
 @login_required
 def help_center():
-    user_queries = SupportTickets.query.filter_by(user_id=current_user.id).all()
+    #user_queries = SupportTickets.query.filter_by(user_id=current_user.id).all()
+    
+    # Najpierw tworzymy subzapytanie, aby znaleźć najnowsze daty dla każdego unikalnego numeru referencyjnego
+    subquery = db.session.query(SupportTickets.reference_number,func.max(SupportTickets.created_at).label('max_date')).group_by(SupportTickets.reference_number).subquery()
+
+    # Następnie dołączamy to subzapytanie do głównego zapytania, aby pobrać ostatnie rekordy
+    user_queries = db.session.query(SupportTickets).join(subquery,(SupportTickets.reference_number == subquery.c.reference_number) &
+        (SupportTickets.created_at == subquery.c.max_date)).filter(SupportTickets.user_id == current_user.id).all()
 
     
     return render_template('help_center.html', all_queries = user_queries)
+
+
+def generate_unique_reference_number(username):
+    """
+    Generuje unikalny numer referencyjny dla użytkownika.
+
+    :param username: Nazwa użytkownika, która ma zostać dołączona do numeru referencyjnego.
+    :return: Unikalny numer referencyjny.
+    """
+    new_reference_number = SupportTickets.query.count() + 1
+
+    while True:
+        # Tworzenie potencjalnie unikalnego numeru referencyjnego
+        potential_ref_number = f'{new_reference_number:06}{username}'
+        
+        # Sprawdzanie, czy numer referencyjny już istnieje
+        existing_ticket = SupportTickets.query.filter_by(reference_number=potential_ref_number).first()
+        
+        if not existing_ticket:
+            return potential_ref_number  # Unikalny numer referencyjny został znaleziony
+        else:
+            new_reference_number += 1  # Zwiększenie liczby i ponowna próba
+            print(potential_ref_number)
+
 
 
 
@@ -291,30 +323,12 @@ def send_query():
         elif form.category.data == 'fraud':
             current_priority = 'urgent'
             
-            
-            
-        # Pobierz liczbę istniejących rekordów w tabeli SupportTickets
-        
-        
-        last_record = SupportTickets.query.order_by(SupportTickets.id.desc()).first()
-        
-        if last_record:
-            new_reference_number = SupportTickets.query.count() + 1
-            
-        else:    
-            new_reference_number = 1
-        
-        # Sformatuj numer referencyjny do formatu z sześciomama cyframi (np. "000001", "000002")
-        formatted_reference_number = f'{new_reference_number:06}'
-        
-        
-        
-        
         new_query = SupportTickets(user_id = current_user.id,
                                   title = form.title.data,
                                   description = form.description.data,
                                   category = form.category.data,
-                                  reference_number = formatted_reference_number,
+                                  reference_number = generate_unique_reference_number(current_user.username),
+                                  #reference_number = formatted_reference_number,
                                   created_at = datetime.utcnow(),
                                   status = 'new',
                                   priority = current_priority)
@@ -339,13 +353,6 @@ def send_query():
     
     
     
-    
-    
-    
-    
-    
-    
-    
 
 @app.route('/process_query/<query_ref>', methods=['GET', 'POST'])
 @login_required
@@ -362,6 +369,19 @@ def process_query(query_ref):
 
 
 
+@app.route('/read_message/<query_ref>', methods=['GET', 'POST'])
+@login_required
+def read_message(query_ref):
+    print("Received reference number:", query_ref)  # Wydruk kontrolny
+    
+    user_queries = SupportTickets.query.filter_by(reference_number=query_ref).all()
+    last_query = SupportTickets.query.filter_by(reference_number=query_ref).order_by(SupportTickets.created_at.desc()).first()
+    
+    return render_template('reading_my_messages.html', all_queries=user_queries, query=last_query)
+
+
+
+
 
 @app.route('/send_message_for_query/<query_ref>', methods=['GET', 'POST'])
 @login_required
@@ -370,18 +390,15 @@ def send_message_for_query(query_ref):
     print('query ref = ', query_ref)
     
     # Pobieranie zapytania z bazy danych za pomocą ID
-    #query = SupportTickets.query.get_or_404(query_ref)
+    
     last_query = SupportTickets.query.filter_by(reference_number=query_ref).order_by(SupportTickets.created_at.desc()).first()
-    user_queries = SupportTickets.query.filter_by(reference_number=query_ref).all()
+    #user_queries = SupportTickets.query.filter_by(reference_number=query_ref).all()
     
-    
-    print("query znaleziony")
-
     # Pobranie danych z formularza
 
     new_query = SupportTickets(user_id = last_query.user_id,
                                 title = last_query.title,
-                                description = request.form['description'],
+                                description = "From: " + current_user.username + '/n' + request.form['description'],
                                 category = last_query.category,
                                 reference_number = last_query.reference_number,
                                 created_at = datetime.utcnow(),
@@ -390,9 +407,9 @@ def send_message_for_query(query_ref):
         
     db.session.add(new_query)
     
-    # db.session.delete(SupportTickets.query.get(3))  # - kasuje rekord o ID 3
-    
-   
+    #db.session.delete(SupportTickets.query.get(3))  # - kasuje rekord o ID 3
+    #db.session.delete(SupportTickets.query.get(4))
+    #db.session.delete(SupportTickets.query.get(7))
 
     # Zapisanie zmian w bazie danych
     db.session.commit()
@@ -507,6 +524,7 @@ def contact_us():
 
 '''
 430
+511 - 08.01.2024
 '''
 
 if __name__ == "__main__":
