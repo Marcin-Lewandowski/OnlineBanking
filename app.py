@@ -440,7 +440,51 @@ def send_message_for_message(query_ref):
     
 
 
+@app.route('/delete_messages_for_query/<query_ref>', methods=['GET', 'POST'])
+@login_required
+def delete_messages_for_query(query_ref):
+    print("Kasuję wszystkie wiadomości dla nr ref: ", query_ref)
+    
+    last_query = SupportTickets.query.filter_by(reference_number=query_ref).order_by(SupportTickets.created_at.desc()).first()
+    user_queries = SupportTickets.query.filter_by(reference_number=query_ref).all()
+    
+    
+    messages_quantity = SupportTickets.query.filter_by(reference_number=query_ref).count()
+    print(messages_quantity)
+    
+    return render_template('dmfq.html', query_ref=last_query.reference_number, all_queries=user_queries, query=last_query, messages_quantity = messages_quantity)
+    
+    
+@app.route('/delete_query_confirmation/<query_ref>', methods=['GET', 'POST'])  
+@login_required
+def delete_query_confirmation(query_ref):
+    
+    last_query = SupportTickets.query.filter_by(reference_number=query_ref).order_by(SupportTickets.created_at.desc()).first()
+    user_queries = SupportTickets.query.filter_by(reference_number=query_ref).all()
+    
+    
+    # Sprawdzenie, czy użytkownik ma uprawnienia do usunięcia tych rekordów
+    # (to jest ważne, aby uniknąć usuwania rekordów przez nieautoryzowane osoby)
+    if last_query.user_id == current_user.id:
+        # Usunięcie wszystkich rekordów z danym numerem referencyjnym
+        for query in user_queries:
+            db.session.delete(query)
+        db.session.commit()
 
+        flash('Your query has been deleted successfully', 'success')
+    else:
+        flash('You do not have permission to delete this query', 'error')
+
+    # Odświeżenie listy rekordów do wyświetlenia
+    user_queries = SupportTickets.query.filter_by(user_id=current_user.id).all()
+
+    
+    # flash('Your query has been deleted successfully', 'success')
+    return redirect(url_for('help_center', query_ref=last_query.reference_number, all_queries = user_queries))
+    #return render_template('help_center.html', all_queries = user_queries)
+
+    
+    
 
 
 
