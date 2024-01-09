@@ -392,13 +392,11 @@ def send_message_for_query(query_ref):
     # Pobieranie zapytania z bazy danych za pomocą ID
     
     last_query = SupportTickets.query.filter_by(reference_number=query_ref).order_by(SupportTickets.created_at.desc()).first()
-    #user_queries = SupportTickets.query.filter_by(reference_number=query_ref).all()
     
     # Pobranie danych z formularza
-
     new_query = SupportTickets(user_id = last_query.user_id,
                                 title = last_query.title,
-                                description = "From: " + current_user.username + '/n' + request.form['description'],
+                                description = request.form['description'],
                                 category = last_query.category,
                                 reference_number = last_query.reference_number,
                                 created_at = datetime.utcnow(),
@@ -409,21 +407,37 @@ def send_message_for_query(query_ref):
     
     #db.session.delete(SupportTickets.query.get(3))  # - kasuje rekord o ID 3
     #db.session.delete(SupportTickets.query.get(4))
-    #db.session.delete(SupportTickets.query.get(7))
 
     # Zapisanie zmian w bazie danych
     db.session.commit()
     
-
     flash('Your response has been sent successfully', 'success')
-    #return render_template('processing_clients_query.html', all_queries=user_queries, query=last_query)
-    
     return redirect(url_for('process_query', query_ref=last_query.reference_number))
-    # return redirect(url_for('process_query', all_queries=user_queries))
-    # return redirect(url_for('process_query', all_queries=user_queries, query=last_query))
     
     
-
+    
+@app.route('/send_message_for_message/<query_ref>', methods=['GET', 'POST'])
+@login_required
+def send_message_for_message(query_ref):
+    print("Klient odpowiada na wiadomosc z nr ref: ", query_ref)
+    
+    last_query = SupportTickets.query.filter_by(reference_number=query_ref).order_by(SupportTickets.created_at.desc()).first()
+    # Pobranie danych z formularza
+    new_query = SupportTickets(user_id = last_query.user_id,
+                                title = last_query.title,
+                                description = request.form['description'],
+                                category = last_query.category,
+                                reference_number = last_query.reference_number,
+                                created_at = datetime.utcnow(),
+                                status = last_query.status,
+                                priority = last_query.priority)
+        
+    db.session.add(new_query)
+    db.session.commit()
+    user_queries = SupportTickets.query.filter_by(reference_number=query_ref).all()
+    flash('Your response has been sent successfully', 'success')
+    return render_template('reading_my_messages.html', query_ref=last_query.reference_number, all_queries=user_queries, query=last_query)
+    
 
 
 
