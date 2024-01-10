@@ -1,7 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
-from datetime import date
+from datetime import date, datetime
 from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
@@ -24,6 +24,12 @@ class Users(db.Model, UserMixin):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
     
+    
+    
+class LockedUsers(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    is_account_locked = db.Column(db.Boolean, default = True)
+    username = db.Column(db.String(50), unique=True, nullable=False)
     
 # an object in the database representing transactions
 
@@ -53,5 +59,27 @@ class Recipient(db.Model):
 
     user = db.relationship('Users', backref=db.backref('recipients', lazy=True))
     
+
     
     
+class DDSO(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    amount = db.Column(db.Float, nullable=False)
+    recipient = db.Column(db.String(50),  nullable=False) 
+    reference_number = db.Column(db.String(100), nullable=False)
+    next_payment_date = db.Column(db.Date, nullable=False)
+    transaction_type = db.Column(db.String(20), nullable=False)
+    frequency = db.Column(db.String(50))  # np. 'monthly'
+    
+    
+class SupportTickets(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)  
+    title = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    reference_number = db.Column(db.String(50), nullable=False)
+    status = db.Column(db.String(50), nullable=False, default='new')  # values: new, in progress, closed, rejected
+    priority = db.Column(db.String(50), nullable=False, default='normal')  # values: normal, high, urgent
+    category = db.Column(db.String(50), nullable=False, default='general')  # values: general, fraud, service problem, money transfer
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)

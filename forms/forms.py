@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, FloatField, SubmitField, PasswordField, SelectField, DateField
+from wtforms import StringField, FloatField, SubmitField, PasswordField, SelectField, DateField, TextAreaField
 from wtforms.validators import DataRequired, Length, Email, NumberRange, EqualTo 
 
 
@@ -41,6 +41,18 @@ class CreateTransactionForm(FlaskForm):
     balance = FloatField('Balance', validators=[NumberRange(min=0)])
     submit = SubmitField('Create Transaction')
     
+    
+class DDSOForm(FlaskForm):
+    amount = FloatField('Amount', validators=[DataRequired(), NumberRange(min=0)])
+    recipient = StringField('Recipient', validators=[DataRequired()])
+    reference_number = StringField('Reference number', validators=[DataRequired()])
+    next_payment_date = DateField('Next payment date', format='%Y-%m-%d', validators=[DataRequired()])
+    transaction_type = SelectField('Transaction type', choices=[('DD', 'Direct Debit'), ('SO', 'Standing Order')], validators=[DataRequired()])
+    frequency = SelectField('Frequency', choices=[('monthly', 'Monthly'), ('daily', 'Daily')], validators=[DataRequired()])
+    confirm_password = PasswordField('Confirm Password', validators=[DataRequired()])
+    submit = SubmitField('Add DD / SO')
+    
+    
 
 class DeleteUserForm(FlaskForm):
     username = StringField('Nazwa Użytkownika', validators=[DataRequired()])
@@ -63,3 +75,14 @@ class AddRecipientForm(FlaskForm):
     sort_code = StringField('Sort Code', validators = [DataRequired()])
     account_number = StringField('Account Number', validators = [DataRequired()])
     submit = SubmitField('Add Recipient')
+    
+    
+class SendQueryForm(FlaskForm):
+    reference_number = StringField('Reference Number', validators=[Length(max=50)])
+    title = StringField('Title', validators=[DataRequired(), Length(max=100)])
+    description = TextAreaField('Description', validators=[DataRequired()])
+    category = SelectField('Category', choices=[('general', 'General'), ('fraud', 'Fraud'), ('service problem', 'Service Problem'), ('money transfer', 'Money Transfer')], default='general')
+    submit = SubmitField('Send message')
+    
+class LockUser(FlaskForm):
+    username = StringField('Username', validators=[DataRequired()])

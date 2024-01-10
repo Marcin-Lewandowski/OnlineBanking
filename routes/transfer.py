@@ -3,7 +3,7 @@ from flask import Blueprint, render_template, request, session, flash, url_for, 
 from flask_login import current_user, login_required, login_user
 from forms.forms import TransferForm, LoginForm, DDSOForm, CreateTransactionForm, EditUserForm
 from datetime import date
-from models.models import Users, Transaction, db, DDSO
+from models.models import Users, Transaction, db, DDSO, LockedUsers
 from functools import wraps
 
 
@@ -129,21 +129,29 @@ login_bp = Blueprint('login_bp', __name__)
 def login():
     form = LoginForm()
     if request.method == "POST":
-        session.permanent = True
+        session.permanent = True # Ustawienie sesji jako trwałej
         if form.validate_on_submit():
             user = Users.query.filter_by(username=form.username.data).first()
             if user and user.check_password(form.password.data):
-                login_user(user)
-                session.permanent = True  # Ustawienie sesji jako trwałej
-                flash("Login succesful!")
-                print(user.username)
-                
-                # Przekieruj do strony admin_dashboard dla administratora
-                if user.role == 'admin':
-                    return redirect(url_for('admin_dashboard'))
-                # Przekieruj do strony dashboard dla klienta
+                # Sprawdzenie, czy użytkownik o tej nazwie istnieje jest zablokowany
+                print("Sprawdza czy user jest zablokowany")
+            
+                locked_user = LockedUsers.query.filter_by(username=user.username).first()
+
+                if locked_user:
+                    print("User jest zablokowany")
+                    return render_template('account_locked.html', locked_user = locked_user)
                 else:
-                    return redirect(url_for('dashboard'))
+                    login_user(user)
+                    flash("Login succesful!")
+                    print(user.username)
+                    
+                    # Przekieruj do strony admin_dashboard dla administratora
+                    if user.role == 'admin':
+                        return redirect(url_for('admin_dashboard'))
+                    # Przekieruj do strony dashboard dla klienta
+                    else:
+                        return redirect(url_for('dashboard'))
             else:
                 flash('Login unsuccessful. Please check your username and password.', 'danger')     
                 
