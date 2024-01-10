@@ -11,7 +11,7 @@ body {
   .center {
     margin-left: auto;
     margin-right: auto;
-    padding-left: 20px;
+    padding-left: 0px;
     padding-top: 15px;
     text-align: center;
   }
@@ -20,7 +20,8 @@ body {
     margin-left: auto;
     margin-right: auto;
     text-align: center;
-    width: 80%; /* lub inna wartość, zależnie od potrzeb */
+    
+    width: 100%; /* lub inna wartość, zależnie od potrzeb */
 }
 
   .center2 {
@@ -253,9 +254,9 @@ font-size: 22px;
 .left5 {
   flex: 3;
   text-align: left;
-  padding-top: 30px;
-  padding-left: 30px;
-  padding-bottom: 40px;
+  padding-top: 20px;
+  padding-left: 20px;
+  padding-bottom: 20px;
   border-color: blue; 
   border-style: solid;
 }
@@ -275,7 +276,7 @@ font-size: 22px;
   display: flex;
   justify-content: space-between;
   margin: 0 auto;
-  max-width: 95%;
+  max-width: 97%;
   border-color: orange; 
   border-style: solid;
   padding-bottom: 10px;
@@ -292,3 +293,12 @@ font-size: 22px;
 .visa3 {
   flex: 4;
 }
+
+.messages-table {
+  word-wrap: break-word;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 16px;
+}
+
+
+
