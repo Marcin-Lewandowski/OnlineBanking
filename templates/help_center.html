@@ -68,6 +68,8 @@
           <th>Status</th>
           <th>Priority</th>
           <th>Created at</th>
+          <th> </th>
+          <th> </th>
       </tr>
   </thead>
   <tbody>
@@ -81,11 +83,14 @@
               <td>{{ query.category }}</td>
               <td>{{ query.status }}</td>
               <td>{{ query.priority }}</td>
-              <td>{{ query.created_at }}</td>
+              <td>{{ query.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+              <td>&nbsp; <a href="{{ url_for('read_message', query_ref=query.reference_number) }}">Read</a> &nbsp;</td>
+              <td>&nbsp; <a href="{{ url_for('delete_messages_for_query', query_ref=query.reference_number) }}">Delete query</a> &nbsp; </td>
           </tr>
       {% endfor %}
   </tbody>
 </table>
+
 
 
 {%  endblock %}

@@ -1,0 +1,11 @@
+<!-- templates/account_locked.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Bank account has been blocked!</h1><br><br>
+<p>Yout bank account for user {{ locked_user.username }}  has been blocked. <br><br>
+    Please contact our customer service department by phone.</p>
+
+<p><big>Phone number: +44 123 456 78</big></p>
+
+{% endblock %}

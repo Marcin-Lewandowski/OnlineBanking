@@ -11,7 +11,7 @@
 
 {% block content %}
 
-<table border="1" class="center-table" >
+<table border="1" class="center-table" width = "100%">
     <thead>
         <tr>
             <th>ID</th>
@@ -31,12 +31,12 @@
                 <td>{{ query.id }}</td>
                 <td>{{ query.user_id }}</td>
                 <td>{{ query.title }}</td>
-                <td>{{ query.description }}</td>
+                <td class="messages-table" style="font-size: 16px;"><pre style="white-space: pre-wrap;">{{ query.description }}</pre></td>
                 <td>{{ query.reference_number }}</td>
                 <td>{{ query.category }}</td>
                 <td>{{ query.status }}</td>
                 <td>{{ query.priority }}</td>
-                <td>{{ query.created_at }}</td>
+                <td>{{ query.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
             </tr>
         {% endfor %}
     </tbody>

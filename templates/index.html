@@ -10,7 +10,7 @@
 
 {% block content %}
 
-<h3> Strona główna </h3>
+
 <br>
 {% with messages = get_flashed_messages() %}
     {% if messages %}
@@ -24,27 +24,25 @@
 
 
 <div class="container">
+  
   <div class="left">
+    
     <!-- Zawartość kontenera po lewej stronie -->
     <div>
-      <h2>Tytuł strony1</h2>
-      <p>To jest paragraf tekstu1.</p>
-      <ul>
-        <li>Element listy 1</li>
-        <li>Element listy 2</li>
-      </ul>
+      
+      
+      <img src="static/bank3.jpg" alt="Imperial Bank">
     </div>
 
   </div>
   <div class="right">
+    
     <!-- Zawartość kontenera po prawej stronie -->
     <div>
-      <h2>Tytuł strony2</h2>
-      <p>To jest paragraf tekstu2.</p>
-      <ul>
-        <li>Element listy 3</li>
-        <li>Element listy 4</li>
-      </ul>
+      
+      <img src="static/bank2.jpg" alt="Imperial Bank">
+      
+      
     </div>
   </div>
 </div>

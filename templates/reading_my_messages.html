@@ -1,0 +1,74 @@
+<!--  reading_my_messages.html ( ) -->
+
+
+{% extends 'base3.html' %}
+
+
+{% block title %} Imperial Bank - Help and cupport center - reading messages {% endblock %}
+
+{% block precontent%}
+
+
+<a href="{{ url_for('help_center') }}" class="link3"> - - > Back to Help Center < - - </a><br>
+<hr color="navy">
+
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+{% for message in messages %}
+    <p>Your fast messages: {{ message }}</p>
+{% endfor %}
+{% endif %}
+{% if not messages %}
+    <p>Your fast messages: ---</p>
+{% endif %}
+{% endwith %}
+
+
+<h4>Message history for Reference number: {{  query.reference_number }}</h4>
+<h4>Message title: {{ query.title }}</h4>
+<h4>Category: {{ query.category }}</h4>
+
+<hr color="navy">
+
+{% for query in all_queries %}
+<div width = "100%">
+<table align="left" border="0" width = "100%">
+    
+    <tr align="left" width = "100%">
+        
+        <td >
+             Created at: {{  query.created_at.strftime('%Y-%m-%d %H:%M') }}  &nbsp; &nbsp; Status: {{  query.status }} 
+
+        </td> 
+
+    </tr>
+    
+    <tr align="left" width = "100%">
+        
+       
+        <td  class="messages-table">
+            <pre style="white-space: pre-wrap;">{{ query.description }}</pre> <hr><br>
+        </td>
+        
+    </tr>
+</table>
+</div>
+          
+{% endfor %}
+
+<form action="{{ url_for('send_message_for_message' , query_ref=query.reference_number) }}" method="post" role="form">
+
+    
+
+    <label for="description">Reply to message: </label> <br>
+    <textarea id="description" name="description" required rows="6" cols="60"></textarea> <br><br>
+
+
+    <!-- Wstaw ukryte pole z tokenem CSRF -->
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+    <input type="submit" value="Send message"><br>
+
+</form>
+
+{%  endblock %}

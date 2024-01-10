@@ -1,0 +1,49 @@
+<!--  admin_dashboard_cam.html (strona administracyjna) -->
+
+<!-- HTML template for admin dashboard customer management -->
+
+{% extends 'base_admin.html' %}
+{% block title %}Imperial Bank - Admin Dashboard - Customer Account Management {% endblock %}
+{% block subtitle %} - Customer Account Management{% endblock %}
+
+
+{% block content %}
+
+<h3>Block account access for specific customer</h3>
+
+<form action="{{ url_for('block_customer') }}" method="post" role="form">
+
+    
+    <label for="username">Username:</label>
+    <input type="text" id="username" name="username" required><br>
+
+    <!-- Wstaw ukryte pole z tokenem CSRF -->
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+    <input type="submit" value="Lock user">
+    
+    
+</form> 
+
+
+<h3>Locked users:</h3> <br>
+        <table border="1" align="center">
+            <thead>
+            <tr>
+                <th>Username</th>
+                
+                <th>Locked </th>
+                <!-- Add more columns as needed -->
+            </tr>
+            </thead>
+            <tbody>
+            {% for user in all_locked_users %}
+                <tr>
+                <td>{{ user.username }}</td>
+                
+                <td>{{ user.is_account_locked }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+{% endblock %}

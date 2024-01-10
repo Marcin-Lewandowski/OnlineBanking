@@ -1,0 +1,29 @@
+<!--  dmfq.html ( delete messages for query) -->
+
+
+{% extends 'base3.html' %}
+
+
+{% block title %} Imperial Bank - Help and cupport center - deleting messages for query {% endblock %}
+
+{% block precontent%}
+
+<h2 style="color: red;">Warning! You trying to delete your query - Reference number {{ query.reference_number }}</h2>
+
+<h3>There is {{ messages_quantity }} messages in your query.</h3>
+<h3>Are you sure you want to delete all messages?</h3>
+<br><br>
+
+<form action="{{ url_for('delete_query_confirmation' , query_ref=query.reference_number) }}" method="post" role="form">
+
+    <!-- Wstaw ukryte pole z tokenem CSRF -->
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+    
+    <input type="submit" value="YES - delete all messages" style="width: 200px; height: 40px; font-size: 16px; cursor: pointer;">
+
+
+</form>
+
+
+{%  endblock %}
