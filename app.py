@@ -2,11 +2,11 @@ from flask import Flask, render_template, flash, request, url_for, redirect, ses
 from flask_wtf.csrf import CSRFProtect
 from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user, login_required
 from werkzeug.security import generate_password_hash, check_password_hash
-from forms.forms import AddCustomerForm, DeleteUserForm, ChangePasswordForm, AddRecipientForm, SendQueryForm
+from forms.forms import AddCustomerForm, DeleteUserForm, ChangePasswordForm, AddRecipientForm, SendQueryForm, LockUser
 from datetime import timedelta, date, datetime
 from routes.transfer import transfer_bp, login_bp, ddso_bp, create_transaction_bp, edit_profile_bp
 from routes.my_routes import grocery1_bp, grocery2_bp, grocery3_bp, grocery4_bp, gas_bp, power_bp, petrol_bp, clothes_bp, water_bp, add_customer_bp
-from models.models import Users, Transaction, db, Recipient, DDSO, SupportTickets
+from models.models import Users, Transaction, db, Recipient, DDSO, SupportTickets, LockedUsers
 from functools import wraps
 from urllib.parse import quote
 from flask_migrate import Migrate
@@ -216,7 +216,19 @@ def admin_dashboard_cm():
     all_transactions = Transaction.query.all()
 
     return render_template('admin_dashboard_cm.html', all_users=all_users, all_transactions=all_transactions)
-                      
+
+@app.route('/admin_dashboard_cam', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def admin_dashboard_cam():
+    
+    all_users = Users.query.all()
+    all_locked_users = LockedUsers.query.all()
+
+    return render_template('admin_dashboard_cam.html', all_users=all_users, all_locked_users = all_locked_users)
+                
+       
+
 
 
 @app.route('/transaction_management', methods=['GET', 'POST'])
@@ -306,6 +318,24 @@ def generate_unique_reference_number(username):
             new_reference_number += 1  # Zwiększenie liczby i ponowna próba
             print(potential_ref_number)
 
+
+@app.route('/block_customer', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def block_customer():
+    form = LockUser()
+    
+    if form.validate_on_submit():
+        user_for_lock = LockedUsers(username = form.username.data)
+        
+        db.session.add(user_for_lock)
+        print(user_for_lock)
+        
+        db.session.commit()
+        
+        all_locked_users = LockedUsers.query.all()
+        flash('User account locked successfully!', 'success')
+        return render_template('admin_dashboard_cam.html', all_locked_users = all_locked_users)  
 
 
 
