@@ -226,8 +226,36 @@ def admin_dashboard_cam():
     all_locked_users = LockedUsers.query.all()
 
     return render_template('admin_dashboard_cam.html', all_users=all_users, all_locked_users = all_locked_users)
-                
+         
+@app.route('/unlock_access/<username>', methods=['GET', 'POST'])  
+@login_required
+@admin_required
+def unlock_access(username):
+    
+    user = LockedUsers.query.filter_by(username=username).first()
+    
+    if user:
+        db.session.delete(user)
+        db.session.commit()
+        flash('User account: ' + user.username + '  unlocked successfully!', 'success')
+    else:
+        flash('User not found.', 'error')
+    
+    
+    all_locked_users = LockedUsers.query.all()
+    
+    return render_template('admin_dashboard_cam.html', all_locked_users = all_locked_users)
+    
+             
        
+
+
+
+
+
+
+
+
 
 
 
@@ -319,6 +347,8 @@ def generate_unique_reference_number(username):
             print(potential_ref_number)
 
 
+
+
 @app.route('/block_customer', methods=['GET', 'POST'])
 @login_required
 @admin_required
@@ -326,16 +356,29 @@ def block_customer():
     form = LockUser()
     
     if form.validate_on_submit():
-        user_for_lock = LockedUsers(username = form.username.data)
-        
-        db.session.add(user_for_lock)
-        print(user_for_lock)
-        
-        db.session.commit()
-        
+        # Sprawdź, czy użytkownik o podanej nazwie istnieje
+        user_exists = Users.query.filter_by(username=form.username.data).first()
+        if user_exists:
+            # Użytkownik istnieje, kontynuuj z blokowaniem
+            user_for_lock = LockedUsers(username=form.username.data)
+            
+            db.session.add(user_for_lock)
+            db.session.commit()
+
+            flash('User account for: ' + user_for_lock.username + '  locked successfully!', 'success')
+        else:
+            # Użytkownik nie istnieje, wyświetl komunikat
+            flash('User account: ' + form.username.data + ' does not exist!', 'error')
+
+        # Pobierz aktualną listę zablokowanych użytkowników
         all_locked_users = LockedUsers.query.all()
-        flash('User account locked successfully!', 'success')
-        return render_template('admin_dashboard_cam.html', all_locked_users = all_locked_users)  
+        return render_template('admin_dashboard_cam.html', all_locked_users=all_locked_users)
+
+    # Renderuj formularz, jeśli nie nastąpiła walidacja
+    return render_template('admin_dashboard_cam.html', form=form)
+
+
+
 
 
 
