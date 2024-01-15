@@ -577,9 +577,19 @@ def find_customer_by_role():
 
 
 
-
-
-
+@app.route('/show_statement_for_customer/<username>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def show_statement_for_customer(username):
+    all_locked_users = LockedUsers.query.all()
+    
+    # Pobierz użytkownika na podstawie nazwy użytkownika
+    user = Users.query.filter_by(username=username).first()
+    
+    user_transactions = Transaction.query.filter_by(user_id = user.id).all()  
+    
+    
+    return render_template('admin_dashboard_cam.html',  all_locked_users = all_locked_users, all_transactions = user_transactions, user = user)
 
 
 
