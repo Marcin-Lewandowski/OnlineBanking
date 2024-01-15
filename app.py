@@ -11,6 +11,10 @@ from functools import wraps
 from urllib.parse import quote
 from flask_migrate import Migrate
 from sqlalchemy import func
+import pandas as pd
+import matplotlib.pyplot as plt
+import io
+import base64
 
 login_manager = LoginManager()
 login_manager.login_view = 'login_bp.login'
@@ -577,19 +581,60 @@ def find_customer_by_role():
 
 
 
+def plot_to_html_img(plt):
+    # Zapisz wykres w buforze pamięci
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png')
+    buf.seek(0)
+
+    # Koduj jako base64
+    image_base64 = base64.b64encode(buf.getvalue()).decode('utf-8').replace('\n', '')
+    buf.close()
+
+    return f'<img src="data:image/png;base64,{image_base64}"/>'
+
+
+
 @app.route('/show_statement_for_customer/<username>', methods=['GET', 'POST'])
 @login_required
 @admin_required
 def show_statement_for_customer(username):
     all_locked_users = LockedUsers.query.all()
-    
     # Pobierz użytkownika na podstawie nazwy użytkownika
     user = Users.query.filter_by(username=username).first()
-    
     user_transactions = Transaction.query.filter_by(user_id = user.id).all()  
+
+    # Przygotowanie danych do DataFrame
+    transactions_data = [{
+        'transaction_type': txn.transaction_type,
+        'debit_amount': txn.debit_amount,
+        'credit_amount': txn.credit_amount
+    } for txn in user_transactions]
+
+    # Tworzenie DataFrame
+    transactions_df = pd.DataFrame(transactions_data)
+
+    # Tworzenie nowej kolumny 'amount' poprzez sumowanie 'debit_amount' i 'credit_amount'
+    transactions_df['amount'] = transactions_df['debit_amount'] + transactions_df['credit_amount']
+
+    # Zachowanie tylko kolumn 'transaction_type' i 'amount'
+    final_df = transactions_df[['transaction_type', 'amount']]
+    
+    # Grupowanie danych według 'transaction_type' i sumowanie 'amount'
+    grouped_data = final_df.groupby('transaction_type')['amount'].sum()
+
+    # Tworzenie wykresu kołowego
+    plt.figure(figsize=(10, 7))
+    plt.pie(grouped_data, labels=grouped_data.index, autopct='%1.1f%%', startangle=140)
+    plt.title('Suma transakcji według typu')
+    
+    # Konwertuj wykres na HTML img
+    plot_html_img = plot_to_html_img(plt)
+    #plt.show()
     
     
-    return render_template('admin_dashboard_cam.html',  all_locked_users = all_locked_users, all_transactions = user_transactions, user = user)
+    
+    return render_template('admin_dashboard_cam.html',  all_locked_users = all_locked_users, all_transactions = user_transactions, user = user, plot_html_img = plot_html_img)
 
 
 
