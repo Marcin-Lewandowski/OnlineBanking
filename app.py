@@ -557,7 +557,31 @@ def delete_query_confirmation(query_ref):
     #return render_template('help_center.html', all_queries = user_queries)
 
     
+@app.route('/find_customer_by_role', methods=['GET', 'POST'])
+@login_required
+@admin_required    
+def find_customer_by_role():
     
+    if request.method == 'POST':
+        role = request.form.get('role')
+        
+    users = Users.query.filter_by(role=role).all()
+    
+    
+    
+    all_locked_users = LockedUsers.query.all()
+
+    return render_template('admin_dashboard_cam.html', users = users, all_locked_users = all_locked_users)
+        
+    
+
+
+
+
+
+
+
+
 
 
 
