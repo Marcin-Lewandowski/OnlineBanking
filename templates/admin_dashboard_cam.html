@@ -9,30 +9,36 @@
 
 {% block content %}
 
-<h3>Block account access for specific customer</h3>
 
-<form action="{{ url_for('block_customer') }}" method="post" role="form">
+<div class="container2">
+    <div class="left2">
+        <h3>Block account access for specific customer</h3>
 
-    
-    <label for="username">Username:</label>
-    <input type="text" id="username" name="username" required><br>
+        <form action="{{ url_for('block_customer') }}" method="post" role="form">
 
-    <!-- Wstaw ukryte pole z tokenem CSRF -->
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required><br><br>
 
-    <input type="submit" value="Lock user">
-    
-    
-</form> 
+            <!-- Wstaw ukryte pole z tokenem CSRF -->
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 
+            <input type="submit" value="Lock user">
+            
+            
+        </form>
 
-<h3>Locked users:</h3> <br>
+    </div>
+
+    <div class="right2">
+        <h3>Locked users:</h3>
         <table border="1" align="center">
             <thead>
             <tr>
                 <th>Username</th>
                 
                 <th>Locked </th>
+                <th>      </th>
                 <!-- Add more columns as needed -->
             </tr>
             </thead>
@@ -42,8 +48,114 @@
                 <td>{{ user.username }}</td>
                 
                 <td>{{ user.is_account_locked }}</td>
+                <td><a href="{{ url_for('unlock_access', username=user.username) }}">Unlock access</a></td>
                 </tr>
             {% endfor %}
             </tbody>
         </table>
+
+    </div>
+</div>
+
+
+<div class="container2">
+    <div class="left2">
+        <h3>Filtrowanie, wyszukiwanie kont po roli, username </h3>
+
+        <form action="{{ url_for('find_customer_by_role') }}" method="post" role="form">
+            
+            <!-- Wstaw ukryte pole z tokenem CSRF -->
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+            <label for="role">Role:</label>
+            <select id="role" name="role" required>
+            <option value="client">Client</option>
+            <option value="bank_emploee">Bank employee</option>
+            <option value="board_member">Board Member</option>
+            <option value="management">Management</option>
+
+            <!-- Add more role options if needed -->
+            </select><br><br>
+
+            
+
+            <input type="submit" value="Find Customer"> <br><br>
+            
+            
+        </form> 
+
+
+
+        <table border="1" align="center">
+            <thead>
+            <tr>
+                <th>Username </th>
+                <th>Role </th>
+                <th>Edit customer information</th>
+                <th>Show bank statement</th>
+            
+            </tr>
+            </thead>
+            <tbody>
+            {% for user in users %}
+                <tr>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.role }}</td>
+                    <td> Edit </td>
+                    <td><a href="{{ url_for('show_statement_for_customer', username=user.username) }}">Show statement</a></td>
+
+                    
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+    </div>
+
+    
+
+    <div class="right2">
+
+        {% if user %}
+            <h3>Transactions for: {{ user.username }}</h3>
+        {% else %}
+            <h3>Transactions for: --- </h3>
+        {% endif %}
+
+        <table border="1" align="center">
+            <thead>
+            <tr>
+                <th>Date </th>
+                <th>Type </th>
+                <th>Debit amount</th>
+                <th>Credit amount</th>
+                <th>Balance</th>
+            
+            </tr>
+            </thead>
+            <tbody>
+            {% for transaction in all_transactions %}
+                <tr>
+                    <td>{{ transaction.transaction_date }}</td>
+                    <td>{{ transaction.transaction_type }}</td>
+                    <td>{{ transaction.debit_amount }}</td>
+                    <td>{{ transaction.credit_amount }}</td>
+                    <td>{{ transaction.balance }}</td>
+
+                    
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+        
+        
+
+    </div>
+</div>
+
+<h1>Wykresy Transakcji</h1>
+        <!-- Wyświetlanie wykresu -->
+        {{ plot_html_img | safe }}
+
 {% endblock %}

@@ -134,6 +134,7 @@ body {
   border-color: grey; 
   border-style: solid;
   text-align: center;
+  overflow: auto;
 }
 
 .right2 {
