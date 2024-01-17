@@ -2,7 +2,7 @@ from flask import Flask, render_template, flash, request, url_for, redirect, ses
 from flask_wtf.csrf import CSRFProtect
 from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user, login_required
 from werkzeug.security import generate_password_hash, check_password_hash
-from forms.forms import AddCustomerForm, DeleteUserForm, ChangePasswordForm, AddRecipientForm, SendQueryForm, LockUser
+from forms.forms import AddCustomerForm, DeleteUserForm, ChangePasswordForm, AddRecipientForm, SendQueryForm, LockUser, EditUserForm
 from datetime import timedelta, date, datetime
 from routes.transfer import transfer_bp, login_bp, ddso_bp, create_transaction_bp, edit_profile_bp
 from routes.my_routes import grocery1_bp, grocery2_bp, grocery3_bp, grocery4_bp, gas_bp, power_bp, petrol_bp, clothes_bp, water_bp, add_customer_bp
@@ -190,15 +190,14 @@ def register():
 @login_required
 @admin_required
 def admin_dashboard():
-    
-    
-    # Tutaj dodaj logikę wyświetlania informacji o wszystkich kontach klientów
-    # Możesz pobierać dane z bazy danych przy użyciu SQLAlchemy
     # Pobierz wszystkich użytkowników z bazy danych
-    all_users = Users.query.all()
+    all_users = Users.query.count()
 
     # Renderuj szablon, przekazując dane o użytkownikach
-    return render_template('admin_dashboard.html', all_users=all_users)
+    return render_template('admin_dashboard.html', users=all_users)
+
+
+
 
 @app.route('/communication_with_clients', methods=['GET', 'POST'])
 @login_required
@@ -637,9 +636,37 @@ def show_statement_for_customer(username):
     return render_template('admin_dashboard_cam.html',  all_locked_users = all_locked_users, all_transactions = user_transactions, user = user, plot_html_img = plot_html_img)
 
 
+@app.route('/edit_customer_information/<username>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_customer_information(username):
+    
+    user = Users.query.filter_by(username=username).first()
+    
+    return render_template('edit_customer_information.html', user = user)
 
+@app.route('/update_customer_information/<username>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def update_customer_information(username):
+    user = Users.query.filter_by(username=username).first()
+    form = EditUserForm()
 
+    if form.validate_on_submit():
+        user.email = form.email.data
+        user.phone_number = form.phone_number.data
+        user.country = form.country.data
+        
+        db.session.commit()
+        flash('Customer profile for ' + user.username + ' has been updated.')
+        return render_template('edit_customer_information.html', user = user)
 
+    
+    else:
+        print(form.errors) 
+
+    
+    return render_template('edit_customer_information.html', user = user)
 
 
 
@@ -668,6 +695,33 @@ def delete_user():
         return redirect(url_for('admin_dashboard_cm'))
 
     return render_template('admin_dashboard_cm.html', form=form, all_users=all_users)
+
+
+@app.route('/reports_and_statistics', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def reports_and_statistics():
+    
+    return render_template('reports_and_statistics.html')
+
+
+@app.route('/products_and_service_management', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def products_and_service_management():
+    
+    return render_template('products_and_service_management.html')
+
+
+@app.route('/safety_settings', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def safety_settings():
+    
+    return render_template('products_and_service_management.html')
+
+
+
 
 
 
