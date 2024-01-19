@@ -6,6 +6,8 @@ from forms.forms import AddCustomerForm, DeleteUserForm, ChangePasswordForm, Add
 from datetime import timedelta, date, datetime
 from routes.transfer import transfer_bp, login_bp, ddso_bp, create_transaction_bp, edit_profile_bp
 from routes.my_routes import grocery1_bp, grocery2_bp, grocery3_bp, grocery4_bp, gas_bp, power_bp, petrol_bp, clothes_bp, water_bp, add_customer_bp
+from routes.my_routes_hc import send_query_bp, process_query_bp, read_message_bp, send_message_for_query_bp, send_message_for_message_bp, delete_messages_for_query_bp
+from routes.my_routes_hc import delete_query_confirmation_bp, show_statement_for_customer_bp, edit_customer_information_bp
 from models.models import Users, Transaction, db, Recipient, DDSO, SupportTickets, LockedUsers
 from functools import wraps
 from urllib.parse import quote
@@ -51,6 +53,17 @@ def create_app():
     app.register_blueprint(petrol_bp)
     app.register_blueprint(clothes_bp)
     app.register_blueprint(water_bp)
+    
+    app.register_blueprint(send_query_bp)
+    app.register_blueprint(process_query_bp) 
+    app.register_blueprint(read_message_bp)
+    app.register_blueprint(send_message_for_query_bp)
+    app.register_blueprint(send_message_for_message_bp)
+    app.register_blueprint(delete_messages_for_query_bp)
+    app.register_blueprint(delete_query_confirmation_bp)
+    app.register_blueprint(show_statement_for_customer_bp)
+    app.register_blueprint(edit_customer_information_bp)
+    
     return app
 
 
@@ -186,15 +199,81 @@ def register():
 
 
 
+def plot_to_html_img(plt):
+    # Zapisz wykres w buforze pamięci
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png')
+    buf.seek(0)
+
+    # Koduj jako base64
+    image_base64 = base64.b64encode(buf.getvalue()).decode('utf-8').replace('\n', '')
+    buf.close()
+
+    return f'<img src="data:image/png;base64,{image_base64}"/>'
+
+
 @app.route('/admin_dashboard', methods=['GET', 'POST'])
 @login_required
 @admin_required
 def admin_dashboard():
     # Pobierz wszystkich użytkowników z bazy danych
     all_users = Users.query.count()
+    locked_users = LockedUsers.query.count()
+    
+   
+    # Pobranie danych o rolach użytkowników
+    roles_count = Users.query.with_entities(Users.role, func.count(Users.role)).group_by(Users.role).all()
 
-    # Renderuj szablon, przekazując dane o użytkownikach
-    return render_template('admin_dashboard.html', users=all_users)
+    # Tworzenie DataFrame
+    roles_df = pd.DataFrame(roles_count, columns=['Role', 'Count'])
+
+    # Tworzenie wykresu kołowego
+    fig, ax = plt.subplots(figsize=(4, 3))  # Utworzenie figury i osi
+    ax.pie(roles_df['Count'], labels=roles_df['Role'], autopct='%1.1f%%', startangle=140)
+    ax.set_title('Rozkład ról użytkowników w systemie')
+
+    # Zmiana koloru tła
+    ax.set_facecolor('black')  # Możesz wybrać dowolny kolor
+    fig.patch.set_facecolor('lightgrey')  # Zmiana koloru tła figury
+    
+    # Konwertuj wykres na HTML img
+    chart1 = plot_to_html_img(plt)
+    
+    
+    # Pobieranie danych o narodowościach użytkownków
+    countries_count = Users.query.with_entities(Users.country, func.count(Users.country)).group_by(Users.country).all()
+    
+    #Tworzenie dataframe
+    countries_df = pd.DataFrame(countries_count, columns = ['Country', 'Count'])
+    
+    # Tworzenie wykresu kołowego
+    fig, ax = plt.subplots(figsize=(4, 3))  # Utworzenie figury i osi
+    ax.pie(countries_df['Count'], labels=countries_df['Country'], autopct='%1.1f%%', startangle=140)
+    ax.set_title('Rozkład narodowości użytkowników w systemie')
+
+    # Zmiana koloru tła
+    ax.set_facecolor('black')  # Możesz wybrać dowolny kolor
+    fig.patch.set_facecolor('lightgrey')  # Zmiana koloru tła figury
+    
+    # Konwertuj wykres na HTML img
+    chart2 = plot_to_html_img(plt)
+    
+    
+    
+    # Renderuj szablon, przekazując dane
+    return render_template('admin_dashboard.html', users = all_users, locked_users = locked_users, chart1 = chart1, chart2 = chart2)
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -249,16 +328,6 @@ def unlock_access(username):
     
     return render_template('admin_dashboard_cam.html', all_locked_users = all_locked_users)
     
-             
-       
-
-
-
-
-
-
-
-
 
 
 
@@ -327,27 +396,7 @@ def help_center():
     return render_template('help_center.html', all_queries = user_queries)
 
 
-def generate_unique_reference_number(username):
-    """
-    Generuje unikalny numer referencyjny dla użytkownika.
 
-    :param username: Nazwa użytkownika, która ma zostać dołączona do numeru referencyjnego.
-    :return: Unikalny numer referencyjny.
-    """
-    new_reference_number = SupportTickets.query.count() + 1
-
-    while True:
-        # Tworzenie potencjalnie unikalnego numeru referencyjnego
-        potential_ref_number = f'{new_reference_number:06}{username}'
-        
-        # Sprawdzanie, czy numer referencyjny już istnieje
-        existing_ticket = SupportTickets.query.filter_by(reference_number=potential_ref_number).first()
-        
-        if not existing_ticket:
-            return potential_ref_number  # Unikalny numer referencyjny został znaleziony
-        else:
-            new_reference_number += 1  # Zwiększenie liczby i ponowna próba
-            print(potential_ref_number)
 
 
 
@@ -381,269 +430,20 @@ def block_customer():
     return render_template('admin_dashboard_cam.html', form=form)
 
 
-
-
-
-
-@app.route('/query_sended', methods=['GET', 'POST']) 
-@login_required
-def send_query():
-    form = SendQueryForm()
-    
-    if form.validate_on_submit():
-        
-        if form.category.data == 'general' or form.category.data == 'service problem':
-            current_priority = 'normal'
-        elif form.category.data == 'money transfer':
-            current_priority = 'high'
-        elif form.category.data == 'fraud':
-            current_priority = 'urgent'
-            
-        new_query = SupportTickets(user_id = current_user.id,
-                                  title = form.title.data,
-                                  description = form.description.data,
-                                  category = form.category.data,
-                                  reference_number = generate_unique_reference_number(current_user.username),
-                                  #reference_number = formatted_reference_number,
-                                  created_at = datetime.utcnow(),
-                                  status = 'new',
-                                  priority = current_priority)
-        
-        db.session.add(new_query)
-        print(new_query)
-            
-        # Zatwierdzenie zmian w bazie danych
-        db.session.commit()
-        
-        flash('Message sent successfully!', 'success')
-        return redirect(url_for('help_center'))
-    
-    else:
-        print(form.errors)  # Wydrukuj błędy formularza
-    return render_template('help_center.html', form=form)
-        
-    
-    
-    
-    
-    
-    
-    
-
-@app.route('/process_query/<query_ref>', methods=['GET', 'POST'])
-@login_required
-@admin_required
-def process_query(query_ref):
-    print("Received reference number:", query_ref)  # Wydruk kontrolny
-    # Pobieranie zapytania z bazy danych za pomocą ID
-    
-    user_queries = SupportTickets.query.filter_by(reference_number=query_ref).all()
-    last_query = SupportTickets.query.filter_by(reference_number=query_ref).order_by(SupportTickets.created_at.desc()).first()
-    
-    # Jeśli metoda to GET, renderuj szablon z detalami zapytania do przetworzenia
-    return render_template('processing_clients_query.html', all_queries=user_queries, query=last_query)
-
-
-
-@app.route('/read_message/<query_ref>', methods=['GET', 'POST'])
-@login_required
-def read_message(query_ref):
-    print("Received reference number:", query_ref)  # Wydruk kontrolny
-    
-    user_queries = SupportTickets.query.filter_by(reference_number=query_ref).all()
-    last_query = SupportTickets.query.filter_by(reference_number=query_ref).order_by(SupportTickets.created_at.desc()).first()
-    
-    return render_template('reading_my_messages.html', all_queries=user_queries, query=last_query)
-
-
-
-
-
-@app.route('/send_message_for_query/<query_ref>', methods=['GET', 'POST'])
-@login_required
-@admin_required
-def send_message_for_query(query_ref):
-    print('query ref = ', query_ref)
-    
-    # Pobieranie zapytania z bazy danych za pomocą ID
-    
-    last_query = SupportTickets.query.filter_by(reference_number=query_ref).order_by(SupportTickets.created_at.desc()).first()
-    
-    # Pobranie danych z formularza
-    new_query = SupportTickets(user_id = last_query.user_id,
-                                title = last_query.title,
-                                description = request.form['description'],
-                                category = last_query.category,
-                                reference_number = last_query.reference_number,
-                                created_at = datetime.utcnow(),
-                                status = request.form['status'],
-                                priority = last_query.priority)
-        
-    db.session.add(new_query)
-    
-    #db.session.delete(SupportTickets.query.get(3))  # - kasuje rekord o ID 3
-    #db.session.delete(SupportTickets.query.get(4))
-
-    # Zapisanie zmian w bazie danych
-    db.session.commit()
-    
-    flash('Your response has been sent successfully', 'success')
-    return redirect(url_for('process_query', query_ref=last_query.reference_number))
-    
-    
-    
-@app.route('/send_message_for_message/<query_ref>', methods=['GET', 'POST'])
-@login_required
-def send_message_for_message(query_ref):
-    print("Klient odpowiada na wiadomosc z nr ref: ", query_ref)
-    
-    last_query = SupportTickets.query.filter_by(reference_number=query_ref).order_by(SupportTickets.created_at.desc()).first()
-    # Pobranie danych z formularza
-    new_query = SupportTickets(user_id = last_query.user_id,
-                                title = last_query.title,
-                                description = request.form['description'],
-                                category = last_query.category,
-                                reference_number = last_query.reference_number,
-                                created_at = datetime.utcnow(),
-                                status = last_query.status,
-                                priority = last_query.priority)
-        
-    db.session.add(new_query)
-    db.session.commit()
-    user_queries = SupportTickets.query.filter_by(reference_number=query_ref).all()
-    flash('Your response has been sent successfully', 'success')
-    return render_template('reading_my_messages.html', query_ref=last_query.reference_number, all_queries=user_queries, query=last_query)
-    
-
-
-@app.route('/delete_messages_for_query/<query_ref>', methods=['GET', 'POST'])
-@login_required
-def delete_messages_for_query(query_ref):
-    print("Kasuję wszystkie wiadomości dla nr ref: ", query_ref)
-    
-    last_query = SupportTickets.query.filter_by(reference_number=query_ref).order_by(SupportTickets.created_at.desc()).first()
-    user_queries = SupportTickets.query.filter_by(reference_number=query_ref).all()
-    
-    
-    messages_quantity = SupportTickets.query.filter_by(reference_number=query_ref).count()
-    print(messages_quantity)
-    
-    return render_template('dmfq.html', query_ref=last_query.reference_number, all_queries=user_queries, query=last_query, messages_quantity = messages_quantity)
-    
-    
-@app.route('/delete_query_confirmation/<query_ref>', methods=['GET', 'POST'])  
-@login_required
-def delete_query_confirmation(query_ref):
-    
-    last_query = SupportTickets.query.filter_by(reference_number=query_ref).order_by(SupportTickets.created_at.desc()).first()
-    user_queries = SupportTickets.query.filter_by(reference_number=query_ref).all()
-    
-    
-    # Sprawdzenie, czy użytkownik ma uprawnienia do usunięcia tych rekordów
-    # (to jest ważne, aby uniknąć usuwania rekordów przez nieautoryzowane osoby)
-    if last_query.user_id == current_user.id:
-        # Usunięcie wszystkich rekordów z danym numerem referencyjnym
-        for query in user_queries:
-            db.session.delete(query)
-        db.session.commit()
-
-        flash('Your query has been deleted successfully', 'success')
-    else:
-        flash('You do not have permission to delete this query', 'error')
-
-    # Odświeżenie listy rekordów do wyświetlenia
-    user_queries = SupportTickets.query.filter_by(user_id=current_user.id).all()
-
-    
-    # flash('Your query has been deleted successfully', 'success')
-    return redirect(url_for('help_center', query_ref=last_query.reference_number, all_queries = user_queries))
-    #return render_template('help_center.html', all_queries = user_queries)
-
     
 @app.route('/find_customer_by_role', methods=['GET', 'POST'])
 @login_required
 @admin_required    
 def find_customer_by_role():
-    
     if request.method == 'POST':
         role = request.form.get('role')
         
     users = Users.query.filter_by(role=role).all()
-    
-    
-    
     all_locked_users = LockedUsers.query.all()
 
     return render_template('admin_dashboard_cam.html', users = users, all_locked_users = all_locked_users)
         
-    
 
-
-
-def plot_to_html_img(plt):
-    # Zapisz wykres w buforze pamięci
-    buf = io.BytesIO()
-    plt.savefig(buf, format='png')
-    buf.seek(0)
-
-    # Koduj jako base64
-    image_base64 = base64.b64encode(buf.getvalue()).decode('utf-8').replace('\n', '')
-    buf.close()
-
-    return f'<img src="data:image/png;base64,{image_base64}"/>'
-
-
-
-@app.route('/show_statement_for_customer/<username>', methods=['GET', 'POST'])
-@login_required
-@admin_required
-def show_statement_for_customer(username):
-    all_locked_users = LockedUsers.query.all()
-    # Pobierz użytkownika na podstawie nazwy użytkownika
-    user = Users.query.filter_by(username=username).first()
-    user_transactions = Transaction.query.filter_by(user_id = user.id).all()  
-
-    # Przygotowanie danych do DataFrame
-    transactions_data = [{
-        'transaction_type': txn.transaction_type,
-        'debit_amount': txn.debit_amount,
-        'credit_amount': txn.credit_amount
-    } for txn in user_transactions]
-
-    # Tworzenie DataFrame
-    transactions_df = pd.DataFrame(transactions_data)
-
-    # Tworzenie nowej kolumny 'amount' poprzez sumowanie 'debit_amount' i 'credit_amount'
-    transactions_df['amount'] = transactions_df['debit_amount'] + transactions_df['credit_amount']
-
-    # Zachowanie tylko kolumn 'transaction_type' i 'amount'
-    final_df = transactions_df[['transaction_type', 'amount']]
-    
-    # Grupowanie danych według 'transaction_type' i sumowanie 'amount'
-    grouped_data = final_df.groupby('transaction_type')['amount'].sum()
-
-    # Tworzenie wykresu kołowego
-    plt.figure(figsize=(10, 7))
-    plt.pie(grouped_data, labels=grouped_data.index, autopct='%1.1f%%', startangle=140)
-    plt.title('Suma transakcji według typu')
-    
-    # Konwertuj wykres na HTML img
-    plot_html_img = plot_to_html_img(plt)
-    #plt.show()
-    
-    
-    
-    return render_template('admin_dashboard_cam.html',  all_locked_users = all_locked_users, all_transactions = user_transactions, user = user, plot_html_img = plot_html_img)
-
-
-@app.route('/edit_customer_information/<username>', methods=['GET', 'POST'])
-@login_required
-@admin_required
-def edit_customer_information(username):
-    
-    user = Users.query.filter_by(username=username).first()
-    
-    return render_template('edit_customer_information.html', user = user)
 
 @app.route('/update_customer_information/<username>', methods=['GET', 'POST'])
 @login_required
@@ -787,8 +587,7 @@ def contact_us():
 
 
 '''
-430
-511 - 08.01.2024
+796 linii hehe -> 530
 '''
 
 if __name__ == "__main__":
