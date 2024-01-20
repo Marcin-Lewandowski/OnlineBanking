@@ -12,7 +12,7 @@ from models.models import Users, Transaction, db, Recipient, DDSO, SupportTicket
 from functools import wraps
 from urllib.parse import quote
 from flask_migrate import Migrate
-from sqlalchemy import func
+from sqlalchemy import func, and_, case
 import pandas as pd
 import matplotlib.pyplot as plt
 import io
@@ -258,10 +258,29 @@ def admin_dashboard():
     # Konwertuj wykres na HTML img
     chart2 = plot_to_html_img(plt)
     
+    # Grupowanie wiadomości według priorytetu i liczenie ich
+    priority_counts = (SupportTickets.query
+                       .with_entities(SupportTickets.priority, func.count(SupportTickets.reference_number.distinct()))
+                       .group_by(SupportTickets.priority)
+                       .all())
+
+    # Inicjalizacja zmiennych dla każdego priorytetu
+    normal_count = high_count = urgent_count = 0
+
+    # Przypisanie wyników do odpowiednich zmiennych
+    for priority, count in priority_counts:
+        if priority == 'normal':
+            normal_count = count
+        elif priority == 'high':
+            high_count = count
+        elif priority == 'urgent':
+            urgent_count = count
+
+    
     
     
     # Renderuj szablon, przekazując dane
-    return render_template('admin_dashboard.html', users = all_users, locked_users = locked_users, chart1 = chart1, chart2 = chart2)
+    return render_template('admin_dashboard.html', users = all_users, locked_users = locked_users, chart1 = chart1, chart2 = chart2, normal_count=normal_count, high_count=high_count, urgent_count=urgent_count)
 
 
 
@@ -283,11 +302,68 @@ def admin_dashboard():
 @admin_required
 def cwc():
     all_queries = SupportTickets.query.all()
+    
+    # Podzapytanie do znalezienia najnowszej daty dla każdego reference_number
+    subquery = (db.session.query(SupportTickets.reference_number,
+                                 func.max(SupportTickets.created_at).label('latest_date'))
+                          .group_by(SupportTickets.reference_number)
+                          .subquery())
 
     
-    return render_template('communication_with_clients.html', all_queries = all_queries)
     
+    # Zewnętrzne zapytanie do pobrania pełnych rekordów
+    latest_tickets_query = (db.session.query(SupportTickets)
+                            .join(subquery, and_(SupportTickets.reference_number == subquery.c.reference_number,
+                                                 SupportTickets.created_at == subquery.c.latest_date))
+                            .order_by(case((SupportTickets.priority == 'urgent', 1),
+                                           (SupportTickets.priority == 'high', 2),
+                                           else_=3))
+                            .all())
 
+    
+    return render_template('communication_with_clients.html', all_queries = all_queries, latest_tickets=latest_tickets_query)
+    
+@app.route('/communication_with_clients_sorting', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def cwcs():
+    
+    return render_template('communication_with_clients_sorting.html')
+    
+@app.route('/find_tickets', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def find_tickets():
+    
+    if request.method == 'POST':
+        priority = request.form.get('priority')
+        
+        # Podzapytanie do znalezienia najnowszej daty dla każdego reference_number
+        subquery = (db.session.query(SupportTickets.reference_number,
+                                     func.max(SupportTickets.created_at).label('latest_date'))
+                              .group_by(SupportTickets.reference_number)
+                              .subquery())
+
+        # Zewnętrzne zapytanie do pobrania pełnych rekordów
+        query = (db.session.query(SupportTickets)
+                            .join(subquery, and_(SupportTickets.reference_number == subquery.c.reference_number,
+                                                 SupportTickets.created_at == subquery.c.latest_date)))
+
+        # Filtracja po priorytecie
+        if priority:
+            query = query.filter(SupportTickets.priority == priority)
+
+        query = query.order_by(case((SupportTickets.priority == 'urgent', 1),
+                                    (SupportTickets.priority == 'high', 2),
+                                    else_=3))
+
+        tickets = query.all()
+        return render_template('communication_with_clients_sorting.html', tickets=tickets)
+       
+    
+    return render_template('communication_with_clients_sorting.html')
+    
+    
 
 @app.route('/admin_dashboard_cm', methods=['GET', 'POST'])
 @login_required
@@ -347,7 +423,6 @@ def transaction_management():
 @login_required
 @admin_required  
 def transactions_filter():
-    all_users = Users.query.all()
     all_transactions = Transaction.query.all()
     
     if request.method == 'POST':
@@ -375,12 +450,13 @@ def transactions_filter():
         # Pobranie wyników
         transactions = query.all()
 
-        return render_template('transaction_management.html', transactions=transactions)
+        return render_template('transaction_management.html', transactions=transactions, all_transactions=all_transactions)
 
-    return render_template('transaction_management.html', all_users=all_users, all_transactions=all_transactions)
+    return render_template('transaction_management.html', transactions=transactions)
+    
 
 
-@app.route('/help_center', methods=['GET', 'POST']) # pracujemy Panie szanowny :]
+@app.route('/help_center', methods=['GET', 'POST']) 
 @login_required
 def help_center():
     #user_queries = SupportTickets.query.filter_by(user_id=current_user.id).all()
