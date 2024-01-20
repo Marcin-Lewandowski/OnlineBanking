@@ -1,4 +1,4 @@
-<!--  admin_dashboard.html (strona administracyjna) -->
+<!--  admin_dashboard.html (admin's website) -->
 
 <!-- HTML template for admin dashboard -->
 
@@ -8,80 +8,48 @@
 
 
 {% block content %}
+<!-- Container contents on the right-->
 
-<!-- Zawartość kontenera po prawej stronie -->
-            <!-- Table with customer information -->
-            <table border="1">
-              <thead>
-              <tr>
-                  <th>ID</th>
-                  <th>Name</th>
-                  <th>Role</th>
-                  <th>Email</th>
-                  <th>Phone number</th>
-                  <th>Country</th>
-                  <!-- Add more columns as needed -->
-              </tr>
-              </thead>
-              <tbody>
-              {% for user in all_users %}
-                  <tr>
-                  <td>{{ user.id }}</td>
-                  <td>{{ user.username }}</td>
-                  <td>{{ user.role }}</td>
-                  <td>{{ user.email }}</td>
-                  <td>{{ user.phone_number }}</td>
-                  <td>{{ user.country }}</td>
+<h3>Welcome to main admin dashboard.</h3>
+
+1. There is <b>{{ users }}</b> users in the system<br><br>
 
 
-                  <!-- Add more rows with user data as needed -->
-                  </tr>
-              {% endfor %}
-              </tbody>
-          </table>
+<!-- Wyświetlanie wykresu -->
+{{ chart1 | safe }}  {{ chart2 | safe }}  <br><br>
 
-          <hr width="90%" align="center">
+ Link do zarządzania userami. <a href="{{ url_for('admin_dashboard_cm') }}">Customer Management</a>  <br><br><br><hr><br>
 
 
-          <h3>Add New Customer</h3>
 
-      
+2. Zarządzaj kontami klientów. Możesz wyszukiwać konta, blokować dostęp i przeglądać historię transakcji klientów. 
+Obecnie jest <b>{{locked_users}}</b> zablokowanych kont. link do zarządzania <a href="{{ url_for('admin_dashboard_cam') }}">Customer Account Management:</a>  <br><br><hr><br>
 
-          <form action="{{ url_for('add_customer_bp.add_customer') }}" method="post" role="form">
+3. Możesz wyszukiwać transakcje klientów według różnych kryteriów, rodzaj, wysokość kwoty.
+<a href="{{ url_for('transaction_management') }}">Transaction Management:</a>  <br><br><hr><br>
 
-              
-              <label for="username">Username:</label>
-              <input type="text" id="username" name="username" required><br>
+4. There is <b>{{ normal_count }}</b> queries with normal priority,  <b>{{ high_count }}</b> queries with high priority and <b> {{ urgent_count }} </b> queries with urgent priority in the system.
+<a href="{{ url_for('cwc') }}">Communication with clients:</a>  <br><br>
 
-              <label for="password">Password:</label>
-              <input type="password" id="password" name="password" required><br>  <!-- moze być błąd type - text? -->
-              
-              <!-- Wstaw ukryte pole z tokenem CSRF -->
-              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+<b>coś do zrobienia</b><hr><br>
 
-              <label for="role">Role:</label>
-              <select id="role" name="role" required>
-              <option value="client">Client</option>
-              <option value="bank_emploee">Bank employee</option>
-              <option value="board_member">Board Member</option>
-              <option value="management">Management</option>
+5. Info about Bank employee, Board Members and Management  <a href="{{ url_for('team') }}">Team</a>  <br><br><hr><br>
 
-              <!-- Add more role options if needed -->
-              </select><br>
+6. You can generate reports, statistics for accounts  <a href="{{ url_for('reports_and_statistics') }}">Reports and Statistics:</a>  <br><br>
 
-              <label for="email">Email:</label>
-              <input type="text" id="email" name="email" required><br>
+<b>coś do zrobienia</b><hr><br>
 
-              <label for="phone_number">Phone number:</label>
-              <input type="text" id="phone_number" name="phone_number" required><br>
+7. Add new financial products. Configuration of interest rates and fees. Configuration of product parameters, 
+such as limits and fees. <a href="{{ url_for('products_and_service_management') }}">Product and Service Management:</a>  <br><br>
+
+<b>coś do zrobienia</b>
+<hr><br>
 
 
-              <label for="country">Country:</label>
-              <input type="text" id="country" name="country" required><br>
-              
+8. Safety settings  <a href="{{ url_for('safety_settings') }}">Safety settings:</a>  <br><br>
 
-              <input type="submit" value="Add Customer">
-              
-              
-          </form>  
+<b>coś do zrobienia</b><hr><br>
+
+
+
 {% endblock %}

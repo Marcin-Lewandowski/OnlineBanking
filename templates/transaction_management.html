@@ -73,6 +73,44 @@
         {% endif %}
     </tbody>
 </table>
+
+<!-- Table with created transactions -->
+<h3>Transaction List</h3>
+
+<table border="1">
+    <thead>
+        <tr>
+            <th>Transaction ID</th>
+            <th>User ID</th>
+            <th>Transaction Date</th>
+            <th>Transaction Type</th>
+            <th>Sort Code</th>
+            <th>Account Number</th>
+            <th>Description</th>
+            <th>Debit Amount</th>
+            <th>Credit Amount</th>
+            <th>Balance</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for transaction in all_transactions %}
+            <tr>
+                <td>{{ transaction.id }}</td>
+                <td>{{ transaction.user_id }}</td>
+                <td>{{ transaction.transaction_date }}</td>
+                <td>{{ transaction.transaction_type }}</td>
+                <td>{{ transaction.sort_code }}</td>
+                <td>{{ transaction.account_number }}</td>
+                <td>{{ transaction.transaction_description }}</td>
+                <td>{{ transaction.debit_amount }}</td>
+                <td>{{ transaction.credit_amount }}</td>
+                <td>{{ transaction.balance }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+
 </center>
 {% endblock %}
 

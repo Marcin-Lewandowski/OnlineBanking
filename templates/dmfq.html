@@ -14,7 +14,7 @@
 <h3>Are you sure you want to delete all messages?</h3>
 <br><br>
 
-<form action="{{ url_for('delete_query_confirmation' , query_ref=query.reference_number) }}" method="post" role="form">
+<form action="{{ url_for('delete_query_confirmation_bp.delete_query_confirmation' , query_ref=query.reference_number) }}" method="post" role="form">
 
     <!-- Wstaw ukryte pole z tokenem CSRF -->
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>

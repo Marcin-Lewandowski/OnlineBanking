@@ -1,0 +1,56 @@
+<!--  edit_customer_information.html (admin's website) -->
+
+<!-- HTML template for admin dashboard customer management -->
+
+{% extends 'base_admin.html' %}
+{% block title %}Imperial Bank - Admin Dashboard - Customer Account Management - edit customer information{% endblock %}
+{% block subtitle %} - Customer Account Management - edit customer information{% endblock %}
+
+
+{% block content %}
+
+<h3>Edit client's information for {{ user.username }}</h3>
+<h3>Role for {{ user.username }} is: {{ user.role }}</h3>
+<hr>
+
+<table border="1" align="center">
+    <thead>
+    <tr>
+        <th>Email </th>
+        <th>Phone number </th>
+        <th>Country</th>
+    </tr>
+    </thead>
+    <tbody>
+    
+        <tr>
+            <td>{{ user.email }}</td>
+            <td>{{ user.phone_number }}</td>
+            <td>{{ user.country }}</td>
+        </tr>
+    
+    </tbody>
+</table>
+<br><br>
+
+<form action="{{ url_for('update_customer_information', username=user.username) }}" method="post" role="form">
+
+    <label for="email">Email:</label>
+    <input type="text" id="email" name="email" required><br>
+
+    <label for="phone_number">Phone number:</label>
+    <input type="text" id="phone_number" name="phone_number" required><br>
+
+
+    <label for="country">Country:</label>
+    <input type="text" id="country" name="country" required><br><br>
+
+    <!-- Wstaw ukryte pole z tokenem CSRF -->
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+    
+
+    <input type="submit" value="Update"><br>
+    
+  </form>
+
+{% endblock %}

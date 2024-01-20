@@ -47,7 +47,7 @@
 
 
 
-<form action="{{ url_for('send_message_for_query' , query_ref=query.reference_number) }}" method="post" role="form"> <!-- było query_ref=reference_number -->
+<form action="{{ url_for('send_message_for_query_bp.send_message_for_query' , query_ref=query.reference_number) }}" method="post" role="form"> <!-- było query_ref=reference_number -->
 
     
 
@@ -69,7 +69,8 @@
 
 </form>
 
-<a href="{{ url_for('process_query', query_ref=query.reference_number) }}" class="link"> Refresh page </a>
+<br><br>
+<a href="{{ url_for('process_query_bp.process_query', query_ref=query.reference_number) }}" class="link"> Refresh page </a>
 
 
 {% endblock %}
