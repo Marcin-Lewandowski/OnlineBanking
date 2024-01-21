@@ -589,8 +589,6 @@ def reports_and_statistics():
     
     
     
-    
-    
     # Podzapytanie do wyodrębnienia unikalnych numerów referencyjnych z ich priorytetami
     subquery = (db.session.query(SupportTickets.reference_number, SupportTickets.priority)
                 .distinct(SupportTickets.reference_number)
@@ -612,6 +610,41 @@ def reports_and_statistics():
 
     chart3 = plot_to_html_img(plt)
     
+    
+    
+    
+    
+    
+    # Pobieranie danych o narodowościach użytkownków
+    transaction_types_count = Transaction.query.with_entities(Transaction.transaction_type, func.count(Transaction.transaction_type)).group_by(Transaction.transaction_type).all()
+    
+    #Tworzenie dataframe
+    transaction_types_df = pd.DataFrame(transaction_types_count, columns = ['Transaction type', 'Count'])
+    
+    # Tworzenie wykresu kołowego
+    fig, ax = plt.subplots(figsize=(6, 3))  # Utworzenie figury i osi
+    ax.pie(transaction_types_df['Count'], labels=transaction_types_df['Transaction type'], autopct='%1.1f%%', startangle=140)
+    ax.set_title('Rozkład typów tranzakcji w systemie tranzakcji')
+
+    # Zmiana koloru tła
+    ax.set_facecolor('black')  # Możesz wybrać dowolny kolor
+    fig.patch.set_facecolor('lightgrey')  # Zmiana koloru tła figury
+    
+    # Konwertuj wykres na HTML img
+    chart4 = plot_to_html_img(plt)
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     # Grupowanie wiadomości według priorytetu i liczenie ich
     priority_counts = (SupportTickets.query
                        .with_entities(SupportTickets.priority, func.count(SupportTickets.reference_number.distinct()))
@@ -631,7 +664,7 @@ def reports_and_statistics():
             urgent_count = count
     total_count = normal_count + high_count + urgent_count
     
-    return render_template('reports_and_statistics.html', chart1 = chart1, chart2 = chart2, chart3 = chart3, normal_count = normal_count, high_count = high_count, urgent_count = urgent_count, total_count=total_count)
+    return render_template('reports_and_statistics.html', chart1 = chart1, chart2 = chart2, chart3 = chart3, chart4=chart4, normal_count = normal_count, high_count = high_count, urgent_count = urgent_count, total_count=total_count)
     
 
 
