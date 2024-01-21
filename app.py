@@ -220,44 +220,6 @@ def admin_dashboard():
     all_users = Users.query.count()
     locked_users = LockedUsers.query.count()
     
-   
-    # Pobranie danych o rolach użytkowników
-    roles_count = Users.query.with_entities(Users.role, func.count(Users.role)).group_by(Users.role).all()
-
-    # Tworzenie DataFrame
-    roles_df = pd.DataFrame(roles_count, columns=['Role', 'Count'])
-
-    # Tworzenie wykresu kołowego
-    fig, ax = plt.subplots(figsize=(4, 3))  # Utworzenie figury i osi
-    ax.pie(roles_df['Count'], labels=roles_df['Role'], autopct='%1.1f%%', startangle=140)
-    ax.set_title('Rozkład ról użytkowników w systemie')
-
-    # Zmiana koloru tła
-    ax.set_facecolor('black')  # Możesz wybrać dowolny kolor
-    fig.patch.set_facecolor('lightgrey')  # Zmiana koloru tła figury
-    
-    # Konwertuj wykres na HTML img
-    chart1 = plot_to_html_img(plt)
-    
-    
-    # Pobieranie danych o narodowościach użytkownków
-    countries_count = Users.query.with_entities(Users.country, func.count(Users.country)).group_by(Users.country).all()
-    
-    #Tworzenie dataframe
-    countries_df = pd.DataFrame(countries_count, columns = ['Country', 'Count'])
-    
-    # Tworzenie wykresu kołowego
-    fig, ax = plt.subplots(figsize=(4, 3))  # Utworzenie figury i osi
-    ax.pie(countries_df['Count'], labels=countries_df['Country'], autopct='%1.1f%%', startangle=140)
-    ax.set_title('Rozkład narodowości użytkowników w systemie')
-
-    # Zmiana koloru tła
-    ax.set_facecolor('black')  # Możesz wybrać dowolny kolor
-    fig.patch.set_facecolor('lightgrey')  # Zmiana koloru tła figury
-    
-    # Konwertuj wykres na HTML img
-    chart2 = plot_to_html_img(plt)
-    
     # Grupowanie wiadomości według priorytetu i liczenie ich
     priority_counts = (SupportTickets.query
                        .with_entities(SupportTickets.priority, func.count(SupportTickets.reference_number.distinct()))
@@ -275,21 +237,9 @@ def admin_dashboard():
             high_count = count
         elif priority == 'urgent':
             urgent_count = count
-
-    
-    
     
     # Renderuj szablon, przekazując dane
-    return render_template('admin_dashboard.html', users = all_users, locked_users = locked_users, chart1 = chart1, chart2 = chart2, normal_count=normal_count, high_count=high_count, urgent_count=urgent_count)
-
-
-
-
-
-
-
-
-
+    return render_template('admin_dashboard.html', users = all_users, locked_users = locked_users, normal_count=normal_count, high_count=high_count, urgent_count=urgent_count)
 
 
 
@@ -310,7 +260,6 @@ def cwc():
                           .subquery())
 
     
-    
     # Zewnętrzne zapytanie do pobrania pełnych rekordów
     latest_tickets_query = (db.session.query(SupportTickets)
                             .join(subquery, and_(SupportTickets.reference_number == subquery.c.reference_number,
@@ -328,7 +277,10 @@ def cwc():
 @admin_required
 def cwcs():
     
+    
+    
     return render_template('communication_with_clients_sorting.html')
+    
     
 @app.route('/find_tickets', methods=['GET', 'POST'])
 @login_required
@@ -573,12 +525,114 @@ def delete_user():
     return render_template('admin_dashboard_cm.html', form=form, all_users=all_users)
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 @app.route('/reports_and_statistics', methods=['GET', 'POST'])
 @login_required
 @admin_required
 def reports_and_statistics():
     
-    return render_template('reports_and_statistics.html')
+    # Pobranie danych o rolach użytkowników
+    roles_count = Users.query.with_entities(Users.role, func.count(Users.role)).group_by(Users.role).all()
+
+    # Tworzenie DataFrame
+    roles_df = pd.DataFrame(roles_count, columns=['Role', 'Count'])
+
+    # Tworzenie wykresu kołowego
+    fig, ax = plt.subplots(figsize=(4, 3))  # Utworzenie figury i osi
+    ax.pie(roles_df['Count'], labels=roles_df['Role'], autopct='%1.1f%%', startangle=140)
+    ax.set_title('Rozkład ról użytkowników w systemie')
+
+    # Zmiana koloru tła
+    ax.set_facecolor('black')  # Możesz wybrać dowolny kolor
+    fig.patch.set_facecolor('lightgrey')  # Zmiana koloru tła figury
+    
+    # Konwertuj wykres na HTML img
+    chart1 = plot_to_html_img(plt)
+    
+    
+    
+    
+    # Pobieranie danych o narodowościach użytkownków
+    countries_count = Users.query.with_entities(Users.country, func.count(Users.country)).group_by(Users.country).all()
+    
+    #Tworzenie dataframe
+    countries_df = pd.DataFrame(countries_count, columns = ['Country', 'Count'])
+    
+    # Tworzenie wykresu kołowego
+    fig, ax = plt.subplots(figsize=(4, 3))  # Utworzenie figury i osi
+    ax.pie(countries_df['Count'], labels=countries_df['Country'], autopct='%1.1f%%', startangle=140)
+    ax.set_title('Rozkład narodowości użytkowników w systemie')
+
+    # Zmiana koloru tła
+    ax.set_facecolor('black')  # Możesz wybrać dowolny kolor
+    fig.patch.set_facecolor('lightgrey')  # Zmiana koloru tła figury
+    
+    # Konwertuj wykres na HTML img
+    chart2 = plot_to_html_img(plt)
+    
+    
+    
+    
+    
+    # Podzapytanie do wyodrębnienia unikalnych numerów referencyjnych z ich priorytetami
+    subquery = (db.session.query(SupportTickets.reference_number, SupportTickets.priority)
+                .distinct(SupportTickets.reference_number)
+                .subquery())
+
+    # Zapytanie główne - grupowanie i zliczanie priorytetów na podstawie unikalnych numerów referencyjnych
+    tickets_count = (db.session.query(subquery.c.priority, func.count(subquery.c.priority))
+                    .group_by(subquery.c.priority)
+                    .all())
+
+    # Reszta kodu pozostaje bez zmian
+    tickets_df = pd.DataFrame(tickets_count, columns=['Priority', 'Count'])
+
+    fig, ax = plt.subplots(figsize=(6, 3))
+    ax.pie(tickets_df['Count'], labels=tickets_df['Priority'], autopct='%1.1f%%', startangle=140)
+    ax.set_title('Rozkład ilości wiadomości z określonym priorytetem w systemie')
+    ax.set_facecolor('black')
+    fig.patch.set_facecolor('lightgrey')
+
+    chart3 = plot_to_html_img(plt)
+    
+    # Grupowanie wiadomości według priorytetu i liczenie ich
+    priority_counts = (SupportTickets.query
+                       .with_entities(SupportTickets.priority, func.count(SupportTickets.reference_number.distinct()))
+                       .group_by(SupportTickets.priority)
+                       .all())
+
+    # Inicjalizacja zmiennych dla każdego priorytetu
+    normal_count = high_count = urgent_count = 0
+
+    # Przypisanie wyników do odpowiednich zmiennych
+    for priority, count in priority_counts:
+        if priority == 'normal':
+            normal_count = count
+        elif priority == 'high':
+            high_count = count
+        elif priority == 'urgent':
+            urgent_count = count
+    total_count = normal_count + high_count + urgent_count
+    
+    return render_template('reports_and_statistics.html', chart1 = chart1, chart2 = chart2, chart3 = chart3, normal_count = normal_count, high_count = high_count, urgent_count = urgent_count, total_count=total_count)
+    
 
 
 @app.route('/products_and_service_management', methods=['GET', 'POST'])
@@ -661,9 +715,8 @@ def careers():
 def contact_us():
     return render_template('contact_us.html')
 
-
 '''
-796 linii hehe -> 530
+665 linii 
 '''
 
 if __name__ == "__main__":
