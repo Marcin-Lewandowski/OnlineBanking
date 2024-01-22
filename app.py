@@ -12,7 +12,7 @@ from models.models import Users, Transaction, db, Recipient, DDSO, SupportTicket
 from functools import wraps
 from urllib.parse import quote
 from flask_migrate import Migrate
-from sqlalchemy import func, and_, case
+from sqlalchemy import func, and_, case, asc
 import pandas as pd
 import matplotlib.pyplot as plt
 import io
@@ -638,6 +638,117 @@ def reports_and_statistics():
     
     
     
+    # Zapytanie do obliczenia średniej wartości transakcji dla każdego typu
+    avg_transactions = (db.session.query(Transaction.transaction_type,func.avg(Transaction.debit_amount + Transaction.credit_amount).label('average_value'))
+                    .filter((Transaction.debit_amount + Transaction.credit_amount) <= 10000).group_by(Transaction.transaction_type).all())
+
+    # Tworzenie DataFrame z wyników
+    transactions_df = pd.DataFrame(avg_transactions, columns=['TransactionType', 'AverageValue'])
+
+    # Tworzenie wykresu słupkowego
+    fig, ax = plt.subplots(figsize=(8, 6))
+    transactions_df.plot(kind='bar', x='TransactionType', y='AverageValue', ax=ax, color='skyblue')
+
+    ax.set_title('Średnia Wartość Transakcji dla Każdego Typu Transakcji')
+    ax.set_xlabel('Typ Transakcji')
+    ax.set_ylabel('Średnia Wartość')
+    plt.xticks(rotation=45)
+    
+    # Dodawanie wartości liczbowych na wykresie
+    for bar in ax.patches:
+        ax.annotate(format(bar.get_height(), '.2f'), 
+                (bar.get_x() + bar.get_width() / 2, 
+                    bar.get_height()), ha='center', va='center',
+                size=10, xytext=(0, 8),
+                textcoords='offset points')
+    
+    # Konwertuj wykres na HTML img
+    chart5 = plot_to_html_img(plt)
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    response_times = []
+    
+    # Znajdź unikalne numery referencyjne
+    unique_reference_numbers = (SupportTickets.query.with_entities(SupportTickets.reference_number).distinct().all())
+
+    # Wyświetl ilość unikalnych numerów referencyjnych
+    print(f"Ilość unikalnych numerów referencyjnych: {len(unique_reference_numbers)}")
+
+    # Wyświetl numery referencyjne
+    for ref_number in unique_reference_numbers:
+        print(ref_number[0])
+
+        dates = (db.session.query(SupportTickets.created_at)
+            .filter(SupportTickets.reference_number == ref_number[0])  # Użyj [0], aby pobrać numer referencyjny
+            .order_by(asc(SupportTickets.created_at))
+            .limit(2)  # Ograniczenie do pierwszych dwóch rekordów
+            .all())
+        
+        
+
+        # Obliczenie różnicy czasu
+        if len(dates) == 2:
+            first_record, second_record = dates[0][0], dates[1][0]  # Zakładając, że dates zawiera daty
+            time_difference = second_record - first_record
+            response_times.append(time_difference)
+            print("Czas, jaki upłynął między rekordami:", time_difference)
+        else:
+            print("Nie znaleziono wystarczającej liczby rekordów.")
+    
+    if response_times:
+        total_time = sum(response_times, timedelta())  # Sumowanie timedelta
+        average_time_seconds = total_time.total_seconds() / len(response_times)  # Średni czas w sekundach
+
+        # Obliczenie godzin i minut
+        hours, remainder = divmod(average_time_seconds, 3600)
+        minutes, _ = divmod(remainder, 60)
+
+        # Wyświetlenie średniego czasu w godzinach i minutach
+        print("Średni czas odpowiedzi: {} godzin {} minut".format(int(hours), int(minutes)))
+    else:
+        print("Nie znaleziono wystarczającej liczby rekordów do obliczenia średniego czasu odpowiedzi.")
+    
+    
+    
+    
+    if response_times:
+        average_time_seconds = total_time.total_seconds() / len(response_times)
+        hours, remainder = divmod(average_time_seconds, 3600)
+        minutes, _ = divmod(remainder, 60)
+        average_response_time = "{} godzin {} minut".format(int(hours), int(minutes))
+    else:
+        average_response_time = "Brak danych"
+    
+    
+    
+    
+    
     
     
     
@@ -664,7 +775,8 @@ def reports_and_statistics():
             urgent_count = count
     total_count = normal_count + high_count + urgent_count
     
-    return render_template('reports_and_statistics.html', chart1 = chart1, chart2 = chart2, chart3 = chart3, chart4=chart4, normal_count = normal_count, high_count = high_count, urgent_count = urgent_count, total_count=total_count)
+    return render_template('reports_and_statistics.html', chart1 = chart1, chart2 = chart2, chart3 = chart3, chart4=chart4, chart5=chart5, average_response_time=average_response_time, 
+                           normal_count = normal_count, high_count = high_count, urgent_count = urgent_count, total_count=total_count)
     
 
 
