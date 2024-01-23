@@ -26,6 +26,8 @@ def create_app():
     app.config['SECRET_KEY'] = 'bc684cf3981dbcacfd60fc34d6985095'
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///ib_database_users.db'  # Ustawienie nazwy bazy danych
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # Zalecane dla wydajności
+    #app.config['MAX_LOGIN_ATTEMPTS'] = 3  # Ustal maksymalną liczbę nieudanych prób logowania
+
     app.permanent_session_lifetime = timedelta(minutes = 45)
     
     csrf = CSRFProtect(app)
@@ -793,7 +795,7 @@ def products_and_service_management():
 @admin_required
 def safety_settings():
     
-    return render_template('products_and_service_management.html')
+    return render_template('safety_settings.html')
 
 
 
