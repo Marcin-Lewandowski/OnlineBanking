@@ -11,12 +11,40 @@
 
 <h3>Reports and statistics</h3>
 
-<h4>stworzyć jakies raporty i statystyki w formie liczbowej i wykresy [może filtrowanie jakies i potem pokaż wyniki w formie wykresów]</h4> <br><br>
+<h4>stworzyć jakies raporty i statystyki w formie liczbowej i wykresy [może filtrowanie jakies i potem pokaż wyniki w formie wykresów]</h4> 
 
-<h3>Pomysły na wykresy</h3><br><br>
+<h3>Pomysły na wykresy</h3><br>
 
-<b>Wykres obrazujący ile jest ticketów w bazie z poszczególnymi priorytetami: urgent, high i normal. Do tego musi być zdanie ile jest tiketów łącznie i z każdym z trzech priorytetów.
-    Takie zdanie jak jest w main dashboard w punkcie czwartym.
-</b>
+
+
+
+...
+
+<br>
+
+<!-- Wyświetlanie wykresu -->
+{{ chart1 | safe }}  {{ chart2 | safe }}  <br><br>
+
+There is <b>{{ total_count }}</b> tickets in total:  <b> {{ urgent_count }} </b> queries with urgent priority, <b>{{ high_count }}</b> queries with high priority and <b>{{ normal_count }}</b> queries with normal priority in the system.
+
+<br><br>
+
+{{ chart3 | safe }} 
+
+<br><br>
+
+{{ chart4 | safe }}
+
+<br><br>
+
+{{ chart5 | safe }}
+
+<br><br>  <hr> <br><br>
+
+<h3>Średni czas odpowiedzi na zapytanie od użytkownika systemu wynosi:</h3>
+<h2>{{ average_response_time }}</h2>
+
+
+<br><br><br><br><br><br>
 
 {% endblock %}

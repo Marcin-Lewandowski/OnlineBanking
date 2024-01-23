@@ -14,12 +14,7 @@
 
 1. There is <b>{{ users }}</b> users in the system<br><br>
 
-
-<!-- Wyświetlanie wykresu -->
-{{ chart1 | safe }}  {{ chart2 | safe }}  <br><br>
-
- Link do zarządzania userami. <a href="{{ url_for('admin_dashboard_cm') }}">Customer Management</a>  <br><br><br><hr><br>
-
+Link do zarządzania userami. <a href="{{ url_for('admin_dashboard_cm') }}">Customer Management</a>  <br><br><br><hr><br>
 
 
 2. Zarządzaj kontami klientów. Możesz wyszukiwać konta, blokować dostęp i przeglądać historię transakcji klientów. 
@@ -29,15 +24,11 @@ Obecnie jest <b>{{locked_users}}</b> zablokowanych kont. link do zarządzania <a
 <a href="{{ url_for('transaction_management') }}">Transaction Management:</a>  <br><br><hr><br>
 
 4. There is <b>{{ normal_count }}</b> queries with normal priority,  <b>{{ high_count }}</b> queries with high priority and <b> {{ urgent_count }} </b> queries with urgent priority in the system.
-<a href="{{ url_for('cwc') }}">Communication with clients:</a>  <br><br>
-
-<b>coś do zrobienia</b><hr><br>
+<a href="{{ url_for('cwc') }}">Communication with clients:</a>  <br><br><hr><br>
 
 5. Info about Bank employee, Board Members and Management  <a href="{{ url_for('team') }}">Team</a>  <br><br><hr><br>
 
-6. You can generate reports, statistics for accounts  <a href="{{ url_for('reports_and_statistics') }}">Reports and Statistics:</a>  <br><br>
-
-<b>coś do zrobienia</b><hr><br>
+6. You can generate reports, statistics for accounts  <a href="{{ url_for('reports_and_statistics') }}">Reports and Statistics:</a>  <br><br><hr><br>
 
 7. Add new financial products. Configuration of interest rates and fees. Configuration of product parameters, 
 such as limits and fees. <a href="{{ url_for('products_and_service_management') }}">Product and Service Management:</a>  <br><br>
