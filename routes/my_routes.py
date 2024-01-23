@@ -34,7 +34,7 @@ def handle_grocery_transaction(amount, recipient_id, description, description2, 
             sender_balance = last_transaction.balance - amount
             new_sender_transaction = Transaction(user_id=current_user.id, 
                                                 transaction_date=transaction_date,
-                                                transaction_type='DD',
+                                                transaction_type='DEB',
                                                 sort_code=last_transaction.sort_code,
                                                 account_number=last_transaction.account_number,
                                                 transaction_description=description,
@@ -243,3 +243,5 @@ def add_customer():
     
     # Jeśli formularz nie jest poprawny, ponów renderowanie strony z błędami
     #return render_template('admin_dashboard', form=form)
+    
+    

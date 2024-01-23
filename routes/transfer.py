@@ -127,6 +127,7 @@ login_bp = Blueprint('login_bp', __name__)
 
 @login_bp.route('/login', methods=['GET', 'POST'])
 def login():
+    
     form = LoginForm()
     if request.method == "POST":
         session.permanent = True # Ustawienie sesji jako trwałej
@@ -134,6 +135,8 @@ def login():
             user = Users.query.filter_by(username=form.username.data).first()
             if user and user.check_password(form.password.data):
                 # Sprawdzenie, czy użytkownik o tej nazwie istnieje jest zablokowany
+                
+                
                 print("Sprawdza czy user jest zablokowany")
             
                 locked_user = LockedUsers.query.filter_by(username=user.username).first()
@@ -142,9 +145,11 @@ def login():
                     print("User jest zablokowany")
                     return render_template('account_locked.html', locked_user = locked_user)
                 else:
+                    
                     login_user(user)
                     flash("Login succesful!")
                     print(user.username)
+                    session['login_attempts'] = 0
                     
                     # Przekieruj do strony admin_dashboard dla administratora
                     if user.role == 'admin':
@@ -154,6 +159,32 @@ def login():
                         return redirect(url_for('dashboard'))
             else:
                 flash('Login unsuccessful. Please check your username and password.', 'danger')     
+                
+                #session['login_attempts'] = 0
+
+                # Zwiększenie liczby nieudanych prób logowania
+                session['login_attempts'] += 1
+                print("Logowal sie tyle razy - ", session['login_attempts'])
+                
+                # Sprawdzenie, czy przekroczono maksymalną liczbę prób
+                if session['login_attempts'] >= 3:
+                    # Zablokuj konto
+                    locked_user = LockedUsers(username=user.username)
+                    session['login_attempts'] = 0
+                    
+                    print("User zablokowany: licznik nieudanych prob logowania zresetowany i wynosi: - ", session['login_attempts'])
+                    
+                    
+                    db.session.add(locked_user)
+                    db.session.commit()
+                    
+                    
+                    flash("Twoje konto zostało zablokowane po przekroczeniu maksymalnej liczby nieudanych prób logowania.")
+                    return render_template('account_locked.html', locked_user = locked_user)
+                
+                
+                
+                
                 
         return render_template('login.html', form = form)   
         
@@ -223,6 +254,7 @@ def ddso():
 create_transaction_bp = Blueprint('create_transaction_bp', __name__)
 
 @create_transaction_bp.route('/create_transaction', methods=['GET', 'POST'])      # nie ma zabezpieczenia , sprawdzic czy istnieje już taki sam sort code i account number
+@login_required
 @admin_required
 def create_transaction():
     
