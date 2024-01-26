@@ -5,6 +5,22 @@ from forms.forms import TransferForm, LoginForm, DDSOForm, CreateTransactionForm
 from datetime import date
 from models.models import Users, Transaction, db, DDSO, LockedUsers
 from functools import wraps
+import logging
+
+
+# Utworzenie loggera
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)  # Ustawienie poziomu logowania
+
+# Definicja własnego formatera
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+
+# Utworzenie i konfiguracja handlera
+handler = logging.FileHandler('app.log')
+handler.setFormatter(formatter)
+
+# Dodanie handlera do loggera
+logger.addHandler(handler)
 
 
 
@@ -12,7 +28,9 @@ def admin_required(func):
     @wraps(func)
     def decorated_view(*args, **kwargs):
         if not current_user.is_authenticated or current_user.role != 'admin':
-            abort(403)  # Zwraca błąd 403 Forbidden, jeśli użytkownik nie jest adminem
+            # Logowanie próby dostępu do zasobu admin_dashboard przez nieuprawnionego użytkownika
+            logger.error(f"Brak dostepu do chronionego zasobu - {request.path}  '{current_user.username}' ")
+            abort(403)  # Zwraca błąd 403 Forbidden
         return func(*args, **kwargs)
     return decorated_view
 
@@ -148,6 +166,8 @@ def login():
                     
                     login_user(user)
                     flash("Login succesful!")
+                    
+                    logger.info(f"Uzytkownik '{user.username}' zalogowal sie do systemu.")
                     print(user.username)
                     session['login_attempts'] = 0
                     
@@ -164,12 +184,16 @@ def login():
 
                 # Zwiększenie liczby nieudanych prób logowania
                 session['login_attempts'] += 1
+                
+                logger.warning(f"Uzytkownik '{user.username}' probowal zalogowac sie. Bledne haslo !")
+                
                 print("Logowal sie tyle razy - ", session['login_attempts'])
                 
                 # Sprawdzenie, czy przekroczono maksymalną liczbę prób
                 if session['login_attempts'] >= 3:
                     # Zablokuj konto
                     locked_user = LockedUsers(username=user.username)
+                    logger.critical(f"Konto dla uzytkownika '{user.username}' zostalo zablokowane !!!")
                     session['login_attempts'] = 0
                     
                     print("User zablokowany: licznik nieudanych prob logowania zresetowany i wynosi: - ", session['login_attempts'])
