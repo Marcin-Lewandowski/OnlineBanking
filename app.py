@@ -17,6 +17,12 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import io
 import base64
+import logging
+
+from routes.transfer import logger, admin_required
+
+
+
 
 login_manager = LoginManager()
 login_manager.login_view = 'login_bp.login'
@@ -102,13 +108,13 @@ def create_sample_user():
         db.session.add(admin)
         db.session.commit()  
         
-def admin_required(func):
-    @wraps(func)
-    def decorated_view(*args, **kwargs):
-        if not current_user.is_authenticated or current_user.role != 'admin':
-            abort(403)  # Zwraca błąd 403 Forbidden, jeśli użytkownik nie jest adminem
-        return func(*args, **kwargs)
-    return decorated_view
+
+    
+
+    
+    
+    
+    
     
 
 @app.route('/', methods=['GET', 'POST'])
@@ -218,6 +224,10 @@ def plot_to_html_img(plt):
 @login_required
 @admin_required
 def admin_dashboard():
+    user = current_user
+    if user.role != 'admin':
+        
+        logger.error(f"Brak dostępu do chronionego zasobu - /admin_dashboard  '{user.username}' ")
     # Pobierz wszystkich użytkowników z bazy danych
     all_users = Users.query.count()
     locked_users = LockedUsers.query.count()
@@ -539,8 +549,22 @@ def delete_user():
 
 
 
+# Funkcja zliczająca ile logów o danym poziomie jest zapisanych w pliku z logami
+def count_log_levels(file_path):
+    log_levels = {"INFO": 0, "ERROR": 0, "WARNING": 0, "CRITICAL": 0}
 
+    with open(file_path, "r", encoding="utf-8") as file:
+        for line in file:
+            if "INFO" in line:
+                log_levels["INFO"] += 1
+            elif "ERROR" in line:
+                log_levels["ERROR"] += 1
+            elif "WARNING" in line:
+                log_levels["WARNING"] += 1
+            elif "CRITICAL" in line:
+                log_levels["CRITICAL"] += 1
 
+    return log_levels
 
 
 
@@ -680,20 +704,6 @@ def reports_and_statistics():
     
     
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     response_times = []
     
     # Znajdź unikalne numery referencyjne
@@ -777,8 +787,32 @@ def reports_and_statistics():
             urgent_count = count
     total_count = normal_count + high_count + urgent_count
     
+    
+    # Wywołanie funkcji zliczającej lofi
+    
+    log_file_path = 'app.log'  # Ścieżka do Twojego pliku logów
+    log_counts = count_log_levels(log_file_path)
+    
+    
+    # Tworzenie DataFrame dla wyjresu logów w pliku app.log
+    #log_counts = count_log_levels(log_file_path) # załóżmy, że log_counts to twoje dane
+    log_counts_df = pd.DataFrame(list(log_counts.items()), columns=['Log Level', 'Count'])
+
+    # Tworzenie wykresu kołowego
+    fig, ax = plt.subplots(figsize=(6, 3))  # Utworzenie figury i osi
+    ax.pie(log_counts_df['Count'], labels=log_counts_df['Log Level'], autopct='%1.1f%%', startangle=140)
+    ax.set_title('Rozkład typów logów w systemie')
+
+    # Zmiana koloru tła
+    ax.set_facecolor('black')  # Możesz wybrać dowolny kolor
+    fig.patch.set_facecolor('lightgrey')  # Zmiana koloru tła figury
+
+    # Konwertowanie wykresu na HTML img
+    chart6 = plot_to_html_img(plt)
+    
+    
     return render_template('reports_and_statistics.html', chart1 = chart1, chart2 = chart2, chart3 = chart3, chart4=chart4, chart5=chart5, average_response_time=average_response_time, 
-                           normal_count = normal_count, high_count = high_count, urgent_count = urgent_count, total_count=total_count)
+                           normal_count = normal_count, high_count = high_count, urgent_count = urgent_count, total_count=total_count, log_counts = log_counts, chart6 = chart6)
     
 
 
