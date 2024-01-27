@@ -1,18 +1,15 @@
-from flask import Blueprint, render_template, request, session, flash, url_for, redirect, abort
+from flask import Blueprint, render_template, request, flash, url_for, redirect
 from flask_login import current_user, login_required, login_user
 from forms.forms import AddCustomerForm
 from datetime import date
-from models.models import Users, Transaction, db, DDSO
-from functools import wraps
+from models.models import Users, Transaction, db
 from routes.transfer import admin_required
-from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import generate_password_hash
 
 
 def handle_grocery_transaction(amount, recipient_id, description, description2, description3):
-    # Twoja istniejąca logika sprawdzania salda i transakcji
-    #user_transactions = Transaction.query.filter_by(user_id=current_user.id).all()
     
-    # Pobierz ostatnią transakcję kupującego, aby sprawdzić jego saldo
+    # Download a buyer's last transaction to check their balance
     last_transaction = Transaction.query.filter_by(user_id=current_user.id).order_by(Transaction.id.desc()).first()
     
     if current_user.id == recipient_id:
@@ -25,12 +22,11 @@ def handle_grocery_transaction(amount, recipient_id, description, description2, 
             return redirect(url_for('online_shop'))
         
     else:    
-        # Logika wykonania przelewu
         try:
-            # Przygotowanie wspólnych danych dla transakcji
+            # Preparation of data for transactions
             transaction_date = date.today()
             
-            # Aktualizacja salda nadawcy
+            # Sender balance update
             sender_balance = last_transaction.balance - amount
             new_sender_transaction = Transaction(user_id=current_user.id, 
                                                 transaction_date=transaction_date,
@@ -43,7 +39,7 @@ def handle_grocery_transaction(amount, recipient_id, description, description2, 
                                                 balance=sender_balance)
             db.session.add(new_sender_transaction)
             
-            # Znajdź ostatnią transakcję odbiorcy - sklepu FreshFood
+            # Find the last transaction of the recipient - the FreshFood store
             last_recipient_transaction = Transaction.query.filter_by(user_id=recipient_id).order_by(Transaction.id.desc()).first()
             
             recipient_balance = last_recipient_transaction.balance + amount
@@ -58,8 +54,6 @@ def handle_grocery_transaction(amount, recipient_id, description, description2, 
                                                         credit_amount=amount,
                                                         balance=recipient_balance)
             db.session.add(new_recipient_transaction)
-            
-            # Zatwierdzenie zmian w bazie danych
             db.session.commit()
             
             flash(f'{description3} purchase completed successfully!', 'success')
@@ -86,6 +80,7 @@ def grocery1():
     description3 = 'Dairy'
     
     return handle_grocery_transaction(amount, recipient_id, description, description2, description3)
+
 
 grocery2_bp = Blueprint('grocery2_bp', __name__)   
    
@@ -201,8 +196,6 @@ def petrol():
 
 
 
-# Dodaj trasę do obsługi formularza dodawania klienta
-
 add_customer_bp = Blueprint('add_customer_bp', __name__)
 
 @add_customer_bp.route('/add_customer', methods=['GET', 'POST'])
@@ -212,22 +205,21 @@ def add_customer():
     form = AddCustomerForm(request.form)
     
     if form.validate_on_submit():
-        # Uzyskaj dane z formularza
+        
         username = form.username.data
         password = form.password.data
         email = form.email.data
         password_hash = generate_password_hash(password, method='pbkdf2:sha256')
         
-        # Sprawdź, czy użytkownik o podanym username lub email już istnieje
+        # Check if a user with the given username or email already exists
         existing_user = Users.query.filter((Users.username == username) | (Users.email == email)).first()
 
         if existing_user:
             
-            # Użytkownik o podanym username lub email już istnieje
             flash('User with given username or email already exists.', 'error')
             return render_template('user_exist.html')
         else:
-            # Utwórz nowego użytkownika i dodaj go do bazy danych
+            # Create a new user and add it to the database
             
             role = form.role.data
             country = form.country.data
@@ -240,8 +232,4 @@ def add_customer():
 
             flash('User added successfully.', 'success')
             return redirect(url_for('admin_dashboard_cm'))
-    
-    # Jeśli formularz nie jest poprawny, ponów renderowanie strony z błędami
-    #return render_template('admin_dashboard', form=form)
-    
     

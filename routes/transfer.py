@@ -1,5 +1,4 @@
 from flask import Blueprint, render_template, request, session, flash, url_for, redirect, abort
-
 from flask_login import current_user, login_required, login_user
 from forms.forms import TransferForm, LoginForm, DDSOForm, CreateTransactionForm, EditUserForm
 from datetime import date
@@ -8,29 +7,31 @@ from functools import wraps
 import logging
 
 
-# Utworzenie loggera
+# Creating a logger
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)  # Ustawienie poziomu logowania
 
-# Definicja własnego formatera
+# Setting the logging level
+logger.setLevel(logging.INFO)  
+
+# Definition of your own formatter
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 
-# Utworzenie i konfiguracja handlera
+# Creating and configuring the handler
 handler = logging.FileHandler('app.log')
 handler.setFormatter(formatter)
 
-# Dodanie handlera do loggera
+# Adding a handler to the logger
 logger.addHandler(handler)
-
 
 
 def admin_required(func):
     @wraps(func)
     def decorated_view(*args, **kwargs):
         if not current_user.is_authenticated or current_user.role != 'admin':
-            # Logowanie próby dostępu do zasobu admin_dashboard przez nieuprawnionego użytkownika
-            logger.error(f"Brak dostepu do chronionego zasobu - {request.path}  '{current_user.username}' ")
-            abort(403)  # Zwraca błąd 403 Forbidden
+            # Logging an attempt to access a resource by an unauthorized user
+            logger.error(f"No access to the resource - {request.path}  '{current_user.username}' ")
+            # Returns a 403 Forbidden error
+            abort(403)
         return func(*args, **kwargs)
     return decorated_view
 
@@ -42,54 +43,47 @@ transfer_bp = Blueprint('transfer_bp', __name__)
 @login_required
 def transfer():
     form = TransferForm()
-    print(1)
 
     if form.validate_on_submit():
-        print(2)
         recipient_sort_code = form.recipient_sort_code.data
         recipient_account_number = form.recipient_account_number.data
         amount = form.amount.data
         transaction_description = form.transaction_description.data
         confirm_password = form.confirm_password.data
         
-        # Sprawdź, czy hasło jest poprawne
+        # Check if the password is correct
         if not current_user.check_password(confirm_password):
-            print(3)
             flash('Invalid password.', 'danger')
             return redirect(url_for('dashboard'))
      
-        # Sprawdź, czy odbiorca istnieje, sprawdza po sort code i account number
+        # Check whether the recipient exists by sort code and account number
         recipient = Users.query.join(Transaction).filter(Transaction.account_number == recipient_account_number, Transaction.sort_code == recipient_sort_code).first()
         
         
         if not recipient:
-            print(4)
             flash('Recipient account not found.', 'danger')
             return redirect(url_for('dashboard')) 
 
         
-        # Pobierz ostatnią transakcję nadawcy, aby sprawdzić jego saldo
+        # Download the sender's last transaction to check their balance
         last_sender_transaction = Transaction.query.filter_by(user_id=current_user.id).order_by(Transaction.id.desc()).first()
         
-        # Sprawdź czy sort code i account_number są danymi wysyłającego
+        # Check if the sort code and account_number are the sender's data
         if recipient_sort_code == last_sender_transaction.sort_code and recipient_account_number == last_sender_transaction.account_number:
             flash('You can not send money to your own account!', 'danger')
             return redirect(url_for('dashboard'))
         
         
         if not last_sender_transaction or last_sender_transaction.balance < amount:
-            print(5)
             flash('Insufficient funds.', 'danger')
             return redirect(url_for('dashboard')) 
         
-        # Logika wykonania przelewu
+        # The logic of making a transfer
         try:
-            print(6)
-            # Przygotowanie wspólnych danych dla transakcji
+            # Preparation of data for transactions
             transaction_date = date.today()
             
-            
-            # Aktualizacja salda nadawcy
+            # Sender balance update
             last_sender_balance = last_sender_transaction.balance - amount
             new_sender_transaction = Transaction(user_id=current_user.id, 
                                                 transaction_date=transaction_date,
@@ -103,11 +97,11 @@ def transfer():
             db.session.add(new_sender_transaction)
             
             
-            # Znajdź ostatnią transakcję odbiorcy
+            # Find the customer's last transaction
             last_recipient_transaction = Transaction.query.filter_by(user_id=recipient.id).order_by(Transaction.id.desc()).first()
             last_recipient_balance = last_recipient_transaction.balance
             
-            # Aktualizacja salda odbiorcy
+            # Recipient balance update
             new_recipient_transaction = Transaction(user_id=recipient.id, 
                                                     transaction_date=transaction_date,
                                                     transaction_type='FPI',
@@ -118,22 +112,17 @@ def transfer():
                                                     credit_amount=amount,
                                                     balance=last_recipient_balance + amount)
             db.session.add(new_recipient_transaction)
-            
-
-            # Zatwierdzenie zmian w bazie danych
             db.session.commit()
             flash('Transfer successful!', 'success')
             return redirect(url_for('dashboard'))
         
         except Exception as e:
-            print(7)
             db.session.rollback()
             flash('An error occurred. Transfer failed.', 'danger')
             return render_template('transfer.html', form=form)
     
     else:
-        print(form.errors)   
-    print(8)    
+        print(form.errors)      
     user_transactions = Transaction.query.filter_by(user_id=current_user.id).all()
     return render_template('dashboard.html', user=current_user, all_transactions=user_transactions)
 
@@ -148,71 +137,54 @@ def login():
     
     form = LoginForm()
     if request.method == "POST":
-        session.permanent = True # Ustawienie sesji jako trwałej
+        # Set the session to be persistent
+        session.permanent = True 
         if form.validate_on_submit():
             user = Users.query.filter_by(username=form.username.data).first()
             if user and user.check_password(form.password.data):
-                # Sprawdzenie, czy użytkownik o tej nazwie istnieje jest zablokowany
-                
-                
-                print("Sprawdza czy user jest zablokowany")
+                # Check if a user with this name is locked
             
                 locked_user = LockedUsers.query.filter_by(username=user.username).first()
 
                 if locked_user:
-                    print("User jest zablokowany")
                     return render_template('account_locked.html', locked_user = locked_user)
                 else:
-                    
                     login_user(user)
                     flash("Login succesful!")
-                    
-                    logger.info(f"Uzytkownik '{user.username}' zalogowal sie do systemu.")
-                    print(user.username)
+                    logger.info(f"User '{user.username}' logged in to the system.")
                     session['login_attempts'] = 0
                     
-                    # Przekieruj do strony admin_dashboard dla administratora
+                    # Redirect to the admin dashboard page for the administrator
                     if user.role == 'admin':
                         return redirect(url_for('admin_dashboard'))
-                    # Przekieruj do strony dashboard dla klienta
+                    # Redirect to the customer dashboard page
                     else:
                         return redirect(url_for('dashboard'))
             else:
                 flash('Login unsuccessful. Please check your username and password.', 'danger')     
-                
-                #session['login_attempts'] = 0
-
-                # Zwiększenie liczby nieudanych prób logowania
+                # Increased number of failed login attempts
                 session['login_attempts'] += 1
                 
-                logger.warning(f"Uzytkownik '{user.username}' probowal zalogowac sie. Bledne haslo !")
+                logger.warning(f"User '{user.username}' tried to log in. Wrong password !")
                 
-                print("Logowal sie tyle razy - ", session['login_attempts'])
-                
-                # Sprawdzenie, czy przekroczono maksymalną liczbę prób
+                # Check whether the maximum number of login attempts has been exceeded
                 if session['login_attempts'] >= 3:
-                    # Zablokuj konto
+                    # Lock the bank account
                     locked_user = LockedUsers(username=user.username)
-                    logger.critical(f"Konto dla uzytkownika '{user.username}' zostalo zablokowane !!!")
+                    logger.critical(f"Bank account for user  '{user.username}' has been blocked !!!")
                     session['login_attempts'] = 0
-                    
-                    print("User zablokowany: licznik nieudanych prob logowania zresetowany i wynosi: - ", session['login_attempts'])
-                    
                     
                     db.session.add(locked_user)
                     db.session.commit()
                     
                     
-                    flash("Twoje konto zostało zablokowane po przekroczeniu maksymalnej liczby nieudanych prób logowania.")
+                    flash("Your account has been locked after exceeding the maximum number of failed login attempts.")
                     return render_template('account_locked.html', locked_user = locked_user)
                 
-                
-                
-                
-                
+                  
         return render_template('login.html', form = form)   
         
-    # Jeśli użytkownik jest już zalogowany, przekieruj go do odpowiedniej strony
+    # If the user is already logged in, redirect him to the appropriate page
     if current_user.is_authenticated:
         flash("Already Logged In")
         if current_user.role == 'admin':
@@ -240,23 +212,21 @@ def ddso():
         
         confirm_password = form.confirm_password.data
         
-        # Sprawdź, czy hasło jest poprawne
+        # Check if the password is correct
         if not current_user.check_password(confirm_password):
-            print(3)
             flash('Invalid password.', 'danger')
             return redirect(url_for('dashboard'))
         
-        # Sprawdź, czy odbiorca istnieje, po username
+        # Check if the recipient exists
         recipient_exist = Users.query.filter_by(username=form.recipient.data).first()
         
         
         if not recipient_exist:
-            print(4)
             flash('Recipient account not found.', 'danger')
             return redirect(url_for('dashboard')) 
         
         
-        # Tworzenie nowego zlecenia na podstawie danych z formularza
+        # Creating a new order based on data from the form
         new_dd_so = DDSO(
                         user_id=current_user.id,  
                         recipient=form.recipient.data,
@@ -269,7 +239,7 @@ def ddso():
         db.session.add(new_dd_so)
         db.session.commit()
         flash('New Direct Debit / Standing Order added successfully!')
-        return redirect(url_for('dashboard'))  # Przekierowanie do strony głównej lub innej strony
+        return redirect(url_for('dashboard'))  
 
     return render_template('ddso.html', form=form, user=current_user, all_transactions=user_transactions, all_dd_so=user_dd_so,  last_transaction=last_transaction)
     
@@ -277,7 +247,7 @@ def ddso():
 
 create_transaction_bp = Blueprint('create_transaction_bp', __name__)
 
-@create_transaction_bp.route('/create_transaction', methods=['GET', 'POST'])      # nie ma zabezpieczenia , sprawdzic czy istnieje już taki sam sort code i account number
+@create_transaction_bp.route('/create_transaction', methods=['GET', 'POST'])  
 @login_required
 @admin_required
 def create_transaction():
@@ -331,7 +301,6 @@ def edit_profile():
         form.email.data = current_user.email
         form.phone.data = current_user.phone
         form.country.data = current_user.country
-        # Załaduj inne pola
     else:
         print(form.errors) 
 
