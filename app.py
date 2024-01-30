@@ -16,16 +16,63 @@ from sqlalchemy import func, and_, case, asc
 import pandas as pd
 import matplotlib.pyplot as plt
 import io
-import base64
+import base64, csv
 import logging
-
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+from flask import make_response, send_file
+from io import BytesIO
+from reportlab.lib import colors
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.platypus import Paragraph
 from routes.transfer import logger, admin_required
+from flask_apscheduler import APScheduler
 
+
+scheduler = APScheduler()
 
 
 
 login_manager = LoginManager()
 login_manager.login_view = 'login_bp.login'
+
+
+#@scheduler.task('cron', id='process_ddso')
+def process_ddso_payments():
+    with app.app_context():
+        today = datetime.today().date()
+        pending_payments = DDSO.query.filter(DDSO.next_payment_date <= today).all()
+        
+        if len(pending_payments) > 0:
+            # Wyświetl ilość rekordów w pending_payments
+            print("Liczba oczekujących płatności:", len(pending_payments))
+
+            for payment in pending_payments:
+                recipient_name = payment.recipient
+                
+                # Pobierz ID odbiorcy (użytkownika) na podstawie recipient_name
+                recipient_user = Users.query.filter_by(username=recipient_name).first()
+                if recipient_user:
+                    recipient_id = recipient_user.id
+
+                    # Teraz możesz użyć recipient_id do dalszych operacji, np. do wyszukania transakcji
+                    last_recipient_transaction = Transaction.query.filter_by(user_id=recipient_id).order_by(Transaction.transaction_date.desc()).first()
+
+                    # Jeśli istnieje ostatnia transakcja, wykonaj dalsze działania
+                    if last_recipient_transaction:
+                        # Logika przetwarzania płatności
+                        # ...
+                        print(last_recipient_transaction.balance)
+                
+                # Zaktualizuj next_payment_date
+                # (Załóżmy, że płatność jest miesięczna)
+                payment.next_payment_date = payment.next_payment_date + timedelta(days=30)
+
+                db.session.commit()
+        else:
+            print("Brak oczekujących płatności.")
+            return  # Zakończenie funkcji jeśli nie ma płatności do przetworzenia
 
 def create_app():
     app = Flask(__name__)
@@ -43,7 +90,21 @@ def create_app():
     
     # Inicjalizacja db z obiektem app
     db.init_app(app)
-    #migrate = Migrate(app, db)
+    
+    # Inicjalizacja schedulera
+    scheduler.init_app(app)
+    scheduler.start()
+    
+    # Dodaj zadanie do schedulera cyklicznie trigger='cron'
+    # Uruchom zadanie tylko raz, krótko po starcie aplikacji trigger='date'
+    #scheduler.add_job(id='process_ddso', func=process_ddso_payments, trigger='cron', hour=0, minute=0)
+    
+    
+
+    # Uruchom zadanie tylko raz, krótko po starcie aplikacji trigger='date'
+    scheduler.add_job(id='process_ddso', func=process_ddso_payments, trigger='date', run_date=datetime.now() + timedelta(seconds=20))
+
+
 
     # ... Rejestracja Blueprintów, inne konfiguracje ...
     app.register_blueprint(transfer_bp)
@@ -378,8 +439,9 @@ def transaction_management():
     
     all_users = Users.query.all()
     all_transactions = Transaction.query.all()
+    ddso_transactions = DDSO.query.all()
 
-    return render_template('transaction_management.html', all_users=all_users, all_transactions=all_transactions)
+    return render_template('transaction_management.html', all_users=all_users, all_transactions=all_transactions, ddso_transactions=ddso_transactions)
 
     
     
@@ -569,6 +631,170 @@ def count_log_levels(file_path):
 
 
 
+
+
+
+
+
+
+
+def create_transactions_pdf(transactions, username):
+    buffer = BytesIO()
+    pdf = SimpleDocTemplate(buffer, pagesize=letter)
+    
+    
+    # Styl dla paragrafu
+    styles = getSampleStyleSheet()
+    
+    # Tekst do umieszczenia przed tabelą
+    
+    intro_text = f"Poniżej znajduje się lista wszystkich transakcji dokonanych na Twoim koncie, {username}: "
+    intro = Paragraph(intro_text, styles['Normal'])
+    epmty_space = Paragraph("<br/><br/>", styles['Normal'])  # Pusty paragraf jako odstęp
+
+
+    data = [["Date", "Type", "Description", "Debit amount", "Credit amount", "Balance"]]  # Nagłówki kolumn
+    for transaction in transactions:
+        data.append([str(transaction.transaction_date), str(transaction.transaction_type), str(transaction.transaction_description), str(transaction.debit_amount), str(transaction.credit_amount), str(transaction.balance)])
+
+    # Tworzenie tabeli
+    table = Table(data)
+
+    # Styl tabeli (opcjonalnie)
+    style = TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.grey),
+        ('TEXTCOLOR',(0,0),(-1,0),colors.whitesmoke),
+        ('ALIGN',(0,0),(-1,-1),'CENTER'),
+        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+        ('BOTTOMPADDING', (0,0), (-1,0), 12),
+        ('BACKGROUND',(0,1),(-1,-1),colors.beige),
+        ('GRID', (0,0), (-1,-1), 1, colors.black)
+    ])
+    table.setStyle(style)
+
+    # Dodawanie tabeli do elementów PDF
+    
+    elems = [intro, epmty_space, table]
+    pdf.build(elems)
+
+    buffer.seek(0)
+    return buffer
+
+
+
+
+
+
+
+@app.route('/download_transactions/<int:user_id>')
+@login_required
+def download_transactions(user_id):
+    # Sprawdzenie, czy zalogowany użytkownik ma uprawnienia do pobrania transakcji
+    if current_user.id != user_id and not current_user.is_admin:
+        abort(403)
+
+    # Pobranie transakcji użytkownika z bazy danych
+    transactions = Transaction.query.filter_by(user_id=user_id).all()
+
+    # Tworzenie PDF
+    
+    buffer = create_transactions_pdf(transactions, current_user.username)
+
+    # Utworzenie odpowiedzi HTTP z plikiem PDF
+    response = make_response(buffer.getvalue())
+    buffer.close()
+    response.headers['Content-Disposition'] = 'attachment; filename=transactions.pdf'
+    response.mimetype = 'application/pdf'
+
+    return response
+
+
+
+
+
+def save_transactions_to_csv(transactions, filename):
+    with open(filename, mode='w', newline='', encoding='utf-8') as file:
+        writer = csv.writer(file)
+        
+        # Nagłówki kolumn
+        writer.writerow(["Date", "Type", "Description", "Debit amount", "Credit amount", "Balance"])
+
+        # Zapisz dane transakcji
+        for transaction in transactions:
+            writer.writerow([transaction.transaction_date, transaction.transaction_type, transaction.transaction_description, transaction.debit_amount, transaction.credit_amount, transaction.balance])
+            
+            
+@app.route('/download_transactions_csv')
+@login_required
+def download_transactions_csv():
+    # Pobierz dane transakcji (możesz tu dodać filtr na transakcje aktualnego użytkownika)
+    transactions = Transaction.query.filter_by(user_id=current_user.id).all()
+
+    # Tworzenie nazwy pliku
+    filename = f"transactions_{current_user.username}.csv"
+
+    # Zapisz dane do CSV
+    save_transactions_to_csv(transactions, filename)
+
+    # Utworzenie odpowiedzi z plikiem CSV
+    return send_file(filename, as_attachment=True)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            
+            
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 @app.route('/reports_and_statistics', methods=['GET', 'POST'])
 @login_required
 @admin_required
@@ -692,18 +918,6 @@ def reports_and_statistics():
     chart5 = plot_to_html_img(plt)
     
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     response_times = []
     
     # Znajdź unikalne numery referencyjne
@@ -747,8 +961,6 @@ def reports_and_statistics():
         print("Nie znaleziono wystarczającej liczby rekordów do obliczenia średniego czasu odpowiedzi.")
     
     
-    
-    
     if response_times:
         average_time_seconds = total_time.total_seconds() / len(response_times)
         hours, remainder = divmod(average_time_seconds, 3600)
@@ -756,15 +968,6 @@ def reports_and_statistics():
         average_response_time = "{} godzin {} minut".format(int(hours), int(minutes))
     else:
         average_response_time = "Brak danych"
-    
-    
-    
-    
-    
-    
-    
-    
-    
     
     
     
