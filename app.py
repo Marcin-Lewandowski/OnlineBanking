@@ -28,6 +28,7 @@ from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import Paragraph
 from routes.transfer import logger, admin_required
 from flask_apscheduler import APScheduler
+import traceback
 
 
 scheduler = APScheduler()
@@ -38,7 +39,7 @@ login_manager = LoginManager()
 login_manager.login_view = 'login_bp.login'
 
 
-#@scheduler.task('cron', id='process_ddso')
+
 def process_ddso_payments():
     with app.app_context():
         today = datetime.today().date()
@@ -51,28 +52,92 @@ def process_ddso_payments():
             for payment in pending_payments:
                 recipient_name = payment.recipient
                 
-                # Pobierz ID odbiorcy (użytkownika) na podstawie recipient_name
+                # Pobierz ID odbiorcy (użytkownika np. Global Cars, Bauron INC ) na podstawie recipient_name
                 recipient_user = Users.query.filter_by(username=recipient_name).first()
+                print("Recipient: ", recipient_user.username)
+                sender = Users.query.filter_by(id = payment.user_id).first()
+                print("Sender: ", sender.username)
+                
                 if recipient_user:
                     recipient_id = recipient_user.id
 
                     # Teraz możesz użyć recipient_id do dalszych operacji, np. do wyszukania transakcji
-                    last_recipient_transaction = Transaction.query.filter_by(user_id=recipient_id).order_by(Transaction.transaction_date.desc()).first()
+                    last_recipient_transaction = Transaction.query.filter_by(user_id=recipient_id).order_by(Transaction.id.desc()).first()
+                    
+                    print("Recipient ID: ", last_recipient_transaction.user_id)
+                    print("Recipient balance: ", last_recipient_transaction.balance)
+                    last_sender_transaction = Transaction.query.filter_by(user_id=payment.user_id).order_by(Transaction.id.desc()).first()
+                    print("Sender ID: ", last_sender_transaction.user_id)
+                    print("Sender balance: ", last_sender_transaction.balance)
+                    
 
                     # Jeśli istnieje ostatnia transakcja, wykonaj dalsze działania
                     if last_recipient_transaction:
                         # Logika przetwarzania płatności
-                        # ...
+                        
                         print(last_recipient_transaction.balance)
+                        try:
+                            # Preparation of data for transactions
+                            transaction_date = date.today()
+                            
+                            # Sender balance update
+                            new_sender_balance = last_sender_transaction.balance - payment.amount
+                            print("New sender balance: ", new_sender_balance)
+                            new_sender_transaction = Transaction(user_id=payment.user_id, 
+                                                transaction_date=transaction_date,
+                                                transaction_type=payment.transaction_type,
+                                                sort_code=last_sender_transaction.sort_code,
+                                                account_number=last_sender_transaction.account_number,
+                                                transaction_description=payment.reference_number,
+                                                debit_amount=payment.amount,
+                                                credit_amount = 0,
+                                                balance=new_sender_balance)
+                            db.session.add(new_sender_transaction)
+                            
+                            
+                            # Recipient balance update
+                            new_recipient_balance = last_recipient_transaction.balance + payment.amount
+                            print("New recipient balance: ", new_recipient_balance)
+                            new_recipient_transaction = Transaction(user_id=recipient_id, 
+                                                                    transaction_date=transaction_date,
+                                                                    transaction_type='FPI',
+                                                                    sort_code=last_recipient_transaction.sort_code,
+                                                                    account_number=last_recipient_transaction.account_number,
+                                                                    transaction_description=payment.reference_number,
+                                                                    debit_amount = 0,
+                                                                    credit_amount=payment.amount,
+                                                                    balance=new_recipient_balance)
+                            db.session.add(new_recipient_transaction)
+                            
+                            # (Załóżmy, że płatność jest miesięczna - timedelta(days=30), ale dla testów codziennie timedelta(days=1))
+                            if payment.frequency == 'daily':
+                                payment.next_payment_date = payment.next_payment_date + timedelta(days=1)
+                                
+                            if payment.frequency == 'monthly':
+                                payment.next_payment_date = payment.next_payment_date + timedelta(days=30)
+                                
+                            db.session.commit()
+                            print('Direct debit sended successful!')
+                            
+                            
+                            
+                         
+                            
+                        except Exception as e:
+                            db.session.rollback()
+                            # Wydrukuj komunikat o błędzie i pełny stos wywołań
+                            print('An error occurred. Transfer failed:', e)
+                            traceback.print_exc()   
                 
-                # Zaktualizuj next_payment_date
-                # (Załóżmy, że płatność jest miesięczna)
-                payment.next_payment_date = payment.next_payment_date + timedelta(days=30)
-
-                db.session.commit()
         else:
             print("Brak oczekujących płatności.")
             return  # Zakończenie funkcji jeśli nie ma płatności do przetworzenia
+        
+        
+        
+        
+        
+        
 
 def create_app():
     app = Flask(__name__)
@@ -100,11 +165,8 @@ def create_app():
     #scheduler.add_job(id='process_ddso', func=process_ddso_payments, trigger='cron', hour=0, minute=0)
     
     
-
     # Uruchom zadanie tylko raz, krótko po starcie aplikacji trigger='date'
-    scheduler.add_job(id='process_ddso', func=process_ddso_payments, trigger='date', run_date=datetime.now() + timedelta(seconds=20))
-
-
+    scheduler.add_job(id='process_ddso', func=process_ddso_payments, trigger='date', run_date=datetime.now() + timedelta(seconds=10))
 
     # ... Rejestracja Blueprintów, inne konfiguracje ...
     app.register_blueprint(transfer_bp)
