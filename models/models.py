@@ -35,11 +35,9 @@ class LockedUsers(db.Model):
 
 class Transaction(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    
     id = db.Column(db.Integer, primary_key=True)
     transaction_date = db.Column(db.Date, default=date.today)
     transaction_type = db.Column(db.String(20), nullable=False)
-    
     sort_code = db.Column(db.String(10), nullable=False)
     account_number = db.Column(db.String(20), nullable=False)
     transaction_description = db.Column(db.String(255) , nullable=False)
@@ -56,7 +54,6 @@ class Recipient(db.Model):
     name = db.Column(db.String(100), nullable=False)
     sort_code = db.Column(db.String(10), nullable=False)
     account_number = db.Column(db.String(20), nullable=False)
-
     user = db.relationship('Users', backref=db.backref('recipients', lazy=True))
     
 
@@ -65,12 +62,13 @@ class Recipient(db.Model):
 class DDSO(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    amount = db.Column(db.Float, nullable=False)
     recipient = db.Column(db.String(50),  nullable=False) 
     reference_number = db.Column(db.String(100), nullable=False)
-    next_payment_date = db.Column(db.Date, nullable=False)
+    amount = db.Column(db.Float, nullable=False)
     transaction_type = db.Column(db.String(20), nullable=False)
     frequency = db.Column(db.String(50))  # np. 'monthly'
+    next_payment_date = db.Column(db.Date, nullable=False)
+    
     
     
 class SupportTickets(db.Model):
