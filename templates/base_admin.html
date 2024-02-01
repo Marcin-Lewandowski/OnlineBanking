@@ -6,17 +6,23 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    
     <title>{% block title %}{% endblock %}</title>
 
     <link rel="stylesheet" href="{{ url_for('static', filename='styles_admin.css') }}">  
+    <style>
+        #timer {
+            font-size: 24px;
+            font-weight: bold;
+        }
+    </style>
     
 </head>
 <body>
     <header>
         <!-- Nagłówek strony -->
         
-        
-    
     </header>
 
      
@@ -24,8 +30,6 @@
         
     </nav>
 
-
-    
 
     <main>
         <!-- main -->
@@ -37,8 +41,44 @@
             {% endfor %}
             {% endif %}
         {% endwith %}
-        <p>Welcome, {{ current_user.username }}!</p>
-        <br><br>
+
+        <!--   <p>Welcome, {{ current_user.username }}!</p>   -->
+        
+        
+        <b>Do końca sesji zostało:</b> <div id="timer"></div>
+        <script>
+            // JavaScript do odliczania czasu
+            // Ustawienie początkowego czasu na 45 minut
+            let time = 45 * 60;
+    
+            const timerElement = document.getElementById('timer');
+    
+            // Funkcja do aktualizacji i wyświetlania czasu
+            function updateTimer() {
+                let minutes = Math.floor(time / 60);
+                let seconds = time % 60;
+    
+                minutes = minutes < 10 ? '0' + minutes : minutes;
+                seconds = seconds < 10 ? '0' + seconds : seconds;
+    
+                timerElement.textContent = `${minutes}:${seconds}`;
+                time--;
+    
+                // Zatrzymaj timer, gdy osiągnie zero
+                if (time < 0) {
+                    clearInterval(interval);
+                    timerElement.textContent = "Czas upłynął!";
+                }
+            }
+    
+            // Aktualizacja timera co sekundę
+            let interval = setInterval(updateTimer, 1000);
+    
+            // Wywołanie funkcji na początku, aby uniknąć początkowego opóźnienia 1 sekundy
+            updateTimer();
+        </script>
+
+        <br>
 
 
         <div class="container">
@@ -105,6 +145,10 @@
             </div>
         </div>
     </main>
+
+    
+
+    
 
     <footer>
         <!-- Stopka strony -->

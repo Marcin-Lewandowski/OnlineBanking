@@ -24,24 +24,26 @@
 <table border="1" class="center-table">
     <thead>
     <tr>
+        <th>User ID</th>
         <th>Recipient name</th>
         <th>Ref number</th>
         <th>Amount</th>
         <th>Type</th>
         <th>Frequency</th>
-        <th>Last paid</th>
+        <th>Next payment date</th>
         <!-- Add more columns as needed -->
     </tr>
     </thead>
     <tbody>
     {% for dd_so in all_dd_so %}
         <tr>
-        <td>{{ dd_so.recipient }}</td>
-        <td>{{ dd_so.reference_number }}</td>
-        <td>{{ dd_so.amount }}</td>
-        <td>{{ dd_so.transaction_type }}</td>
-        <td>{{ dd_so.frequency }}</td>
-        <td>{{ dd_so.next_payment_date }}</td>
+            <td>{{ dd_so.user_id }}</td>
+            <td>{{ dd_so.recipient }}</td>
+            <td>{{ dd_so.reference_number }}</td>
+            <td>{{ dd_so.amount }}</td>
+            <td>{{ dd_so.transaction_type }}</td>
+            <td>{{ dd_so.frequency }}</td>
+            <td>{{ dd_so.next_payment_date }}</td>
         </tr>
     {% endfor %}
     </tbody>

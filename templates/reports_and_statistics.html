@@ -45,6 +45,16 @@ There is <b>{{ total_count }}</b> tickets in total:  <b> {{ urgent_count }} </b>
 <h2>{{ average_response_time }}</h2>
 
 
-<br><br><br><br><br><br>
+<br><br>
+
+<h1>Log Statistics</h1>
+    
+        <b>There is  {{ log_counts['INFO'] }} INFO level logs, {{ log_counts['ERROR'] }} ERROR level logs, {{ log_counts['WARNING'] }} WARNING level logs and 
+            {{ log_counts['CRITICAL'] }} CRITICAL level logs in app.log file.</b>
+    
+
+<br><br>
+{{ chart6 | safe }}
+<br><br>
 
 {% endblock %}

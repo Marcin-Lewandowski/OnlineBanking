@@ -74,6 +74,40 @@
     </tbody>
 </table>
 
+
+
+<!-- Table with DD / SO transactions -->
+<h3>DD / SO transaction List</h3>
+
+
+<table border="1">
+    <thead>
+        <tr>
+            <th>User ID</th>
+            <th>Recipient</th>
+            <th>Reference number</th>
+            <th>Amount</th>
+            <th>Transaction type</th>
+            <th>Frequency</th>
+            <th>Next payment date</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for transaction in ddso_transactions %}
+            <tr>
+                <td>{{ transaction.user_id }}</td>
+                <td>{{ transaction.recipient }}</td>
+                <td>{{ transaction.reference_number }}</td>
+                <td>{{ transaction.amount }}</td>
+                <td>{{ transaction.transaction_type }}</td>
+                <td>{{ transaction.frequency }}</td>
+                <td>{{ transaction.next_payment_date }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+
 <!-- Table with created transactions -->
 <h3>Transaction List</h3>
 
