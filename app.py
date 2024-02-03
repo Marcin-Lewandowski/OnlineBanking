@@ -403,8 +403,6 @@ def cwc():
 @admin_required
 def cwcs():
     
-    
-    
     return render_template('communication_with_clients_sorting.html')
     
     
