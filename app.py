@@ -236,16 +236,13 @@ def create_sample_user():
 
     
 
-    
-    
-    
-    
-    
-
 @app.route('/', methods=['GET', 'POST'])
 def index():
     return render_template('index.html')
 
+@app.route('/main', methods=['GET', 'POST'])
+def main():
+    return render_template('index.html')
 
 
 @app.route('/logout')
@@ -685,9 +682,29 @@ def change_password(user_id):
 
 
 
-@app.route('/branch_locator', methods=['GET', 'POST'])
-def branch_locator():
-    return render_template('branch_locator.html')
+
+
+@app.route('/about_the_project', methods=['GET', 'POST'])
+def about_the_project():
+    return render_template('about_the_project.html')
+
+
+
+@app.route('/financial_products', methods=['GET', 'POST'])
+def financial_products():
+    return render_template('financial_products.html')
+
+
+@app.route('/author', methods=['GET', 'POST'])
+def author():
+    return render_template('author.html')
+
+
+
+
+
+
+
 
 
 @app.route('/service_status', methods=['GET', 'POST'])
@@ -708,7 +725,7 @@ def contact_us():
     return render_template('contact_us.html')
 
 '''
-1160 linii -> 1013 -> 735
+1160 linii -> 1013 -> 711
 '''
 
 if __name__ == "__main__":
