@@ -33,7 +33,7 @@
 </table>
 <br><br>
 
-<form action="{{ url_for('update_customer_information', username=user.username) }}" method="post" role="form">
+<form action="{{ url_for('update_customer_information_bp.update_customer_information', username=user.username) }}" method="post" role="form">
 
     <label for="email">Email:</label>
     <input type="text" id="email" name="email" required><br>

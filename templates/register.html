@@ -1,17 +1,51 @@
-<!-- register.html (strona rejestracji) -->
+<!-- register.html -->
 
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Strona Główna</title>
-</head>
-<body>
-    <center> <img src="static/imperial-bank-2.jpg" alt="Imperial Bank"> </center>
-    <h1><center>Zarejestruj sie</center></h1>
-    <p><center>To jest przykładowa zawartość strony.</center></p>
-</body>
-</html>
+
+{% extends 'base.html' %}
+
+
+{% block title %}Imperial Bank - Online Banking - project's author {% endblock %}
+
+
+
+
+{% block content %}
+<br><br>
+
+
+
+
+<div class="container100">
+    <div class="left">
+        <h1>Visit the nearest Imperial Bank branch and create your bank account.</h1>
+
+        <h3><a href="{{ url_for('contact_us') }}" > Contact us </a> and book you appointment.</h3>
+
+
+        <hr>
+        <h1>Get the IB Mobile Banking App</h1> 
+        <h2>Mobile banking has never been easier. </h2>
+        <h2>Quickly register to start managing your money whenever and wherever you need to.</h2>
+            <p>Download the app:</p>
+            <img src="static/asi.png"> <img src="static/gp.png"> <br><br>
+
+        <h2>Why use the app?</h2>
+
+        <h3>Super easy registration</h3> 
+
+        <p>All you need are your account and personal details. </p>
+
+        <h3>Simple payments hub</h3>
+
+        <p>For your banking essentials.</p>
+
+        <h3></h3>
+
+        <img src="static/ibapp11.jpg">
+    </div>
+</div>
+<br><br>
+
+
+{% endblock %}

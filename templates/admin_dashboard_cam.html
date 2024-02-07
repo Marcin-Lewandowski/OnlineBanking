@@ -14,7 +14,7 @@
     <div class="left2">
         <h3>Block account access for specific customer</h3>
 
-        <form action="{{ url_for('block_customer') }}" method="post" role="form">
+        <form action="{{ url_for('block_customer_bp.block_customer') }}" method="post" role="form">
             <label for="username">Username:</label>
             <input type="text" id="username" name="username" required><br><br>
 
@@ -43,7 +43,7 @@
                 <td>{{ user.username }}</td>
                 
                 <td>{{ user.is_account_locked }}</td>
-                <td><a href="{{ url_for('unlock_access', username=user.username) }}">Unlock access</a></td>
+                <td><a href="{{ url_for('unlock_access_bp.unlock_access', username=user.username) }}">Unlock access</a></td>
                 </tr>
             {% endfor %}
             </tbody>

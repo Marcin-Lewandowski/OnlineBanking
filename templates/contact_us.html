@@ -2,12 +2,34 @@
 
 {% extends 'base.html' %}
 {% block title %}Imperial Bank - Contact us{% endblock %}
-<center>
+
 {% block content %}
+<center>
 <br><br>
-Contact us ...
-<br><br><br>
+
+<div class="container5" style="border: 0px solid #000">
+
+    
+
+    <div class="right4"  style="border: 0px solid #F00">
+        <img src="static/imperialbankmini.jpg" > 
 
 
-{% endblock %}
+    </div>
+
+    <div class="left4" style="padding-top: 20px; padding-left: 30px; padding-bottom: 20px;" >
+
+        <h3>Contact us: </h3> 
+        <h4>Phone number: +44 123456789 </h4>
+        <h4>Email: info@imperialbank.co.uk</h4>
+        <h4>If you are a bank customer, log in and send a message from the help center. </h4>
+        <a href="{{ url_for('help_center') }}" > Help and support center</a> 
+
+
+    </div>
+
+
+</div>
+
 </center>
+{% endblock %}

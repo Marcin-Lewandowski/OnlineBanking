@@ -23,8 +23,8 @@
 
 <h3>Your account statement: </h3>
 
-<h5><a href="{{ url_for('download_transactions', user_id=current_user.id) }}">Download pdf statement</a>  &nbsp; &nbsp; &nbsp; | &nbsp; &nbsp; &nbsp; 
-    <a href="{{ url_for('download_transactions_csv', user_id=current_user.id) }}">Download csv statement file</a> </h5>
+<h5><a href="{{ url_for('download_transactions_bp.download_transactions', user_id=current_user.id) }}">Download pdf statement</a>  &nbsp; &nbsp; &nbsp; | &nbsp; &nbsp; &nbsp; 
+    <a href="{{ url_for('download_transactions_csv_bp.download_transactions_csv', user_id=current_user.id) }}">Download csv statement file</a> </h5>
 
 
 
