@@ -9,7 +9,7 @@ from routes.my_routes import grocery1_bp, grocery2_bp, grocery3_bp, grocery4_bp,
 from routes.my_routes_hc import send_query_bp, process_query_bp, read_message_bp, send_message_for_query_bp, send_message_for_message_bp, delete_messages_for_query_bp
 from routes.my_routes_hc import delete_query_confirmation_bp, show_statement_for_customer_bp, edit_customer_information_bp
 from routes.my_routes_statement import download_transactions_bp, download_transactions_csv_bp
-from routes.my_routes_admin import transactions_filter_bp, reports_and_statistics_bp
+from routes.my_routes_admin import transactions_filter_bp, reports_and_statistics_bp, delete_user_bp, update_customer_information_bp, find_tickets_bp, block_customer_bp, unlock_access_bp, admin_dashboard_bp
 from models.models import Users, Transaction, db, Recipient, DDSO, SupportTickets, LockedUsers
 from functools import wraps
 from urllib.parse import quote
@@ -196,9 +196,14 @@ def create_app():
     
     app.register_blueprint(transactions_filter_bp)
     app.register_blueprint(reports_and_statistics_bp)
+    app.register_blueprint(delete_user_bp)
+    app.register_blueprint(update_customer_information_bp)
+    app.register_blueprint(find_tickets_bp)
+    app.register_blueprint(block_customer_bp)
+    app.register_blueprint(unlock_access_bp)
+    app.register_blueprint(admin_dashboard_bp)
     
     return app
-
 
 
 
@@ -277,7 +282,6 @@ def make_payment():
 
 
 
-
 @app.route('/add_recipient', methods=['GET', 'POST'])
 @login_required
 def add_recipient():
@@ -302,7 +306,6 @@ def add_recipient():
 
 
  
-    
 @app.route('/online_shop', methods=['GET', 'POST'])
 @login_required
 def online_shop():
@@ -330,46 +333,6 @@ def register():
 
 
 
-
-@app.route('/admin_dashboard', methods=['GET', 'POST'])
-@login_required
-@admin_required
-def admin_dashboard():
-    user = current_user
-    if user.role != 'admin':
-        
-        logger.error(f"Brak dostępu do chronionego zasobu - /admin_dashboard  '{user.username}' ")
-    # Pobierz wszystkich użytkowników z bazy danych
-    all_users = Users.query.count()
-    locked_users = LockedUsers.query.count()
-    
-    # Grupowanie wiadomości według priorytetu i liczenie ich
-    priority_counts = (SupportTickets.query
-                       .with_entities(SupportTickets.priority, func.count(SupportTickets.reference_number.distinct()))
-                       .group_by(SupportTickets.priority)
-                       .all())
-
-    # Inicjalizacja zmiennych dla każdego priorytetu
-    normal_count = high_count = urgent_count = 0
-
-    # Przypisanie wyników do odpowiednich zmiennych
-    for priority, count in priority_counts:
-        if priority == 'normal':
-            normal_count = count
-        elif priority == 'high':
-            high_count = count
-        elif priority == 'urgent':
-            urgent_count = count
-    
-    # Renderuj szablon, przekazując dane
-    return render_template('admin_dashboard.html', users = all_users, locked_users = locked_users, normal_count=normal_count, high_count=high_count, urgent_count=urgent_count)
-
-
-
-
-
-
-
 @app.route('/communication_with_clients', methods=['GET', 'POST'])
 @login_required
 @admin_required
@@ -382,7 +345,6 @@ def cwc():
                           .group_by(SupportTickets.reference_number)
                           .subquery())
 
-    
     # Zewnętrzne zapytanie do pobrania pełnych rekordów
     latest_tickets_query = (db.session.query(SupportTickets)
                             .join(subquery, and_(SupportTickets.reference_number == subquery.c.reference_number,
@@ -392,7 +354,6 @@ def cwc():
                                            else_=3))
                             .all())
 
-    
     return render_template('communication_with_clients.html', all_queries = all_queries, latest_tickets=latest_tickets_query)
     
 @app.route('/communication_with_clients_sorting', methods=['GET', 'POST'])
@@ -402,39 +363,6 @@ def cwcs():
     
     return render_template('communication_with_clients_sorting.html')
     
-    
-@app.route('/find_tickets', methods=['GET', 'POST'])
-@login_required
-@admin_required
-def find_tickets():
-    
-    if request.method == 'POST':
-        priority = request.form.get('priority')
-        
-        # Podzapytanie do znalezienia najnowszej daty dla każdego reference_number
-        subquery = (db.session.query(SupportTickets.reference_number,
-                                     func.max(SupportTickets.created_at).label('latest_date'))
-                              .group_by(SupportTickets.reference_number)
-                              .subquery())
-
-        # Zewnętrzne zapytanie do pobrania pełnych rekordów
-        query = (db.session.query(SupportTickets)
-                            .join(subquery, and_(SupportTickets.reference_number == subquery.c.reference_number,
-                                                 SupportTickets.created_at == subquery.c.latest_date)))
-
-        # Filtracja po priorytecie
-        if priority:
-            query = query.filter(SupportTickets.priority == priority)
-
-        query = query.order_by(case((SupportTickets.priority == 'urgent', 1),
-                                    (SupportTickets.priority == 'high', 2),
-                                    else_=3))
-
-        tickets = query.all()
-        return render_template('communication_with_clients_sorting.html', tickets=tickets)
-       
-    
-    return render_template('communication_with_clients_sorting.html')
     
     
 
@@ -458,27 +386,8 @@ def admin_dashboard_cam():
 
     return render_template('admin_dashboard_cam.html', all_users=all_users, all_locked_users = all_locked_users)
          
-@app.route('/unlock_access/<username>', methods=['GET', 'POST'])  
-@login_required
-@admin_required
-def unlock_access(username):
-    
-    user = LockedUsers.query.filter_by(username=username).first()
-    
-    if user:
-        db.session.delete(user)
-        db.session.commit()
-        flash('User account: ' + user.username + '  unlocked successfully!', 'success')
-    else:
-        flash('User not found.', 'error')
-    
-    
-    all_locked_users = LockedUsers.query.all()
-    
-    return render_template('admin_dashboard_cam.html', all_locked_users = all_locked_users)
-    
 
-
+    
 
 @app.route('/transaction_management', methods=['GET', 'POST'])
 @login_required
@@ -493,9 +402,6 @@ def transaction_management():
 
     
     
-
-    
-
 
 @app.route('/help_center', methods=['GET', 'POST']) 
 @login_required
@@ -515,39 +421,6 @@ def help_center():
 
 
 
-
-
-
-@app.route('/block_customer', methods=['GET', 'POST'])
-@login_required
-@admin_required
-def block_customer():
-    form = LockUser()
-    
-    if form.validate_on_submit():
-        # Sprawdź, czy użytkownik o podanej nazwie istnieje
-        user_exists = Users.query.filter_by(username=form.username.data).first()
-        if user_exists:
-            # Użytkownik istnieje, kontynuuj z blokowaniem
-            user_for_lock = LockedUsers(username=form.username.data)
-            
-            db.session.add(user_for_lock)
-            db.session.commit()
-
-            flash('User account for: ' + user_for_lock.username + '  locked successfully!', 'success')
-        else:
-            # Użytkownik nie istnieje, wyświetl komunikat
-            flash('User account: ' + form.username.data + ' does not exist!', 'error')
-
-        # Pobierz aktualną listę zablokowanych użytkowników
-        all_locked_users = LockedUsers.query.all()
-        return render_template('admin_dashboard_cam.html', all_locked_users=all_locked_users)
-
-    # Renderuj formularz, jeśli nie nastąpiła walidacja
-    return render_template('admin_dashboard_cam.html', form=form)
-
-
-    
 @app.route('/find_customer_by_role', methods=['GET', 'POST'])
 @login_required
 @admin_required    
@@ -560,66 +433,6 @@ def find_customer_by_role():
 
     return render_template('admin_dashboard_cam.html', users = users, all_locked_users = all_locked_users)
         
-
-
-@app.route('/update_customer_information/<username>', methods=['GET', 'POST'])
-@login_required
-@admin_required
-def update_customer_information(username):
-    user = Users.query.filter_by(username=username).first()
-    form = EditUserForm()
-
-    if form.validate_on_submit():
-        user.email = form.email.data
-        user.phone_number = form.phone_number.data
-        user.country = form.country.data
-        
-        db.session.commit()
-        flash('Customer profile for ' + user.username + ' has been updated.')
-        return render_template('edit_customer_information.html', user = user)
-
-    
-    else:
-        print(form.errors) 
-
-    
-    return render_template('edit_customer_information.html', user = user)
-
-
-
-
-@app.route('/delete_user', methods=['GET', 'POST'])
-@login_required
-@admin_required
-def delete_user():
-    all_users = Users.query.all()
-    if current_user.role != 'admin':
-        flash('Brak uprawnień do wykonania tej operacji.', 'danger')
-        return redirect(url_for('index'))
-
-    form = DeleteUserForm()
-    if form.validate_on_submit():
-        username = form.username.data
-        user_to_delete = Users.query.filter_by(username=username).first()
-
-        if user_to_delete:
-            db.session.delete(user_to_delete)
-            db.session.commit()
-            flash('Użytkownik został pomyślnie usunięty.', 'success')
-        else:
-            flash('Użytkownik nie został znaleziony.', 'danger')
-
-        return redirect(url_for('admin_dashboard_cm'))
-
-    return render_template('admin_dashboard_cm.html', form=form, all_users=all_users)
-
-
-
-
-
-
-
-
 
 
 
@@ -638,8 +451,6 @@ def products_and_service_management():
 def safety_settings():
     
     return render_template('safety_settings.html')
-
-
 
 
 
@@ -689,12 +500,6 @@ def about_the_project():
     return render_template('about_the_project.html')
 
 
-
-@app.route('/financial_products', methods=['GET', 'POST'])
-def financial_products():
-    return render_template('financial_products.html')
-
-
 @app.route('/author', methods=['GET', 'POST'])
 def author():
     return render_template('author.html')
@@ -703,29 +508,17 @@ def author():
 
 
 
-
-
-
-
-@app.route('/service_status', methods=['GET', 'POST'])
-def service_status():
-    return render_template('service_status.html')
-
-
 @app.route('/privacy', methods=['GET', 'POST'])
 def privacy():
     return render_template('privacy.html')
 
-@app.route('/careers', methods=['GET', 'POST'])
-def careers():
-    return render_template('careers.html')
 
 @app.route('/contact_us', methods=['GET', 'POST'])
 def contact_us():
     return render_template('contact_us.html')
 
 '''
-1160 linii -> 1013 -> 711
+1160 linii -> 1013 -> 711 -> 580 -> 528
 '''
 
 if __name__ == "__main__":
