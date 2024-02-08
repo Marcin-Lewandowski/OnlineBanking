@@ -93,7 +93,7 @@ body {
 }
   .link:hover{
     color: red;
-    font-size: 25px;
+    font-size: 24px;
   }
 
 .container {
@@ -113,7 +113,7 @@ body {
 }
 
 .right {
-  flex: 3;
+  flex: 4;
   border-color: black; 
   border-style: solid; 
   text-align: center;
