@@ -1,4 +1,4 @@
-<!--   -->
+<!--  base.html - base for all subpages for non-logged in users -->
 
 <!DOCTYPE html>
 <html lang="en">
@@ -16,7 +16,6 @@
 </head>
 <body>
     <header>
-        <!-- Nagłówek strony -->
         <center> <img src="static/imperial-bank-2.jpg" alt="Imperial Bank"> </center>
         <div style="text-align: right;">
             <a href="register" class="to_the_right"><img src="static/register.jpg" alt="Imperial Bank - Register"></a>
@@ -25,9 +24,7 @@
     
     </header>
 
-     
     <nav>
-        
         <table class="center">
             <tr>
                 <td  class="center2">
@@ -47,22 +44,14 @@
     </nav>
 
 
-    
 
     <main>
-        <!-- main -->
-
             {% block content %}
             
             {% endblock %}
-        
-
-
-
     </main>
 
     <footer>
-        <!-- Stopka strony -->
         <table class="footer">
             <tr>
                 
@@ -70,7 +59,6 @@
                     <a href="privacy" class="link">Privacy</a> 
                 </td>
                
-                
                 <td class="center2">
                     <a href="contact_us" class="link">Contact us</a>  
                 </td>

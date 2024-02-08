@@ -1,11 +1,11 @@
 
-<!--  dashboard.html (strona główna klienta, pracownika banku, członka zarządu, menadżera) -->
+<!--  account_data.html  -->
 
 
 {% extends 'base2.html' %}
 
 
-{% block title %} Imperial Bank - user dashboard Add new recipient {% endblock %}
+{% block title %} Imperial Bank - user dashboard - account data {% endblock %}
 
 
 {% block precontent %}
@@ -21,26 +21,22 @@
 {% endif %}
 {% endwith %}
 
-<h4>Dane Twojego konta użytkownika:</h4>
+<h4>Your user account details:</h4>
     <table border="1" class="center-table">
       <thead>
         <tr>
           <th>ID</th>
           <th>Name</th>
-          
           <th>Role</th>
           <th>Email</th>
           <th>Phone number</th>
           <th>Country</th>
-          
-          <!-- Add more columns as needed -->
         </tr>
       </thead>
       <tbody>
           <tr>
             <td>{{ user.id }}</td>
             <td>{{ user.username }}</td>
-            
             <td>{{ user.role }}</td>
             <td>{{ user.email }}</td>
             <td>{{ user.phone_number }}</td>
@@ -50,7 +46,7 @@
     </table>
     <br>
 
-    <h3>Edytuj swoje dane:</h3><br>
+    <h3>Edit your data:</h3><br>
 
     <form action="{{ url_for('edit_profile_bp.edit_profile') }}" method="post" role="form">
 
@@ -62,24 +58,20 @@
 
 
       <label for="country">Country:</label>
-      <input type="text" id="country" name="country" required><br>
+      <input type="text" id="country" name="country" required><br><br>
 
-      <!-- Wstaw ukryte pole z tokenem CSRF -->
+      <!-- Hidden field with CSRF token -->
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
       
 
-      <input type="submit" value="Update"><br>
-      <img src="static/{{ user.username }}.jpg" alt="Obraz użytkownika">
+      <input type="submit" value="Update"><br><br>
+      <img src="static/{{ user.username }}.jpg">
     </form>
 
     
 {% endblock %}
 
 
-
-
 {% block content %}
 
-
 {% endblock %}
-

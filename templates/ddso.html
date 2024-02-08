@@ -1,4 +1,4 @@
-
+<!-- ddso.htnl  webpage for creating direct debit / standing order payments -->
 
 {% extends 'base2.html' %}
 
@@ -31,7 +31,6 @@
         <th>Type</th>
         <th>Frequency</th>
         <th>Next payment date</th>
-        <!-- Add more columns as needed -->
     </tr>
     </thead>
     <tbody>
@@ -79,18 +78,12 @@
     <input type="date" id="next_payment_date" name="next_payment_date" required><br>
 
 
-
-
     <label for="confirm_password">Confirm password:</label>
     <input type="password" id="confirm_password" name="confirm_password" required><br>
 
-    <!-- Wstaw ukryte pole z tokenem CSRF -->
+    <!-- Hidden field with CSRF token -->
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 
     <input type="submit" value="Set DD / SO"><br>
-
 </form>
-
-
-
 {% endblock %}

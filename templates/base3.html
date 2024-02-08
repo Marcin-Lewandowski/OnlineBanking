@@ -1,6 +1,5 @@
 <!--  base3.html (template for help center) -->
 
-<!--   -->
 
 <!DOCTYPE html>
 <html lang="en">
@@ -18,8 +17,6 @@
 </head>
 <body>
     <header>
-        <!-- Nagłówek strony -->
-       
         <div class="container5">
             <div class="left4">
                 <img src="{{ url_for('static', filename='imperial-bank-2.jpg') }}" alt="Imperial Bank">
@@ -33,8 +30,6 @@
             <div class="right4">
                 <a href="{{ url_for('logout') }}"><img src="{{ url_for('static', filename='logout.jpg') }}" alt="logout"> </a>
 
-
-
             </div>
         </div>
         
@@ -45,7 +40,7 @@
     </nav>
 
     <main>
-        <!-- main -->
+     
         <div class="container5">
             <div class="left5">
                 <div class="container100">
@@ -53,17 +48,9 @@
                         {% block precontent%}
 
                         {%  endblock %}
-                    
-
                     </div>
-                
-
-
                 </div>
             </div>
-
-
-
 
             <div class="right5">
                 <div class="center">
@@ -82,42 +69,21 @@
 
                     <a href="{{ url_for('help_center') }}" > Help and support center</a>
                     
-
-
-
                 </div>
-                
-
-
             </div>
         </div>
-
-        
-        
-
 
 
     </main>
 
     <footer>
-        <!-- Stopka strony -->
         <table class="footer">
             <tr>
-                <td  class="center2">
-                    Branch Locator
-                </td>
+                
                 <td class="center2">
-                    Service status
+                    <a href="privacy" class="link">Privacy</a> 
                 </td>
-                <td class="center2">
-                    Cookies
-                </td>
-                <td class="center2">
-                    Privacy
-                </td>
-                <td class="center2">
-                    Careers
-                </td>
+               
                 <td class="center2">
                     <a href="contact_us" class="link">Contact us</a>  
                 </td>

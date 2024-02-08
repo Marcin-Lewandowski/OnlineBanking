@@ -1,5 +1,5 @@
 
-<!--  dashboard.html (strona główna klienta, pracownika banku, członka zarządu, menadżera) -->
+<!--  add_recipient.html  -->
 
 
 {% extends 'base2.html' %}
@@ -26,21 +26,17 @@
 <table border="1" class="center-table">
   <thead>
       <tr>
-          
           <th>Name</th>
           <th>Sort Code</th>
           <th>Account Number</th>
-          
       </tr>
   </thead>
   <tbody>
       {% for recipient in all_recipients %}
-        
           <tr>
               <td>{{ recipient.name }}</td>
               <td>{{ recipient.sort_code }}</td>
               <td>{{ recipient.account_number }}</td>
-              
           </tr>
       {% endfor %}
   </tbody>
@@ -60,29 +56,15 @@
       <p><label for="account_number">Account Number:</label>
       <input type="text" id="account_number" name="account_number" required></p>
 
-      <!-- Wstaw ukryte pole z tokenem CSRF -->
+      <!-- Hidden field with CSRF token -->
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 
       <input type="submit" value="Add Recipient"><br>
 
-
     </form>
-
-    
-
-
-
-
-
-
-
-
 
 
 {% endblock %}
-
-
-
 
 {% block content %}
 

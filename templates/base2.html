@@ -1,4 +1,4 @@
-<!--   -->
+<!--  base2.html - base for all user's subpages excluding help center subpages -->
 
 <!DOCTYPE html>
 <html lang="en">
@@ -15,8 +15,6 @@
 </head>
 <body>
     <header>
-        <!-- Nagłówek strony -->
-       
         <div class="container5">
             <div class="left4">
                 <img src="static/imperial-bank-2.jpg" alt="Imperial Bank">
@@ -40,7 +38,6 @@
     </nav>
 
     <main>
-        <!-- main -->
         <div class="container5">
             <div class="left5">
                 <div class="container100">
@@ -53,9 +50,6 @@
                         <h3>Standard Save & Spend Account</h3>
                         <h4>Sort code: {{ last_transaction.sort_code }}  <br>
                         Account number: {{ last_transaction.account_number }}</h4>
-
-    
-    
                     </div>
 
                     <div class="visa3">
@@ -79,10 +73,6 @@
 
                     <a href="{{ url_for('ddso_bp.ddso') }}"> Direct Debit & Standing orders</a>  &nbsp | &nbsp </h4>
 
-
-                    
-
-
                 </div>
                 <div class="center">
                     {% block precontent%}
@@ -90,17 +80,7 @@
                     {%  endblock %}
 
                 </div>
-
-
-
-
-                
-                
-
             </div>
-
-
-
 
             <div class="right5">
                 <div class="center">
@@ -118,12 +98,8 @@
                     <hr> <br>
                     <a href="{{ url_for('help_center') }}" > Help and support center</a>
 
-
-
                 </div>
                 
-
-
             </div>
         </div>
 
@@ -131,30 +107,16 @@
             
         {% endblock %}
         
-
-
-
     </main>
 
     <footer>
-        <!-- Stopka strony -->
         <table class="footer">
             <tr>
-                <td  class="center2">
-                    Branch Locator
-                </td>
+                
                 <td class="center2">
-                    Service status
+                    <a href="privacy" class="link">Privacy</a> 
                 </td>
-                <td class="center2">
-                    Cookies
-                </td>
-                <td class="center2">
-                    Privacy
-                </td>
-                <td class="center2">
-                    Careers
-                </td>
+               
                 <td class="center2">
                     <a href="contact_us" class="link">Contact us</a>  
                 </td>

@@ -1,6 +1,4 @@
-<!--  admin_dashboard_cm.html (strona administracyjna) -->
-
-<!-- HTML template for admin dashboard customer management -->
+<!--  admin_dashboard_cm.html (admin's website) -->
 
 {% extends 'base_admin.html' %}
 {% block title %}Imperial Bank - Admin Dashboard - Customer Management {% endblock %}
@@ -9,7 +7,6 @@
 
 {% block content %}
 <br>
-
 
 <div class="container2">
     <div class="left2">
@@ -23,7 +20,7 @@
             <input type="text" id="username" name="username" required><br>
 
             <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required><br>  <!-- moze być błąd type - text? -->
+            <input type="password" id="password" name="password" required><br>
             
             <!-- Wstaw ukryte pole z tokenem CSRF -->
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
@@ -34,8 +31,6 @@
             <option value="bank_emploee">Bank employee</option>
             <option value="board_member">Board Member</option>
             <option value="management">Management</option>
-
-            <!-- Add more role options if needed -->
             </select><br>
 
             <label for="email">Email:</label>
@@ -44,21 +39,15 @@
             <label for="phone_number">Phone number:</label>
             <input type="text" id="phone_number" name="phone_number" required><br>
 
-
             <label for="country">Country:</label>
             <input type="text" id="country" name="country" required><br>
             
-
             <input type="submit" value="Add Customer">
-            
-            
         </form> 
-
 
     </div>
 
     <div class="right2">
-        <!-- Zawartość kontenera po prawej stronie -->
         <!-- Table with customer information -->
 
         <h3>Users database:</h3> <br>
@@ -71,23 +60,21 @@
                 <th>Email</th>
                 <th>Phone number</th>
                 <th>Country</th>
-                <!-- Add more columns as needed -->
             </tr>
             </thead>
             <tbody>
             {% for user in all_users %}
                 <tr>
-                <td>{{ user.id }}</td>
-                <td>{{ user.username }}</td>
-                <td>{{ user.role }}</td>
-                <td>{{ user.email }}</td>
-                <td>{{ user.phone_number }}</td>
-                <td>{{ user.country }}</td>
+                    <td>{{ user.id }}</td>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.role }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.phone_number }}</td>
+                    <td>{{ user.country }}</td>
                 </tr>
             {% endfor %}
             </tbody>
         </table>
-
 
     </div>
 </div>
@@ -139,7 +126,7 @@
             <label for="balance">Balance:</label>
             <input type="number" step="0.01" id="balance" name="balance" required><br>
 
-            <!-- Wstaw ukryte pole z tokenem CSRF -->
+            <!-- Hidden field with CSRF token -->
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 
             <input type="submit" value="Add Transaction">
@@ -156,39 +143,20 @@
         <form action="{{ url_for('delete_user_bp.delete_user') }}" method="post">
             <label for="username">User to delete - Name:</label>
             <input type="text" id="username" name="username" required> <br><br>
-            <!-- Wstaw ukryte pole z tokenem CSRF -->
+            
+            <!-- Hidden field with CSRF token -->
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 
-            <input type="submit" value="Usuń użytkownika">
+            <input type="submit" value="Delete user">
         </form>
+        <hr>
 
 
-        <!-- zmiana hasła dla użytkownika - klienta -->
+        <!-- Changing the password for the user: List of users with link to change password -->
         <h3>Password change:</h3>
         <a href="{{ url_for('list_users') }}" class="link">Password change</a> <br>
         
-
-
     </div>
 </div>
-
-
-<div class="container2">
-    
-    <div class="left2">
-        
-       
-
-    </div>
-
-    <div class="right2">
-        
-
-
-    </div>
-</div>
-        
-
-
 
 {% endblock %}

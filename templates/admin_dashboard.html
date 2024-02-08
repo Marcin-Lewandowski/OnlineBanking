@@ -1,45 +1,41 @@
 <!--  admin_dashboard.html (admin's website) -->
 
-<!-- HTML template for admin dashboard -->
-
 {% extends 'base_admin.html' %}
 {% block title %}Imperial Bank - Admin Dashboard - Main {% endblock %}
 {% block subtitle %} - Main{% endblock %}
 
 
 {% block content %}
-<!-- Container contents on the right-->
 
 <h3>Welcome to main admin dashboard.</h3>
 
-1. There is <b>{{ users }}</b> users in the system<br><br>
+There is <b>{{ users }}</b> users in the system<br><br>
 
-Link do zarządzania userami. <a href="{{ url_for('admin_dashboard_cm') }}">Customer Management</a>  <br><br><br><hr><br>
+Link to manage users. <a href="{{ url_for('admin_dashboard_cm') }}">Customer Management</a>  <br><br><br><hr><br>
 
 
-2. Zarządzaj kontami klientów. Możesz wyszukiwać konta, blokować dostęp i przeglądać historię transakcji klientów. 
-Obecnie jest <b>{{locked_users}}</b> zablokowanych kont. link do zarządzania <a href="{{ url_for('admin_dashboard_cam') }}">Customer Account Management:</a>  <br><br><hr><br>
+Manage customer accounts. You can search for accounts, block access and view customer transaction history. 
+There is <b>{{locked_users}}</b> locked accounts. <a href="{{ url_for('admin_dashboard_cam') }}">Customer Account Management:</a>  <br><br><hr><br>
 
-3. Możesz wyszukiwać transakcje klientów według różnych kryteriów, rodzaj, wysokość kwoty.
+You can search for customer transactions by transaction type.
 <a href="{{ url_for('transaction_management') }}">Transaction Management:</a>  <br><br><hr><br>
 
-4. There is <b>{{ normal_count }}</b> queries with normal priority,  <b>{{ high_count }}</b> queries with high priority and <b> {{ urgent_count }} </b> queries with urgent priority in the system.
+There is <b>{{ normal_count }}</b> queries with normal priority,  <b>{{ high_count }}</b> queries with high priority and <b> {{ urgent_count }} </b> queries with urgent priority in the system.
 <a href="{{ url_for('cwc') }}">Communication with clients:</a>  <br><br><hr><br>
 
-5. Info about Bank employee, Board Members and Management  <a href="{{ url_for('team') }}">Team</a>  <br><br><hr><br>
+Info about Bank employee's, Board Members and Management  <a href="{{ url_for('team') }}">Team</a>  <br><br><hr><br>
 
-6. You can generate reports, statistics for accounts  <a href="{{ url_for('reports_and_statistics_bp.reports_and_statistics') }}">Reports and Statistics:</a>  <br><br><hr><br>
+You can generate reports, statistics for accounts  <a href="{{ url_for('reports_and_statistics_bp.reports_and_statistics') }}">Reports and Statistics:</a>  <br><br><hr><br>
 
-7. Add new financial products. Configuration of interest rates and fees. Configuration of product parameters, 
-such as limits and fees. <a href="{{ url_for('products_and_service_management') }}">Product and Service Management:</a>  <br><br>
+Add new financial products. Configuration of interest rates and fees. 
+<a href="{{ url_for('products_and_service_management') }}">Product and Service Management:</a>  <br><br>
 
-<b>coś do zrobienia</b>
-<hr><br>
+<h1>coś do zrobienia</h1> <hr><br>
 
 
-8. Safety settings  <a href="{{ url_for('safety_settings') }}">Safety settings:</a>  <br><br>
+Safety settings  <a href="{{ url_for('safety_settings') }}">Safety settings:</a>  <br><br>
 
-<b>coś do zrobienia</b><hr><br>
+<h1>coś do zrobienia</h1><hr><br>
 
 
 

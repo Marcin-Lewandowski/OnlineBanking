@@ -1,9 +1,6 @@
-
-<!--  dashboard.html (strona główna klienta, pracownika banku, członka zarządu, menadżera) -->
-
+<!--  dashboard.html (home page for a client, bank employee, board member and manager) -->
 
 {% extends 'base2.html' %}
-
 
 {% block title %} Imperial Bank - user dashboard {% endblock %}
 
@@ -31,7 +28,6 @@
 <table border="1" class="center-table">
   <thead>
       <tr>
-          
           <th>Date</th>
           <th>Type</th>
           <th>Description</th>
@@ -42,7 +38,6 @@
   </thead>
   <tbody>
       {% for transaction in all_transactions %}
-        
           <tr>
               <td>{{ transaction.transaction_date }}</td>
               <td>{{ transaction.transaction_type }}</td>
@@ -58,10 +53,6 @@
 
 {% endblock %}
 
-
-
-
 {% block content %}
  
 {% endblock %}
-

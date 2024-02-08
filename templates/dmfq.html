@@ -16,14 +16,13 @@
 
 <form action="{{ url_for('delete_query_confirmation_bp.delete_query_confirmation' , query_ref=query.reference_number) }}" method="post" role="form">
 
-    <!-- Wstaw ukryte pole z tokenem CSRF -->
+    <!-- Hidden field with CSRF token -->
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 
-    
     <input type="submit" value="YES - delete all messages" style="width: 200px; height: 40px; font-size: 16px; cursor: pointer;">
+</form> <br><br>
 
-
-</form>
-
-
+<h3>
+    <a href="{{ url_for('help_center' ) }}">NO - back to Help Center</a>
+</h3>
 {%  endblock %}

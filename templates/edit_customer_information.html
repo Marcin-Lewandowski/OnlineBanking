@@ -1,7 +1,5 @@
 <!--  edit_customer_information.html (admin's website) -->
 
-<!-- HTML template for admin dashboard customer management -->
-
 {% extends 'base_admin.html' %}
 {% block title %}Imperial Bank - Admin Dashboard - Customer Account Management - edit customer information{% endblock %}
 {% block subtitle %} - Customer Account Management - edit customer information{% endblock %}
@@ -45,10 +43,9 @@
     <label for="country">Country:</label>
     <input type="text" id="country" name="country" required><br><br>
 
-    <!-- Wstaw ukryte pole z tokenem CSRF -->
+    <!-- Hidden field with CSRF token -->
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
     
-
     <input type="submit" value="Update"><br>
     
   </form>

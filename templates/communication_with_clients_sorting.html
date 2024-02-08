@@ -1,8 +1,5 @@
-    
-    
 <!--  communication_with_clients_sorting.html (admin's website) -->
 
-<!-- HTML template for admin dashboard -->
 
 {% extends 'base_admin.html' %}
 {% block title %}Imperial Bank - Admin Dashboard - Communication with clients sorting{% endblock %}
@@ -22,10 +19,9 @@
         <option value="urgent">Urgent</option>
         <option value="high">High</option>
         <option value="normal">Normal</option>
-       
     </select> <br><br>
 
-    <!-- Wstaw ukryte pole z tokenem CSRF -->
+    <!-- Hidden field with CSRF token -->
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 
     <input type="submit" value="Find tickets"><br>
@@ -34,7 +30,7 @@
 
 <br><br>
 
-<h1>Latest Support Tickets by priority:</h1>
+<h2>Latest Support Tickets by priority:</h2>
 <table border="1" class="center-table" width = "100%">
     <thead>
         <tr>
