@@ -1,8 +1,4 @@
-    
-    
-<!--  processing_clients_query.html (strona administracyjna) -->
-
-<!-- HTML template for admin dashboard -->
+<!-- processing_clients_query.html (admin's website - this page is used to reply to a message with a specific reference number) -->
 
 {% extends 'base_admin.html' %}
 {% block title %}Imperial Bank - Admin Dashboard - Communication with clients - processing clients query {% endblock %}
@@ -44,10 +40,7 @@
 
 <br><hr>
 
-
-
-
-<form action="{{ url_for('send_message_for_query_bp.send_message_for_query' , query_ref=query.reference_number) }}" method="post" role="form"> <!-- było query_ref=reference_number -->
+<form action="{{ url_for('send_message_for_query_bp.send_message_for_query' , query_ref=query.reference_number) }}" method="post" role="form">
 
     
 
@@ -62,7 +55,7 @@
         <option value="rejected">Rejected</option>
     </select> <br><br>
 
-    <!-- Wstaw ukryte pole z tokenem CSRF -->
+    <!-- Hidden field with CSRF token -->
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 
     <input type="submit" value="Send message"><br>

@@ -1,4 +1,4 @@
-<!--  help_center.html ( ) -->
+<!--  help_center.html ( here you can create customer service messages ) -->
 
 
 {% extends 'base3.html' %}
@@ -11,7 +11,6 @@
 
 <a href="{{ url_for('dashboard') }}" class="link3"> - - > Back to Dashboard < - - </a><br>
 <hr>
-
 
 
 <h3>Here you can send query:</h3> 
@@ -45,7 +44,7 @@
         <option value="fraud">Fraud</option>
     </select> <br><br>
 
-    <!-- Wstaw ukryte pole z tokenem CSRF -->
+    <!-- Hidden field with CSRF token -->
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 
     <input type="submit" value="Send message"><br>
@@ -54,12 +53,10 @@
 
 
 
-
 <h3>Your queries history: </h3>
 <table border="1" class="center-table" >
   <thead>
-      <tr>
-          
+      <tr>  
           <th>User ID</th>
           <th>Username</th>
           <th>Title</th>
@@ -74,7 +71,6 @@
   </thead>
   <tbody>
       {% for query in all_queries %}
-        
           <tr>
               <td>{{ query.user_id }}</td>
               <td>{{ current_user.username }}</td>
@@ -90,8 +86,4 @@
       {% endfor %}
   </tbody>
 </table>
-
-
-
 {%  endblock %}
-

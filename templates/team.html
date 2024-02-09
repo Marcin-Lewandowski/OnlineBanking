@@ -1,6 +1,5 @@
-<!--  team.html (strona administracyjna) -->
+<!--  team.html (admin's subsite - based info about staff, board members, managment etc) -->
 
-<!-- HTML template for admin dashboard Team -->
 
 {% extends 'base_admin.html' %}
 {% block title %}Imperial Bank - Admin Dashboard - Team {% endblock %}
@@ -9,10 +8,8 @@
 
 {% block content %}
 
-<!-- Table with customer information -->
 <div class="container3">
 
-    <!-- Table with customer information -->
     <table border="1" class="large-font-table">
         <thead>
         <tr>
@@ -22,7 +19,6 @@
             <th>Email</th>
             <th>Phone number</th>
             <th>Country</th>
-            <!-- Add more columns as needed -->
         </tr>
         </thead>
         <tbody>
@@ -30,24 +26,18 @@
             
             {% if user.role in ('board_member', 'management', 'bank_emploee'): %}
                 <tr>
-                <td><img src="static/{{ user.username }}.jpg" alt="Obraz użytkownika"></td>
-
-                <td>{{ user.username }}</td>
-                <td>{{ user.role }}</td>
-                <td>{{ user.email }}</td>
-                <td>{{ user.phone_number }}</td>
-                <td>{{ user.country }}</td>
+                    <td><img src="static/{{ user.username }}.jpg" alt="Obraz użytkownika"></td>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.role }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.phone_number }}</td>
+                    <td>{{ user.country }}</td>
             {% endif %}
 
-
-                <!-- Add more rows with user data as needed -->
                 </tr>
         {% endfor %}
         </tbody>
     </table>
-
-
 </div>
         
-
 {% endblock %}

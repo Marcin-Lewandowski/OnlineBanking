@@ -1,9 +1,8 @@
 
-<!--  dashboard.html (strona główna klienta, pracownika banku, członka zarządu, menadżera) -->
+<!--  make_payment.html ( On this website you can make transfers to recipients who are saved in the database and to recipients who are not saved in the database ) -->
 
 
 {% extends 'base2.html' %}
-
 
 {% block title %} Imperial Bank - user dashboard payment {% endblock %}
 
@@ -21,7 +20,7 @@
 {% endif %}
 {% endwith %}
 
-<h4>Wykonaj przelew na zewnętrzne konto:</h4><br>
+<h4>Make a money transfer to an external account:</h4><br>
 
     <form action="{{ url_for('transfer_bp.transfer') }}" method="post" role="form">
 
@@ -56,7 +55,7 @@
       <label for="confirm_password">Confirm password:</label>
       <input type="password" id="confirm_password" name="confirm_password" required><br>
 
-      <!-- Wstaw ukryte pole z tokenem CSRF -->
+      <!-- Hidden field with CSRF token -->
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 
       <input type="submit" value="Send Money"><br>
@@ -78,21 +77,6 @@
       </script>
 {% endblock %}
 
-
-
-
 {% block content %}
 
-
 {% endblock %}
-
-<!-- 
-
-<select name="saved_recipient" id="saved_recipient">
-          <option value=""> Select a Recipient </option>
-          {% for recipient in all_recipients %}
-              <option value="{{ recipient.id }}">{{ recipient.name }}</option>
-          {% endfor %}
-      </select><br>
-
--->
