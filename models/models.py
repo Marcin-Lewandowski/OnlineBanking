@@ -6,7 +6,6 @@ from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 
-# an object in the database representing the user/customer
 
 class Users(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
@@ -31,7 +30,7 @@ class LockedUsers(db.Model):
     is_account_locked = db.Column(db.Boolean, default = True)
     username = db.Column(db.String(50), unique=True, nullable=False)
     
-# an object in the database representing transactions
+
 
 class Transaction(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
@@ -46,11 +45,11 @@ class Transaction(db.Model):
     balance = db.Column(db.Float, nullable=False)  
     
     
-# an object in the database that represents the recipient of a bank transfer    
+# an object in the database that represents the recipient of a bank transfer
     
 class Recipient(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)  # Powiązanie z użytkownikiem
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False) 
     name = db.Column(db.String(100), nullable=False)
     sort_code = db.Column(db.String(10), nullable=False)
     account_number = db.Column(db.String(20), nullable=False)
@@ -66,7 +65,7 @@ class DDSO(db.Model):
     reference_number = db.Column(db.String(100), nullable=False)
     amount = db.Column(db.Float, nullable=False)
     transaction_type = db.Column(db.String(20), nullable=False)
-    frequency = db.Column(db.String(50))  # np. 'monthly'
+    frequency = db.Column(db.String(50))  # 'daily' 'monthly' etc
     next_payment_date = db.Column(db.Date, nullable=False)
     
     
