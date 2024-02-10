@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, flash, url_for, redirect
-from flask_login import current_user, login_required, login_user
+from flask_login import current_user, login_required
 from forms.forms import AddCustomerForm
 from datetime import date
 from models.models import Users, Transaction, db

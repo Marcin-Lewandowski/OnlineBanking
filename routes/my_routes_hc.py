@@ -27,7 +27,8 @@ def generate_unique_reference_number(username):
         existing_ticket = SupportTickets.query.filter_by(reference_number=potential_ref_number).first()
         
         if not existing_ticket:
-            return potential_ref_number  # A unique reference number has been created
+            # A unique reference number has been created
+            return potential_ref_number
         else:
             new_reference_number += 1 
             

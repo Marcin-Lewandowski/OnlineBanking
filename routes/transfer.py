@@ -99,9 +99,10 @@ def transfer():
             
             # Find the customer's last transaction
             last_recipient_transaction = Transaction.query.filter_by(user_id=recipient.id).order_by(Transaction.id.desc()).first()
-            last_recipient_balance = last_recipient_transaction.balance
+            
             
             # Recipient balance update
+            last_recipient_balance = last_recipient_transaction.balance
             new_recipient_transaction = Transaction(user_id=recipient.id, 
                                                     transaction_date=transaction_date,
                                                     transaction_type='FPI',
@@ -134,7 +135,6 @@ login_bp = Blueprint('login_bp', __name__)
 
 @login_bp.route('/login', methods=['GET', 'POST'])
 def login():
-    
     form = LoginForm()
     if request.method == "POST":
         # Set the session to be persistent
@@ -156,7 +156,7 @@ def login():
                     
                     # Redirect to the admin dashboard page for the administrator
                     if user.role == 'admin':
-                        return redirect(url_for('admin_dashboard'))
+                        return redirect(url_for('admin_dashboard_bp.admin_dashboard'))
                     # Redirect to the customer dashboard page
                     else:
                         return redirect(url_for('dashboard'))
@@ -177,7 +177,6 @@ def login():
                     db.session.add(locked_user)
                     db.session.commit()
                     
-                    
                     flash("Your account has been locked after exceeding the maximum number of failed login attempts.")
                     return render_template('account_locked.html', locked_user = locked_user)
                 
@@ -188,12 +187,14 @@ def login():
     if current_user.is_authenticated:
         flash("Already Logged In")
         if current_user.role == 'admin':
-            return redirect(url_for('admin_dashboard'))
+            return redirect(url_for('admin_dashboard_bp.admin_dashboard'))
         else:
             return redirect(url_for('dashboard'))
 
 
     return render_template('login.html', form = form)
+
+
 
 
 ddso_bp = Blueprint('ddso_bp', __name__)
@@ -256,11 +257,11 @@ def create_transaction():
     all_transactions = Transaction.query.all()
     form = CreateTransactionForm()
 
-    # Ładowanie użytkowników do wyboru
+    # Loading users to choose from
     form.user_id.choices = [(user.id, user.username) for user in Users.query.all()]
 
     if form.validate_on_submit():
-        # Tworzenie obiektu transakcji
+        # Creating a transaction object
         
         new_transaction = Transaction(user_id=form.user_id.data,
                                         transaction_date=form.transaction_date.data,
@@ -295,6 +296,8 @@ def edit_profile():
         
         db.session.commit()
         flash('Your profile has been updated.')
+        
+        logger.warning(f"Change of personal data -  '{current_user.username}' ")
         return redirect(url_for('dashboard'))
 
     elif request.method == 'GET':
