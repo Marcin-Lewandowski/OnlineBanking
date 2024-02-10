@@ -281,8 +281,8 @@ def make_payment():
     
 
 
-
-@app.route('/add_recipient', methods=['GET', 'POST'])
+# poprawić kod tak aby sprawdzał czy w bazie jest odbiorca o podanym sort code i account number, jeśli jest to ok a jeśli nie to wyswietla wiadomośc ze nie ma takiego klienta w bazie
+@app.route('/add_recipient', methods=['GET', 'POST'])       
 @login_required
 def add_recipient():
     user_transactions = Transaction.query.filter_by(user_id=current_user.id).all()
@@ -518,7 +518,7 @@ def contact_us():
     return render_template('contact_us.html')
 
 '''
-1160 linii -> 1013 -> 711 -> 580 -> 528
+528
 '''
 
 if __name__ == "__main__":
