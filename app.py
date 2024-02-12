@@ -259,14 +259,40 @@ def logout():
 
 
 
-@app.route('/dashboard' , methods=['GET', 'POST'])
+
+
+
+
+
+
+
+
+
+@app.route('/dashboard/', defaults={'page': 1})
+@app.route('/dashboard/<int:page>' , methods=['GET', 'POST'])
+
 @login_required
-def dashboard():
+def dashboard(page=1):
+    PER_PAGE = 20
     
-    user_transactions = Transaction.query.filter_by(user_id=current_user.id).all()
+    user_transactions = Transaction.query.filter_by(user_id=current_user.id).paginate(page=page, per_page=PER_PAGE, error_out=False)
     last_transaction = Transaction.query.filter_by(user_id=current_user.id).order_by(Transaction.id.desc()).first()
 
     return render_template('dashboard.html', user=current_user, all_transactions=user_transactions, last_transaction=last_transaction)
+
+
+
+
+    
+
+
+
+
+
+
+
+
+
 
 
 @app.route('/make_payment' , methods=['GET', 'POST'])
@@ -281,28 +307,49 @@ def make_payment():
     
 
 
-# poprawić kod tak aby sprawdzał czy w bazie jest odbiorca o podanym sort code i account number, jeśli jest to ok a jeśli nie to wyswietla wiadomośc ze nie ma takiego klienta w bazie
-@app.route('/add_recipient', methods=['GET', 'POST'])       
+@app.route('/add_recipient', methods=['GET', 'POST'])
 @login_required
 def add_recipient():
+    form = AddRecipientForm()
+    if form.validate_on_submit():
+        # Sprawdź, czy istnieje użytkownik z danym sort_code i account_number w tabeli Users
+        user_exists = Transaction.query.filter_by(sort_code=form.sort_code.data, account_number=form.account_number.data).first()
+        
+        if user_exists:
+            # Użytkownik istnieje, więc dodajemy nowego odbiorcę
+            new_recipient = Recipient(
+                user_id=current_user.id,
+                name=form.name.data,
+                sort_code=form.sort_code.data,
+                account_number=form.account_number.data
+            )
+            db.session.add(new_recipient)
+            db.session.commit()
+            flash('New recipient added successfully!', 'success')
+            return redirect(url_for('add_recipient'))
+        else:
+            # Użytkownik nie istnieje, wyświetl komunikat o błędzie
+            flash('The user with the given sort code and account number does not exist.', 'danger')
+
+    # Pobierz transakcje i odbiorców użytkownika do wyświetlenia na stronie
     user_transactions = Transaction.query.filter_by(user_id=current_user.id).all()
     user_recipients = Recipient.query.filter_by(user_id=current_user.id).all()
     last_transaction = Transaction.query.filter_by(user_id=current_user.id).order_by(Transaction.id.desc()).first()
     
-    form = AddRecipientForm()
-    if form.validate_on_submit():
-        new_recipient = Recipient(
-            user_id=current_user.id,
-            name=form.name.data,
-            sort_code=form.sort_code.data,
-            account_number=form.account_number.data
-            
-        )
-        db.session.add(new_recipient)
-        db.session.commit()
-        flash('New recipient added successfully!', 'success')
-        return redirect(url_for('add_recipient'))
     return render_template('add_recipient.html', form=form, user=current_user, all_transactions=user_transactions, last_transaction=last_transaction, all_recipients=user_recipients)
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
  
