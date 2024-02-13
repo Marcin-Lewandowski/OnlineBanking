@@ -30,6 +30,7 @@ from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import Paragraph
 from routes.transfer import logger, admin_required
 from flask_apscheduler import APScheduler
+from flask_talisman import Talisman
 import traceback
 
 
@@ -140,7 +141,28 @@ def create_app():
     app.config['SECRET_KEY'] = 'bc684cf3981dbcacfd60fc34d6985095'
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///ib_database_users.db'  # Ustawienie nazwy bazy danych
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # Zalecane dla wydajności
-    #app.config['MAX_LOGIN_ATTEMPTS'] = 3  # Ustal maksymalną liczbę nieudanych prób logowania
+    
+    # Twoja konfiguracja CSP: wszystkie zasoby Twojego projektu bankowości online znajdują się lokalnie w katalogu na dysku C (np. C:\OnlineBanking) 
+    # i są serwowane bezpośrednio przez Twoją aplikację Flask
+    csp = {
+    'default-src': [
+        '\'self\''
+    ],
+    'script-src': [
+        '\'self\''
+    ],
+    'img-src': [
+        '\'self\'',
+        'data:'
+    ],
+    'style-src': [
+        '\'self\''
+    ],
+    
+    }
+
+    # Inicjalizacja Talisman z twoją konfiguracją CSP
+    Talisman(app, content_security_policy=csp)
 
     app.permanent_session_lifetime = timedelta(minutes = 45)
     
