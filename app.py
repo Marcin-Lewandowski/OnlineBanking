@@ -1,37 +1,22 @@
-from flask import Flask, render_template, flash, request, url_for, redirect, session, abort
+from flask import Flask, render_template, flash, request, url_for, redirect, session
 from flask_wtf.csrf import CSRFProtect
-from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user, login_required
-from werkzeug.security import generate_password_hash, check_password_hash
-from forms.forms import AddCustomerForm, DeleteUserForm, ChangePasswordForm, AddRecipientForm, SendQueryForm, LockUser, EditUserForm
+from flask_login import LoginManager, logout_user, current_user, login_required
+from forms.forms import ChangePasswordForm, AddRecipientForm
 from datetime import timedelta, date, datetime
 from routes.transfer import transfer_bp, login_bp, ddso_bp, create_transaction_bp, edit_profile_bp
 from routes.my_routes import grocery1_bp, grocery2_bp, grocery3_bp, grocery4_bp, gas_bp, power_bp, petrol_bp, clothes_bp, water_bp, add_customer_bp
 from routes.my_routes_hc import send_query_bp, process_query_bp, read_message_bp, send_message_for_query_bp, send_message_for_message_bp, delete_messages_for_query_bp
 from routes.my_routes_hc import delete_query_confirmation_bp, show_statement_for_customer_bp, edit_customer_information_bp
 from routes.my_routes_statement import download_transactions_bp, download_transactions_csv_bp
-from routes.my_routes_admin import transactions_filter_bp, reports_and_statistics_bp, delete_user_bp, update_customer_information_bp, find_tickets_bp, block_customer_bp, unlock_access_bp, admin_dashboard_bp
+from routes.my_routes_admin import transactions_filter_bp, reports_and_statistics_bp, delete_user_bp, update_customer_information_bp, find_tickets_bp, block_customer_bp, unlock_access_bp
+from routes.my_routes_admin import admin_dashboard_bp, logs_filtering_bp
 from models.models import Users, Transaction, db, Recipient, DDSO, SupportTickets, LockedUsers
-from functools import wraps
-from urllib.parse import quote
-from flask_migrate import Migrate
-from sqlalchemy import func, and_, case, asc
-import pandas as pd
-import matplotlib.pyplot as plt
-import io
-import base64, csv
-import logging
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
-from flask import make_response, send_file
-from io import BytesIO
-from reportlab.lib import colors
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
-from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.platypus import Paragraph
-from routes.transfer import logger, admin_required
+from sqlalchemy import func, and_, case
+from routes.transfer import admin_required
 from flask_apscheduler import APScheduler
 from flask_talisman import Talisman
 import traceback
+import pandas as pd
 
 
 scheduler = APScheduler()
@@ -130,7 +115,7 @@ def process_ddso_payments():
                             traceback.print_exc()   
                 
         else:
-            print("Brak oczekujących płatności.")
+            print("No pending payments.")
             return  # Zakończenie funkcji jeśli nie ma płatności do przetworzenia
         
         
@@ -144,25 +129,40 @@ def create_app():
     
     # Twoja konfiguracja CSP: wszystkie zasoby Twojego projektu bankowości online znajdują się lokalnie w katalogu na dysku C (np. C:\OnlineBanking) 
     # i są serwowane bezpośrednio przez Twoją aplikację Flask
+    
+    
     csp = {
-    'default-src': [
-        '\'self\''
-    ],
+    'default-src': '\'self\'',
     'script-src': [
-        '\'self\''
+        '\'self\'',
+        '\'nonce\''
     ],
     'img-src': [
         '\'self\'',
         'data:'
     ],
-    'style-src': [
-        '\'self\''
-    ],
-    
-    }
+    'style-src': '\'self\'',
+}
+
 
     # Inicjalizacja Talisman z twoją konfiguracją CSP
-    Talisman(app, content_security_policy=csp)
+    
+    Talisman(app, content_security_policy=None, 
+             content_security_policy_nonce_in=['script-src'], 
+             session_cookie_secure=False, # Wymusza używanie cookies tylko przez HTTPS
+             force_https=False, # Przekierowuje wszystkie żądania do HTTPS
+             # force_https_permanent=True, # Dodaje nagłówek Strict-Transport-Security z includeSubDomains i max-age
+             frame_options='SAMEORIGIN', # Ustawia X-Frame-Options na SAMEORIGIN, chroniąc przed clickjackingiem
+             # strict_transport_security=True, # włącza HSTS
+             # strict_transport_security_max_age=31536000,  # na przykład na rok
+             # strict_transport_security_include_subdomains=True, # łącza HSTS również dla subdomen,
+             # strict_transport_security_preload=True  # dodaje dyrektywę preload do nagłówka HSTS
+             )
+
+    
+
+
+
 
     app.permanent_session_lifetime = timedelta(minutes = 45)
     
@@ -224,6 +224,7 @@ def create_app():
     app.register_blueprint(block_customer_bp)
     app.register_blueprint(unlock_access_bp)
     app.register_blueprint(admin_dashboard_bp)
+    app.register_blueprint(logs_filtering_bp)
     
     return app
 
@@ -359,6 +360,27 @@ def add_recipient():
     last_transaction = Transaction.query.filter_by(user_id=current_user.id).order_by(Transaction.id.desc()).first()
     
     return render_template('add_recipient.html', form=form, user=current_user, all_transactions=user_transactions, last_transaction=last_transaction, all_recipients=user_recipients)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
