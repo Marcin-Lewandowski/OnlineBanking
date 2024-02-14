@@ -232,4 +232,9 @@ def add_customer():
 
             flash('User added successfully.', 'success')
             return redirect(url_for('admin_dashboard_cm'))
+        
+    else:
+        flash('User has not been added, check the correctness of the data', 'danger')
+        return redirect(url_for('admin_dashboard_cm'))
+        
     

@@ -1,27 +1,13 @@
-from flask import Blueprint, abort, flash, url_for, redirect
-from flask_wtf.csrf import CSRFProtect
-from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user, login_required
-from werkzeug.security import generate_password_hash, check_password_hash
-from forms.forms import AddCustomerForm, DeleteUserForm, ChangePasswordForm, AddRecipientForm, SendQueryForm, LockUser, EditUserForm
-from datetime import timedelta, date, datetime
-from models.models import Users, Transaction, db, Recipient, DDSO, SupportTickets, LockedUsers
-from functools import wraps
-from urllib.parse import quote
-from flask_migrate import Migrate
+from flask import Blueprint, flash, url_for, redirect
+from flask_login import current_user, login_required
+from forms.forms import DeleteUserForm, LockUser, EditUserForm
+from datetime import timedelta
+from models.models import Users, Transaction, db, SupportTickets, LockedUsers
 from sqlalchemy import func, and_, case, asc
 import pandas as pd
 import matplotlib.pyplot as plt
 import io
-import base64, csv
-import logging
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
-from flask import make_response, send_file
-from io import BytesIO
-from reportlab.lib import colors
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
-from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.platypus import Paragraph
+import base64
 from routes.transfer import admin_required, logger
 from flask import render_template, request
 
@@ -63,11 +49,6 @@ def transactions_filter():
         return render_template('transaction_management.html', transactions=transactions, all_transactions=all_transactions)
 
     return render_template('transaction_management.html', transactions=transactions)
-
-
-
-
-
 
 
 
@@ -306,6 +287,11 @@ def reports_and_statistics():
     
     
     
+    
+    
+    
+    
+    
     # Path to your log file
     log_file_path = 'app.log'
     
@@ -483,10 +469,8 @@ admin_dashboard_bp = Blueprint('admin_dashboard_bp', __name__)
 def admin_dashboard():
     user = current_user
     if user.role != 'admin':
-        
         logger.error(f"No access to the protected resource - /admin_dashboard  '{user.username}' ")
         
-    
     all_users = Users.query.count()
     locked_users = LockedUsers.query.count()
     
@@ -510,3 +494,38 @@ def admin_dashboard():
     
     # Render template by passing data
     return render_template('admin_dashboard.html', users = all_users, locked_users = locked_users, normal_count=normal_count, high_count=high_count, urgent_count=urgent_count)
+
+
+
+logs_filtering_bp = Blueprint('logs_filtering_bp', __name__)
+
+@logs_filtering_bp.route('/logs_filtering', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def logs_filtering():
+    if request.method == 'POST':
+        selected_level = request.form['level'].upper()
+
+        # Lista do przechowywania danych logów
+        logs_data = []
+
+        # Odczytaj logi z pliku
+        log_file_path = 'app.log'
+        with open(log_file_path, 'r') as file:
+            for line in file:
+                # Załóżmy, że logi są w formacie: '%(asctime)s - %(levelname)s - %(message)s'
+                parts = line.strip().split(' - ', 2)
+                if len(parts) == 3:
+                    date, level, message = parts
+                    if level.upper() == selected_level:
+                        # Dodajemy dane do listy
+                        logs_data.append({'date': date, 'level': level, 'message': message})
+
+        # Tworzenie DataFrame z przefiltrowanych danych
+        logs_df = pd.DataFrame(logs_data)
+
+        # Przekazanie przefiltrowanych logów do szablonu
+        return render_template('safety_settings.html', all_logs=logs_df.to_dict('records'))
+    else:
+        # Jeśli żądanie jest typu GET, po prostu wyświetl formularz bez wyników
+        return render_template('safety_settings.html')

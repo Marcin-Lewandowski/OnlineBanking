@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, flash, url_for, redirect, abort
+from flask import Blueprint, render_template, request, flash, url_for, redirect
 from flask_login import current_user, login_required
 from routes.transfer import admin_required
 from forms.forms import SendQueryForm

@@ -104,8 +104,8 @@ def save_transactions_to_csv(transactions, filename):
             
             
 download_transactions_csv_bp = Blueprint('download_transactions_csv_bp', __name__)    
-            
-@download_transactions_csv_bp.route('/download_transactions_csv')
+
+@download_transactions_csv_bp.route('/download_transactions_csv/<int:user_id>')
 @login_required
 def download_transactions_csv(user_id):
     
