@@ -10,7 +10,7 @@ from routes.my_routes_hc import delete_query_confirmation_bp, show_statement_for
 from routes.my_routes_statement import download_transactions_bp, download_transactions_csv_bp
 from routes.my_routes_admin import transactions_filter_bp, reports_and_statistics_bp, delete_user_bp, update_customer_information_bp, find_tickets_bp, block_customer_bp, unlock_access_bp
 from routes.my_routes_admin import admin_dashboard_bp, logs_filtering_bp
-from models.models import Users, Transaction, db, Recipient, DDSO, SupportTickets, LockedUsers
+from models.models import Users, Transaction, db, Recipient, DDSO, SupportTickets, LockedUsers, Loans
 from sqlalchemy import func, and_, case
 from routes.transfer import admin_required
 from flask_apscheduler import APScheduler
@@ -367,6 +367,92 @@ def add_recipient():
 
 
 
+@app.route('/loans', methods=['GET', 'POST'])
+@login_required
+def loans():
+    last_transaction = Transaction.query.filter_by(user_id=current_user.id).order_by(Transaction.id.desc()).first()
+    
+    return render_template('loans.html', last_transaction=last_transaction)
+
+
+@app.route('/my_loans', methods=['GET', 'POST'])
+@login_required
+def my_loans():
+    last_transaction = Transaction.query.filter_by(user_id=current_user.id).order_by(Transaction.id.desc()).first()
+    
+    user_loans = Loans.query.filter_by(user_id=current_user.id).all()
+    
+    
+    
+    
+    
+    
+    
+    return render_template('my_loans.html', last_transaction=last_transaction, user_loans=user_loans)
+
+
+
+
+@app.route('/consumer_loan', methods=['GET', 'POST'])
+@login_required
+def consumer_loan():
+    last_transaction = Transaction.query.filter_by(user_id=current_user.id).order_by(Transaction.id.desc()).first()
+    
+    return render_template('consumer_loan.html', last_transaction=last_transaction)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@app.route('/apply_consumer_loan', methods=['GET', 'POST'])
+@login_required
+def apply_consumer_loan():
+    last_transaction = Transaction.query.filter_by(user_id=current_user.id).order_by(Transaction.id.desc()).first()
+    
+    new_consumer_loan = Loans(user_id=current_user.id,
+                             recipient = 'Imperial Bank',
+                             product_id = 'Consumer loan',
+                             transaction_type = 'SO',
+                             nominal_amount = 5000,
+                             interest = '7%',
+                             installment_amount = 237.50,
+                             installments_number = 24,
+                             installments_paid = 0,
+                             installments_to_be_paid = 24,
+                             total_amount_to_be_repaid = 5700,
+                             remaining_amount_to_be_repaid = 5700,
+                             loan_cost = 700,
+                             interest_type = 'fixed',
+                             loan_status = 'granted',
+                             frequency = 30,
+                             loan_start_date = date.today(),
+                             loan_end_date = date.today() + timedelta(days=(24 * 30)),
+                             next_payment_date = date.today() + timedelta(days=30),
+                             currency_code = 'GBP',
+                             loan_purpose = 'Customer loan',
+                             notes = '')
+    db.session.add(new_consumer_loan)
+    db.session.commit()
+    
+    
+    
+    
+    
+    
+    
+    flash('Transfer successful!', 'success')
+    
+    return render_template('apply_consumer_loan.html', last_transaction=last_transaction)
 
 
 
@@ -383,6 +469,44 @@ def add_recipient():
 
 
 
+
+
+
+
+@app.route('/car_loan', methods=['GET', 'POST'])
+@login_required
+def car_loan():
+    last_transaction = Transaction.query.filter_by(user_id=current_user.id).order_by(Transaction.id.desc()).first()
+    
+    return render_template('car_loan.html', last_transaction=last_transaction)
+
+
+@app.route('/apply_car_loan', methods=['GET', 'POST'])
+@login_required
+def apply_car_loan():
+    last_transaction = Transaction.query.filter_by(user_id=current_user.id).order_by(Transaction.id.desc()).first()
+    
+    return render_template('apply_car_loan.html', last_transaction=last_transaction)
+
+
+
+
+
+
+@app.route('/home_renovation_loan', methods=['GET', 'POST'])
+@login_required
+def home_renovation_loan():
+    last_transaction = Transaction.query.filter_by(user_id=current_user.id).order_by(Transaction.id.desc()).first()
+    
+    return render_template('home_renovation_loan.html', last_transaction=last_transaction)
+
+
+@app.route('/apply_home_renovation_loan', methods=['GET', 'POST'])
+@login_required
+def apply_home_renovation_loan():
+    last_transaction = Transaction.query.filter_by(user_id=current_user.id).order_by(Transaction.id.desc()).first()
+    
+    return render_template('apply_home_renovation_loan.html', last_transaction=last_transaction)
 
 
 
