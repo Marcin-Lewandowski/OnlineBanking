@@ -400,6 +400,11 @@ def consumer_loan():
 
 
 
+
+
+
+
+
 @app.route('/apply_consumer_loan', methods=['GET', 'POST'])
 @login_required
 def apply_consumer_loan():
@@ -407,7 +412,6 @@ def apply_consumer_loan():
     in_progress_customer_loan = Loans.query.filter_by(user_id=current_user.id, loan_status='granted').first()
     
     if in_progress_customer_loan:
-       
         flash('You have one loan in progress!', 'danger')
         return redirect(url_for('consumer_loan'))
         
@@ -427,10 +431,10 @@ def apply_consumer_loan():
                                 loan_cost = 700,
                                 interest_type = 'fixed',
                                 loan_status = 'granted',
-                                frequency = 1,
+                                frequency = 30,
                                 loan_start_date = date.today(),
-                                loan_end_date = date.today() + timedelta(days=(24 * 1)),
-                                next_payment_date = date.today() + timedelta(days=1),
+                                loan_end_date = date.today() + timedelta(days=(24 * 30)),
+                                next_payment_date = date.today() + timedelta(days=30),
                                 currency_code = 'GBP',
                                 loan_purpose = 'Customer loan',
                                 notes = '')
@@ -438,11 +442,9 @@ def apply_consumer_loan():
         
         # Download Imperial Bank last transaction
         last_ib_transaction = Transaction.query.filter_by(user_id=25).order_by(Transaction.id.desc()).first()
-        print(last_ib_transaction.balance)
         
         # Download last customer transaction
         last_customer_transaction = Transaction.query.filter_by(user_id=current_user.id).order_by(Transaction.id.desc()).first()
-        print(last_customer_transaction.balance)
         
         # The logic of making a transfer
         try:
@@ -451,18 +453,16 @@ def apply_consumer_loan():
             
             # Imperial Bank balance update
             new_ib_balance = last_ib_transaction.balance - 5000
-            
             new_ib_transaction = Transaction(user_id=25, 
-                                                transaction_date=transaction_date,
-                                                transaction_type='FPO',
-                                                sort_code=last_ib_transaction.sort_code,
-                                                account_number=last_ib_transaction.account_number,
-                                                transaction_description='Customer loan granted',
-                                                debit_amount=5000,
-                                                credit_amount = 0,
-                                                balance=new_ib_balance)
+                                            transaction_date=transaction_date,
+                                            transaction_type='FPO',
+                                            sort_code=last_ib_transaction.sort_code,
+                                            account_number=last_ib_transaction.account_number,
+                                            transaction_description='Customer loan granted',
+                                            debit_amount=5000,
+                                            credit_amount = 0,
+                                            balance=new_ib_balance)
             db.session.add(new_ib_transaction)
-            
             
             
             # Recipient balance update
@@ -477,9 +477,6 @@ def apply_consumer_loan():
                                                     credit_amount=5000,
                                                     balance=new_customer_balance)
             db.session.add(new_customer_transaction)
-        
-        
-        
             db.session.commit()
             
             flash('Consumer loan granted!', 'success')
@@ -494,12 +491,36 @@ def apply_consumer_loan():
 
 
 
+
+
+
+
+
+
+
+
+
+
 @app.route('/car_loan', methods=['GET', 'POST'])
 @login_required
 def car_loan():
     last_transaction = Transaction.query.filter_by(user_id=current_user.id).order_by(Transaction.id.desc()).first()
     
     return render_template('car_loan.html', last_transaction=last_transaction)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 @app.route('/apply_car_loan', methods=['GET', 'POST'])
@@ -536,10 +557,58 @@ def apply_car_loan():
                                 loan_purpose = 'Car loan',
                                 notes = '')
         db.session.add(new_car_loan)
-        db.session.commit()
         
-        flash('Car loan granted!', 'success')
-        return redirect(url_for('my_loans'))
+        # Download Imperial Bank last transaction
+        last_ib_transaction = Transaction.query.filter_by(user_id=25).order_by(Transaction.id.desc()).first()
+        
+        # Download last customer transaction
+        last_customer_transaction = Transaction.query.filter_by(user_id=current_user.id).order_by(Transaction.id.desc()).first()
+        
+        # The logic of making a transfer
+        try:
+            # Preparation of data for transactions
+            transaction_date = date.today()
+            
+            # Imperial Bank balance update
+            new_ib_balance = last_ib_transaction.balance - 8000
+            new_ib_transaction = Transaction(user_id=25, 
+                                                transaction_date=transaction_date,
+                                                transaction_type='FPO',
+                                                sort_code=last_ib_transaction.sort_code,
+                                                account_number=last_ib_transaction.account_number,
+                                                transaction_description='Car loan granted',
+                                                debit_amount=8000,
+                                                credit_amount = 0,
+                                                balance=new_ib_balance)
+            
+            db.session.add(new_ib_transaction)
+            
+            # Recipient balance update
+            new_customer_balance = last_customer_transaction.balance + 8000
+            new_customer_transaction = Transaction(user_id=current_user.id, 
+                                                    transaction_date=transaction_date,
+                                                    transaction_type='FPI',
+                                                    sort_code=last_customer_transaction.sort_code,
+                                                    account_number=last_customer_transaction.account_number,
+                                                    transaction_description='Car loan granted',
+                                                    debit_amount = 0,
+                                                    credit_amount=8000,
+                                                    balance=new_customer_balance)
+            db.session.add(new_customer_transaction)
+            db.session.commit()
+            
+            flash('Car loan granted!', 'success')
+            return redirect(url_for('my_loans'))
+        
+        except Exception as e:
+            db.session.rollback()
+            flash('An error occurred. Transfer failed.', 'danger')
+            return redirect(url_for('car_loan'))
+
+
+
+
+
 
 
 
@@ -554,14 +623,24 @@ def home_renovation_loan():
     return render_template('home_renovation_loan.html', last_transaction=last_transaction)
 
 
+
+
+
+
+
+
+
+
+
+
+
 @app.route('/apply_home_renovation_loan', methods=['GET', 'POST'])
 @login_required
 def apply_home_renovation_loan():
+    
     in_progress_customer_loan = Loans.query.filter_by(user_id=current_user.id, loan_status='granted').first()
     
     if in_progress_customer_loan:
-        last_ib_transaction = Transaction.query.filter_by(user_id=25).order_by(Transaction.id.desc()).first()
-        print(last_ib_transaction.balance)
         flash('You have one loan in progress!', 'danger')
         return redirect(url_for('home_renovation_loan'))
         
@@ -583,29 +662,177 @@ def apply_home_renovation_loan():
                                     loan_status = 'granted',
                                     frequency = 30,
                                     loan_start_date = date.today(),
-                                    loan_end_date = date.today() + timedelta(days=(12 * 30)),
+                                    loan_end_date = date.today() + timedelta(days=(36 * 30)),
                                     next_payment_date = date.today() + timedelta(days=30),
                                     currency_code = 'GBP',
                                     loan_purpose = 'Home renovation loan',
                                     notes = '')
         db.session.add(new_home_renovation_loan)
         
-        
-        
-        
-        # Download Imperial Bank last transaction to check their balance
+        # Download Imperial Bank last transaction
         last_ib_transaction = Transaction.query.filter_by(user_id=25).order_by(Transaction.id.desc()).first()
-        print(last_ib_transaction.balance)
         
+        # Download last customer transaction
+        last_customer_transaction = Transaction.query.filter_by(user_id=current_user.id).order_by(Transaction.id.desc()).first()
         
+        # The logic of making a transfer
+        try:
+            # Preparation of data for transactions
+            transaction_date = date.today()
+            
+            # Imperial Bank balance update
+            new_ib_balance = last_ib_transaction.balance - 15000
+            new_ib_transaction = Transaction(user_id=25, 
+                                                transaction_date=transaction_date,
+                                                transaction_type='FPO',
+                                                sort_code=last_ib_transaction.sort_code,
+                                                account_number=last_ib_transaction.account_number,
+                                                transaction_description='Home renovation loan granted',
+                                                debit_amount=15000,
+                                                credit_amount = 0,
+                                                balance=new_ib_balance)
+            
+            db.session.add(new_ib_transaction)
+            
+            # Recipient balance update
+            new_customer_balance = last_customer_transaction.balance + 15000
+            new_customer_transaction = Transaction(user_id=current_user.id, 
+                                                    transaction_date=transaction_date,
+                                                    transaction_type='FPI',
+                                                    sort_code=last_customer_transaction.sort_code,
+                                                    account_number=last_customer_transaction.account_number,
+                                                    transaction_description='Home renovation loan granted',
+                                                    debit_amount = 0,
+                                                    credit_amount = 15000,
+                                                    balance=new_customer_balance)
+            db.session.add(new_customer_transaction)
+            db.session.commit()
+            
+            flash('Home renovation loan granted!', 'success')
+            return redirect(url_for('my_loans'))
         
-        
-        
-        db.session.commit()
-        
-        flash('Home renovation loan granted!', 'success')
-        return redirect(url_for('my_loans'))
+        except Exception as e:
+            db.session.rollback()
+            flash('An error occurred. Transfer failed.', 'danger')
+            return redirect(url_for('home_renovation_loan'))
     
+
+
+
+
+
+
+@app.route('/test_loan', methods=['GET', 'POST'])
+@login_required
+def test_loan():
+    last_transaction = Transaction.query.filter_by(user_id=current_user.id).order_by(Transaction.id.desc()).first()
+    
+    return render_template('test_loan.html', last_transaction=last_transaction)
+
+
+
+
+
+
+
+
+
+@app.route('/apply_test_loan', methods=['GET', 'POST'])
+@login_required
+def apply_test_loan():
+    
+    in_progress_customer_loan = Loans.query.filter_by(user_id=current_user.id, loan_status='granted').first()
+    
+    if in_progress_customer_loan:
+        flash('You have one loan in progress!', 'danger')
+        return redirect(url_for('test_loan'))
+        
+    else:
+        new_test_loan = Loans(user_id=current_user.id,
+                                    recipient = 'Imperial Bank',
+                                    product_id = 'TEST LOAN',
+                                    transaction_type = 'SO',
+                                    nominal_amount = 100,
+                                    interest = '10%',
+                                    installment_amount = 55.00,
+                                    installments_number = 2,
+                                    installments_paid = 0,
+                                    installments_to_be_paid = 2,
+                                    total_amount_to_be_repaid = 110,
+                                    remaining_amount_to_be_repaid = 110,
+                                    loan_cost = 10,
+                                    interest_type = 'fixed',
+                                    loan_status = 'granted',
+                                    frequency = 1,
+                                    loan_start_date = date.today(),
+                                    loan_end_date = date.today() + timedelta(days=(2 * 1)),
+                                    next_payment_date = date.today() + timedelta(days=1),
+                                    currency_code = 'GBP',
+                                    loan_purpose = 'TEST LOAN',
+                                    notes = '')
+        db.session.add(new_test_loan)
+        
+        # Download Imperial Bank last transaction
+        last_ib_transaction = Transaction.query.filter_by(user_id=25).order_by(Transaction.id.desc()).first()
+        
+        # Download last customer transaction
+        last_customer_transaction = Transaction.query.filter_by(user_id=current_user.id).order_by(Transaction.id.desc()).first()
+        
+        # The logic of making a transfer
+        try:
+            # Preparation of data for transactions
+            transaction_date = date.today()
+            
+            # Imperial Bank balance update
+            new_ib_balance = last_ib_transaction.balance - 100
+            new_ib_transaction = Transaction(user_id=25, 
+                                                transaction_date=transaction_date,
+                                                transaction_type='FPO',
+                                                sort_code=last_ib_transaction.sort_code,
+                                                account_number=last_ib_transaction.account_number,
+                                                transaction_description='TEST LOAN granted',
+                                                debit_amount = 100,
+                                                credit_amount = 0,
+                                                balance=new_ib_balance)
+            
+            db.session.add(new_ib_transaction)
+            
+            # Recipient balance update
+            new_customer_balance = last_customer_transaction.balance + 100
+            new_customer_transaction = Transaction(user_id=current_user.id, 
+                                                    transaction_date=transaction_date,
+                                                    transaction_type='FPI',
+                                                    sort_code=last_customer_transaction.sort_code,
+                                                    account_number=last_customer_transaction.account_number,
+                                                    transaction_description='TEST LOAN granted',
+                                                    debit_amount = 0,
+                                                    credit_amount = 100,
+                                                    balance=new_customer_balance)
+            db.session.add(new_customer_transaction)
+            db.session.commit()
+            
+            flash('TEST LOAN granted!', 'success')
+            return redirect(url_for('my_loans'))
+        
+        except Exception as e:
+            db.session.rollback()
+            flash('An error occurred. Transfer failed.', 'danger')
+            return redirect(url_for('test_loan'))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
