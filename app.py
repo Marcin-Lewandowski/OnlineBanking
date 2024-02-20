@@ -120,6 +120,114 @@ def process_ddso_payments():
         
         
         
+        
+        
+        
+def process_loans_payments():
+    with app.app_context():
+        today = datetime.today().date()
+        pending_loans_payments = Loans.query.filter(Loans.next_payment_date <= today).all()
+        
+        if len(pending_loans_payments) > 0:
+            # Wyświetl ilość rekordów w pending_loans_payments
+            print()
+            print('LOANS: ')
+            print()
+            print()
+            print("Liczba oczekujących płatności rat pożyczek: ", len(pending_loans_payments))
+            
+            for loan_payment in pending_loans_payments:
+                
+                # Pobierz ID odbiorcy (Imperial Bank ) na podstawie id
+                recipient = Users.query.filter_by(id = 25).first()
+                print("Recipient: ", recipient.username)
+                
+                # Pobierz ID wysyłającego  na podstawie id jako user_id z tablicy Loans
+                sender = Users.query.filter_by(id = loan_payment.user_id).first()
+                print("Sender: ", sender.username)
+                
+                if recipient:
+                    # Wyszukuje ostatnią transakcję Imperial bank
+                    last_recipient_transaction = Transaction.query.filter_by(user_id = 25).order_by(Transaction.id.desc()).first()
+                    
+                    # Wyszukuje ostatnią transakcję wysyłającego ratę pożyczki
+                    last_sender_transaction = Transaction.query.filter_by(user_id = loan_payment.user_id).order_by(Transaction.id.desc()).first()
+                    
+                    # Jeśli istnieje ostatnia transakcja banku, wykonaj dalsze działania
+                    if last_recipient_transaction:
+                        # Logika przetwarzania płatności
+                        try:
+                            # Preparation of data for transactions
+                            transaction_date = date.today()
+                            
+                            # Sender balance update
+                            new_sender_balance = last_sender_transaction.balance - loan_payment.installment_amount
+                            print("New sender balance: ", new_sender_balance)
+                            new_sender_transaction = Transaction(user_id=loan_payment.user_id, 
+                                                transaction_date=transaction_date,
+                                                transaction_type=loan_payment.transaction_type,
+                                                sort_code=last_sender_transaction.sort_code,
+                                                account_number=last_sender_transaction.account_number,
+                                                transaction_description=loan_payment.loan_purpose,
+                                                debit_amount=loan_payment.installment_amount,
+                                                credit_amount = 0,
+                                                balance=new_sender_balance)
+                            db.session.add(new_sender_transaction)
+                            
+                            
+                            # Recipient balance update - Imperial Bank
+                            new_recipient_balance = last_recipient_transaction.balance + loan_payment.installment_amount
+                            print("New recipient balance: ", new_recipient_balance)
+                            new_recipient_transaction = Transaction(user_id=25, 
+                                                                    transaction_date=transaction_date,
+                                                                    transaction_type='FPI',
+                                                                    sort_code=last_recipient_transaction.sort_code,
+                                                                    account_number=last_recipient_transaction.account_number,
+                                                                    transaction_description=loan_payment.loan_purpose,
+                                                                    debit_amount = 0,
+                                                                    credit_amount = loan_payment.installment_amount,
+                                                                    balance=new_recipient_balance)
+                            db.session.add(new_recipient_transaction)
+                            
+                            
+                            
+                            
+                            # (Załóżmy, że płatność jest miesięczna - timedelta(days=30), ale dla testów codziennie timedelta(days=1))
+                            
+                            # ustalenie daty kolejnego przelewu (1 dla TEST Loan)
+                            
+                            loan_payment.installments_paid += 1
+                            loan_payment.installments_to_be_paid -= 1
+                            loan_payment.remaining_amount_to_be_repaid -= loan_payment.installment_amount
+                            loan_payment.next_payment_date += timedelta(days = loan_payment.frequency)
+                            
+                            if loan_payment.installments_to_be_paid == 0:
+                                db.session.delete(loan_payment)
+                            
+                            
+                                
+                            db.session.commit()
+                            print('Loans standing orders sended successful!')
+                            
+                        except Exception as e:
+                            db.session.rollback()
+                            # Wydrukuj komunikat o błędzie i pełny stos wywołań
+                            print('An error occurred. Transfer failed:', e)
+                            traceback.print_exc()
+                            
+                else:
+                    print('Recipient not found')
+                    return  # Zakończenie funkcji jeśli odbiorca - Bank - nie został znaleziony, co jest nierealne ;)
+                    
+                            
+        else:
+            print("No pending loan payments.")
+            return  # Zakończenie funkcji jeśli nie ma płatności do przetworzenia
+        
+        
+        
+        
+        
 
 def create_app():
     app = Flask(__name__)
@@ -184,7 +292,8 @@ def create_app():
     
     
     # Uruchom zadanie tylko raz, krótko po starcie aplikacji trigger='date'
-    scheduler.add_job(id='process_ddso', func=process_ddso_payments, trigger='date', run_date=datetime.now() + timedelta(seconds=10))
+    scheduler.add_job(id='process_ddso', func=process_ddso_payments, trigger = 'date', run_date = datetime.now() + timedelta(seconds = 10))
+    scheduler.add_job(id='process_loans', func=process_loans_payments, trigger = 'date', run_date = datetime.now() + timedelta(seconds = 20))
 
     # ... Rejestracja Blueprintów, inne konfiguracje ...
     app.register_blueprint(transfer_bp)
