@@ -22,7 +22,7 @@
             <label for="password">Password:</label>
             <input type="password" id="password" name="password" required><br>
             
-            <!-- Wstaw ukryte pole z tokenem CSRF -->
+            <!-- Hidden field with CSRF token -->
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 
             <label for="role">Role:</label>

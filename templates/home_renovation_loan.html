@@ -1,0 +1,104 @@
+
+<!--  home_renovation_loan.html ( on this website user can take out a home renovation loan ) -->
+
+
+{% extends 'base2.html' %}
+
+{% block title %} Imperial Bank - Home Renovation Loan {% endblock %}
+
+
+{% block precontent %}
+
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+{% for message in messages %}
+    <p>Your fast messages: {{ message }}</p>
+{% endfor %}
+{% endif %}
+{% if not messages %}
+    <p>Your fast messages: ---</p>
+{% endif %}
+{% endwith %}
+
+<div class="container2">
+
+    <div class="left2">
+        <h3>Home renovation loan details:</h3>
+        <table border="1" >
+            <tbody>
+
+                <tr>
+                    <td>Currency code </td>
+                    <td>GBP</td>
+                </tr>
+                
+                <tr>
+                    <td> Nominal amount </td>
+                    <td>£ 15000</td>
+                </tr>
+    
+                <tr>
+                    <td> Annual interest </td>
+                    <td> 5.5 %</td>
+                </tr>
+
+                <tr>
+                    <td>Interest type </td>
+                    <td>Fixed</td>
+                </tr>
+    
+                <tr>
+                    <td>Installment amount </td>
+                    <td>£ 485.42</td>
+                </tr>
+
+                <tr>
+                    <td>Installment numbers </td>
+                    <td>36</td>
+                </tr>
+
+                <tr>
+                    <td>Loan cost </td>
+                    <td>£ 2475</td>
+                </tr>
+
+                <tr>
+                    <td>Total amount to be repaid </td>
+                    <td>£ 17475</td>
+                </tr>
+
+                <tr>
+                    <td>Loan purpose </td>
+                    <td>Home renovation</td>
+                </tr>
+            </tbody>
+          </table>
+
+
+    </div>
+
+    <div class="right2">
+        <h3>Loan Repayment Terms</h3>
+        
+        <b>1. Amount and Duration:</b> The Borrower agrees to repay the total loan amount along with accrued interest, as per the agreed-upon repayment schedule, 
+        which shall not exceed a term of [insert term here] years/months from the date of the loan disbursement.<br><br>
+
+        <b>2. Repayment Schedule:</b> Repayments are due in monthly installments on the [insert day] of each month, starting from [insert start date] until the loan is fully repaid. 
+        Each installment includes both principal and interest components.<br><br>
+
+        <b>3. Interest Rate:</b> The annual interest rate on the loan is [insert interest rate]%, calculated on a [insert method, e.g., fixed or reducing] basis. 
+        The exact amount of interest payable will be detailed in the repayment schedule.<br><br>
+
+        <b>4. Early Repayment:</b> The Borrower may choose to repay the loan in full or in part before the due date without incurring any early repayment fees.<br><br>
+
+        <b>5. Late Payment Penalties:</b> Any payments not made within [insert number of days] days of the due date will incur a late payment fee of [insert fee amount] 
+        plus additional interest on the overdue amount at the rate of [insert penalty interest rate]% per annum. <br>
+
+        <h2><a href="{{ url_for('apply_home_renovation_loan_bp.apply_home_renovation_loan') }}"> Apply for Home Renovation Loan</a></h2>
+
+        <h3><a href="{{ url_for('my_loans') }}"> Go to - My Loans</a></h3>
+
+    </div>
+</div>
+
+{% endblock %}

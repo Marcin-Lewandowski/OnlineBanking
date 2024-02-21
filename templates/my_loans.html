@@ -1,0 +1,84 @@
+
+<!--  my_loans.html ( on this page user can check all the details of their loans ) -->
+
+
+{% extends 'base2.html' %}
+
+{% block title %} Imperial Bank - My Loans {% endblock %}
+
+
+
+{% block precontent %}
+
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+{% for message in messages %}
+    <p>Your fast messages: {{ message }}</p>
+{% endfor %}
+{% endif %}
+{% if not messages %}
+    <p>Your fast messages: ---</p>
+{% endif %}
+{% endwith %}
+
+
+{% if user_loans %}
+    <h3>My loans:</h3>
+    <table border="1" class="center-table">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Nominal amount</th>
+                <th>Interest</th>
+                <th>Installment amount</th>
+                <th>Installments number</th>
+                <th>Installments paid</th>
+                <th>Installments to paid</th>
+            </tr>
+            
+        </thead>
+        <tbody>
+            {% for loan in user_loans %}
+                <tr>
+                    <td><b>{{ loan.product_id }}</b></td>
+                    <td>£ {{ loan.nominal_amount }}</td>
+                    <td>{{ loan.interest }}</td>
+                    <td>£ {{ loan.installment_amount }}</td>
+                    <td>{{ loan.installments_number }}</td>
+                    <td>{{ loan.installments_paid}} </td>
+                    <td>{{ loan.installments_to_be_paid}}</td>
+                </tr>
+                <tr>
+                    <th>Amount to be repaid</th>
+                    <th>Remaining amount to be repaid</th>
+                    <th>Loan cost</th>
+                    <th>Interest type</th>
+                    <th>Loan start date</th>
+                    <th>Next payment date</th>
+                    <th>Loan end date</th>
+                    <th>Loan status</th>
+                    
+                </tr>
+                <tr>
+                    <td>£ {{ loan.total_amount_to_be_repaid }}</td>
+                    <td>£ {{ loan.remaining_amount_to_be_repaid }}</td>
+                    <td>£ {{ loan.loan_cost }}</td>
+                    <td>{{ loan.interest_type }}</td>
+                    <td>{{ loan.loan_start_date }}</td>
+                    <td>{{ loan.next_payment_date}} </td>
+                    <td>{{ loan.loan_end_date}}</td>
+                    <td>{{ loan.loan_status}}</td>
+                    
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <h2><a href="{{ url_for('delete_all_loans') }}">Delete all loans</a> </h2>
+
+    <h3><a href="{{ url_for('add_one_day') }}">Add one day</a></h3>
+{% else %}
+    <h3>You have no loans.</h3>
+{% endif %}
+
+
+{% endblock %}

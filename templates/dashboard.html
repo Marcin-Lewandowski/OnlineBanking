@@ -20,8 +20,15 @@
 
 <h3>Your account statement: </h3>
 
-<h5><a href="{{ url_for('download_transactions_bp.download_transactions', user_id=current_user.id) }}">Download pdf statement</a>  &nbsp; &nbsp; &nbsp; | &nbsp; &nbsp; &nbsp; 
-    <a href="{{ url_for('download_transactions_csv_bp.download_transactions_csv', user_id=current_user.id) }}">Download csv statement file</a> </h5>
+
+
+{% if all_transactions.has_prev %}
+<a href="{{ url_for('dashboard', page=all_transactions.prev_num) }}">Previous page</a>
+{% endif %}
+{% if all_transactions.has_next %}
+&nbsp; &nbsp;  &nbsp; &nbsp; <a href="{{ url_for('dashboard', page=all_transactions.next_num) }}">Next page</a>
+{% endif %}
+<br><br>
 
 
 
@@ -37,7 +44,7 @@
       </tr>
   </thead>
   <tbody>
-      {% for transaction in all_transactions %}
+      {% for transaction in all_transactions.items %}
           <tr>
               <td>{{ transaction.transaction_date }}</td>
               <td>{{ transaction.transaction_type }}</td>
@@ -49,7 +56,15 @@
       {% endfor %}
   </tbody>
 </table>
-<br><br><br>
+<br><br>
+
+
+
+    
+
+<h4><a href="{{ url_for('download_transactions_bp.download_transactions', user_id=current_user.id) }}">Download pdf statement</a>  &nbsp; &nbsp; &nbsp; | &nbsp; &nbsp; &nbsp; 
+    <a href="{{ url_for('download_transactions_csv_bp.download_transactions_csv', user_id=current_user.id) }}">Download csv statement file</a> </h4>
+<br><br>
 
 {% endblock %}
 

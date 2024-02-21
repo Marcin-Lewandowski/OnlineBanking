@@ -1,0 +1,82 @@
+
+<!--  loans.html ( on this website user can take out a loan ) -->
+
+
+{% extends 'base2.html' %}
+
+{% block title %} Imperial Bank - Loans {% endblock %}
+
+
+
+
+{% block precontent %}
+
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+{% for message in messages %}
+    <p>Your fast messages: {{ message }}</p>
+{% endfor %}
+{% endif %}
+{% if not messages %}
+    <p>Your fast messages: ---</p>
+{% endif %}
+{% endwith %}
+
+<div>
+    <h3>Most popular loans:</h3>
+    <table border="1" >
+        <thead>
+            <tr>
+                <th> </th>
+                <th>Amount</th>
+                <th>Annual interest</th>
+                <th>Installment amount</th>
+                <th>Instalment's number</th>
+                <th>                                  </th>
+            </tr>
+        </thead>
+        <tbody>
+            
+            <tr>
+                <td> Consumer loan </td>
+                <td>£ 5000</td>
+                <td>7 %</td>
+                <td>£ 237.50</td>
+                <td>24</td>
+                <td><a href="{{ url_for('consumer_loan') }}" > Consumer loan - more info </a> <br></td>
+            </tr>
+
+            <tr>
+                <td> Car loan </td>
+                <td>£ 8000</td>
+                <td>6 %</td>
+                <td>£ 706.67</td>
+                <td>12</td>
+                <td><a href="{{ url_for('car_loan') }}" > Car loan - more info</a> <br></td>
+            </tr>
+
+            <tr>
+                <td>Home renovation loan </td>
+                <td>£ 15000</td>
+                <td>5.5 %</td>
+                <td>£ 485.42</td>
+                <td>36</td>
+                <td><a href="{{ url_for('home_renovation_loan') }}" > Home renovation loan - more info</a> <br></td>
+            </tr>
+
+            <tr>
+                <td><b>TEST LOAN </b></td>
+                <td>£ 100</td>
+                <td>10 %</td>
+                <td>£ 55.00</td>
+                <td>2</td>
+                <td><a href="{{ url_for('test_loan') }}" > TEST LOAN - more info</a> <br></td>
+            </tr>
+            
+        </tbody>
+      </table>
+</div>
+
+
+{% endblock %}
+
