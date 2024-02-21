@@ -23,13 +23,6 @@ class Users(db.Model, UserMixin):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
     
-    
-    
-class LockedUsers(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    is_account_locked = db.Column(db.Boolean, default = True)
-    username = db.Column(db.String(50), unique=True, nullable=False)
-    
 
 
 class Transaction(db.Model):
@@ -80,3 +73,35 @@ class SupportTickets(db.Model):
     priority = db.Column(db.String(50), nullable=False, default='normal')  # values: normal, high, urgent
     category = db.Column(db.String(50), nullable=False, default='general')  # values: general, fraud, service problem, money transfer
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    
+class LockedUsers(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    is_account_locked = db.Column(db.Boolean, default = True)
+    username = db.Column(db.String(50), unique=True, nullable=False)
+    
+    
+class Loans(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    recipient = db.Column(db.String(100), nullable=False)
+    product_id = db.Column(db.String(50), nullable=False)
+    transaction_type = db.Column(db.String(20), nullable=False, default='LOAN')
+    nominal_amount = db.Column(db.Float, nullable=False)
+    interest = db.Column(db.String(20), nullable=False)
+    installment_amount = db.Column(db.Float, nullable=False)
+    installments_number = db.Column(db.Integer, nullable=False)
+    installments_paid = db.Column(db.Integer, nullable=False)
+    installments_to_be_paid = db.Column(db.Integer, nullable=False)
+    total_amount_to_be_repaid = db.Column(db.Float, nullable=False)
+    remaining_amount_to_be_repaid = db.Column(db.Float, nullable=False)
+    loan_cost = db.Column(db.Float, nullable=False)
+    interest_type = db.Column(db.String(20), nullable=False)
+    loan_status = db.Column(db.String(20), nullable=False)
+    frequency = db.Column(db.Integer, nullable=False)
+    loan_start_date = db.Column(db.Date, nullable=False, default=date.today)
+    loan_end_date = db.Column(db.Date, nullable=False)
+    next_payment_date = db.Column(db.Date, nullable=False)
+    currency_code = db.Column(db.String(3), nullable=False)
+    loan_purpose = db.Column(db.String(255), nullable=False)
+    notes = db.Column(db.Text)
