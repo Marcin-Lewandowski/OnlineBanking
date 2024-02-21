@@ -203,6 +203,7 @@ def process_loans_payments():
                             
                             if loan_payment.installments_to_be_paid == 0:
                                 db.session.delete(loan_payment)
+                                print('Loan paid !!!')
                             
                             
                                 
@@ -292,8 +293,8 @@ def create_app():
     
     
     # Uruchom zadanie tylko raz, krótko po starcie aplikacji trigger='date'
-    scheduler.add_job(id='process_ddso', func=process_ddso_payments, trigger = 'date', run_date = datetime.now() + timedelta(seconds = 10))
-    scheduler.add_job(id='process_loans', func=process_loans_payments, trigger = 'date', run_date = datetime.now() + timedelta(seconds = 20))
+    scheduler.add_job(id='process_ddso', func=process_ddso_payments, trigger = 'date', run_date = datetime.now() + timedelta(seconds = 5))
+    scheduler.add_job(id='process_loans', func=process_loans_payments, trigger = 'date', run_date = datetime.now() + timedelta(seconds = 10))
 
     # ... Rejestracja Blueprintów, inne konfiguracje ...
     app.register_blueprint(transfer_bp)
@@ -947,7 +948,7 @@ def apply_test_loan():
 
 @app.route('/delete_all_loans', methods=['GET', 'POST'])
 @login_required
-@admin_required
+#@admin_required
 def delete_all_loans():
     try:
         # Usuwa wszystkie rekordy z tabeli Loans
@@ -960,7 +961,43 @@ def delete_all_loans():
         db.session.rollback()
         print(f"Error deleting loans: {e}")
         
-    return redirect(url_for('products_and_service_management'))
+    if current_user.role == 'admin':
+        return redirect(url_for('products_and_service_management'))
+    else:
+        return redirect(url_for('my_loans'))
+        
+    
+
+
+
+@app.route('/add_one_day', methods=['GET', 'POST'])
+@login_required
+def add_one_day():
+    try:
+        loans = Loans.query.all()
+        print(len(loans))
+        
+        for loan in loans:
+            loan.next_payment_date -= timedelta(days = 1)
+        
+        db.session.commit()
+        
+    except Exception as e:
+        # W przypadku błędu wycofuje zmiany
+        db.session.rollback()
+        print(f"Error deleting loans: {e}")
+        
+    return redirect(url_for('my_loans'))
+
+
+
+
+
+
+
+
+
+
 
 
 
