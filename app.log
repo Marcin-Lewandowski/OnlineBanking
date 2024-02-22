@@ -1,0 +1,160 @@
+INFO:werkzeug: * Restarting with stat
+2024-01-25 17:58:58,184 - INFO - User 'Marcin' logged in to the system.
+2024-01-25 18:03:12,133 - WARNING - User 'Paul' tried to log in. Wrong password !
+2024-01-25 18:04:07,676 - WARNING - User 'Paul' tried to log in. Wrong password !
+2024-01-25 18:04:17,721 - WARNING - User 'Paul' tried to log in. Wrong password !
+2024-01-25 18:04:17,721 - CRITICAL - Bank account for user 'Paul' has been blocked !!!
+2024-01-26 16:31:34,256 - ERROR - No access to the protected resource - /admin_dashboard  'Sophia' 
+2024-01-26 18:24:21,388 - WARNING - User 'admin' tried to log in. Wrong password !
+2024-01-26 18:24:27,798 - INFO - User 'admin' logged in to the system.
+2024-01-26 18:54:00,931 - INFO - User 'admin' logged in to the system.
+2024-01-27 16:21:46,067 - INFO - User 'admin' logged in to the system.
+2024-01-27 17:36:48,985 - INFO - User 'admin' logged in to the system.
+2024-01-28 18:48:05,005 - INFO - User 'admin' logged in to the system.
+2024-01-28 19:03:34,249 - INFO - User 'Marcin' logged in to the system.
+2024-01-29 12:17:57,285 - INFO - User 'Marcin' logged in to the system.
+2024-01-29 17:04:57,424 - INFO - User 'Marcin' logged in to the system.
+2024-01-29 17:38:20,767 - INFO - User 'Sophia' logged in to the system.
+2024-01-30 09:48:52,465 - INFO - User 'Marcin' logged in to the system.
+2024-01-30 11:05:24,667 - INFO - User 'admin' logged in to the system.
+2024-01-30 11:07:00,180 - INFO - User 'Marcin' logged in to the system.
+2024-01-30 11:07:32,637 - INFO - User 'admin' logged in to the system.
+2024-01-30 11:29:26,544 - INFO - User 'Sophia' logged in to the system.
+2024-01-30 11:29:57,457 - INFO - User 'admin' logged in to the system.
+2024-01-30 15:01:13,217 - INFO - User 'admin' logged in to the system.
+2024-02-01 16:02:25,253 - INFO - User 'Marcin' logged in to the system.
+2024-02-01 16:53:33,538 - INFO - User 'admin' logged in to the system.
+2024-02-01 16:54:52,286 - INFO - User 'Marcin' logged in to the system.
+2024-02-01 17:53:37,670 - INFO - User 'Bauron INC' logged in to the system.
+2024-02-01 18:25:32,865 - INFO - User 'Marcin' logged in to the system.
+2024-02-01 18:28:25,874 - INFO - User 'Bauron INC' logged in to the system.
+2024-02-01 18:29:53,406 - INFO - User 'Marcin' logged in to the system.
+2024-02-01 18:30:17,710 - INFO - User 'Bauron INC' logged in to the system.
+2024-02-02 15:58:19,312 - INFO - User 'Marcin' logged in to the system.
+2024-02-02 16:33:54,217 - INFO - User 'admin' logged in to the system.
+2024-02-02 19:19:51,542 - INFO - User 'admin' logged in to the system.
+2024-02-03 16:05:44,673 - INFO - User 'Marcin' logged in to the system.
+2024-02-03 16:32:24,270 - WARNING - Change of personal data -  'Marcin' 
+2024-02-03 17:24:10,906 - INFO - User 'admin' logged in to the system.
+2024-02-05 06:58:09,126 - INFO - User 'admin' logged in to the system.
+2024-02-06 08:34:49,076 - INFO - User 'Marcin' logged in to the system.
+2024-02-06 08:35:15,969 - INFO - User 'admin' logged in to the system.
+2024-02-06 10:36:29,809 - INFO - User 'Marcin' logged in to the system.
+2024-02-07 12:01:12,810 - INFO - User 'admin' logged in to the system.
+2024-02-08 12:18:14,718 - INFO - User 'admin' logged in to the system.
+2024-02-08 12:21:02,410 - INFO - User 'admin' logged in to the system.
+2024-02-08 12:32:46,516 - INFO - User 'Marcin' logged in to the system.
+2024-02-08 12:43:36,811 - WARNING - User 'Marcin' tried to log in. Wrong password !
+2024-02-08 12:43:42,750 - WARNING - User 'Marcin' tried to log in. Wrong password !
+2024-02-08 12:44:06,097 - WARNING - User 'Marcin' tried to log in. Wrong password !
+2024-02-08 12:44:06,097 - CRITICAL - Bank account for user  'Marcin' has been blocked !!!
+2024-02-08 12:44:28,796 - INFO - User 'admin' logged in to the system.
+2024-02-08 12:44:56,598 - INFO - User 'Marcin' logged in to the system.
+2024-02-08 14:00:50,953 - INFO - User 'Marcin' logged in to the system.
+2024-02-08 14:14:19,621 - INFO - User 'admin' logged in to the system.
+2024-02-08 14:46:09,852 - INFO - User 'Marcin' logged in to the system.
+2024-02-08 14:48:35,951 - INFO - User 'admin' logged in to the system.
+2024-02-08 14:53:17,350 - INFO - User 'Marcin' logged in to the system.
+2024-02-08 15:06:17,725 - INFO - User 'admin' logged in to the system.
+2024-02-08 15:29:45,228 - INFO - User 'Marcin' logged in to the system.
+2024-02-08 15:43:37,068 - INFO - User 'Bauron INC' logged in to the system.
+2024-02-08 15:59:29,423 - INFO - User 'Marcin' logged in to the system.
+2024-02-08 16:15:31,628 - INFO - User 'admin' logged in to the system.
+2024-02-09 16:55:25,811 - INFO - User 'Marcin' logged in to the system.
+2024-02-09 17:04:40,592 - INFO - User 'Marcin' logged in to the system.
+2024-02-09 17:07:06,056 - INFO - User 'admin' logged in to the system.
+2024-02-09 17:15:30,334 - INFO - User 'Marcin' logged in to the system.
+2024-02-09 17:30:11,442 - INFO - User 'admin' logged in to the system.
+2024-02-09 17:36:14,670 - INFO - User 'Marcin' logged in to the system.
+2024-02-09 17:46:35,744 - INFO - User 'admin' logged in to the system.
+2024-02-09 18:33:14,773 - INFO - User 'Marcin' logged in to the system.
+2024-02-09 18:35:17,528 - INFO - User 'admin' logged in to the system.
+2024-02-10 17:14:24,986 - INFO - User 'Marcin' logged in to the system.
+2024-02-10 17:14:47,099 - INFO - User 'admin' logged in to the system.
+2024-02-10 17:15:53,942 - INFO - User 'Marcin' logged in to the system.
+2024-02-10 17:21:20,971 - INFO - User 'admin' logged in to the system.
+2024-02-11 15:56:39,093 - INFO - User 'admin' logged in to the system.
+2024-02-11 19:14:23,188 - INFO - User 'admin' logged in to the system.
+2024-02-11 20:00:23,304 - INFO - User 'admin' logged in to the system.
+2024-02-12 08:37:04,837 - INFO - User 'Marcin' logged in to the system.
+2024-02-12 10:36:13,846 - INFO - User 'Sophia' logged in to the system.
+2024-02-12 10:50:47,026 - INFO - User 'Marcin' logged in to the system.
+2024-02-12 17:14:10,322 - INFO - User 'admin' logged in to the system.
+2024-02-13 09:37:28,502 - INFO - User 'admin' logged in to the system.
+2024-02-13 09:46:08,676 - INFO - User 'Imperial Bank' logged in to the system.
+2024-02-13 09:48:14,880 - INFO - User 'admin' logged in to the system.
+2024-02-13 10:52:34,075 - INFO - User 'Marcin' logged in to the system.
+2024-02-13 10:52:55,936 - WARNING - User 'admin' tried to log in. Wrong password !
+2024-02-13 10:53:03,117 - INFO - User 'admin' logged in to the system.
+2024-02-13 18:46:36,379 - INFO - User 'admin' logged in to the system.
+2024-02-13 18:58:06,183 - INFO - User 'Marcin' logged in to the system.
+2024-02-14 09:59:56,222 - INFO - User 'Marcin' logged in to the system.
+2024-02-14 10:19:52,887 - INFO - User 'admin' logged in to the system.
+2024-02-14 10:20:15,330 - INFO - User 'Marcin' logged in to the system.
+2024-02-14 11:56:43,847 - INFO - User 'admin' logged in to the system.
+2024-02-14 13:13:22,193 - INFO - User 'admin' logged in to the system.
+2024-02-14 14:24:33,945 - WARNING - User 'Kate' tried to log in. Wrong password !
+2024-02-15 16:08:04,515 - INFO - User 'Marcin' logged in to the system.
+2024-02-15 16:13:25,677 - ERROR - No access to the resource - /admin_dashboard  'Marcin' 
+2024-02-15 17:22:15,109 - INFO - User 'Kate' logged in to the system.
+2024-02-15 19:19:03,676 - INFO - User 'Marcin' logged in to the system.
+2024-02-16 17:52:02,500 - INFO - User 'Marcin' logged in to the system.
+2024-02-16 17:52:20,388 - WARNING - User 'Marcin' tried to log in. Wrong password !
+2024-02-16 17:52:35,806 - INFO - User 'Marcin' logged in to the system.
+2024-02-17 20:18:27,608 - INFO - User 'Marcin' logged in to the system.
+2024-02-18 16:07:22,772 - INFO - User 'Marcin' logged in to the system.
+2024-02-19 08:51:00,683 - INFO - User 'Marcin' logged in to the system.
+2024-02-19 10:07:08,370 - INFO - User 'Sophia' logged in to the system.
+2024-02-19 10:08:02,817 - INFO - User 'Sophia' logged in to the system.
+2024-02-19 10:18:03,393 - INFO - User 'Kate' logged in to the system.
+2024-02-19 10:27:02,349 - INFO - User 'admin' logged in to the system.
+2024-02-19 10:36:36,970 - INFO - User 'Marcin' logged in to the system.
+2024-02-19 10:36:56,096 - INFO - User 'Sophia' logged in to the system.
+2024-02-19 10:41:25,382 - INFO - User 'Marcin' logged in to the system.
+2024-02-19 11:01:42,888 - INFO - User 'admin' logged in to the system.
+2024-02-19 11:02:57,024 - INFO - User 'Marcin' logged in to the system.
+2024-02-19 11:24:12,039 - INFO - User 'admin' logged in to the system.
+2024-02-19 11:24:36,881 - INFO - User 'Marcin' logged in to the system.
+2024-02-19 11:40:06,971 - INFO - User 'Imperial Bank' logged in to the system.
+2024-02-19 11:42:27,002 - INFO - User 'Marcin' logged in to the system.
+2024-02-19 15:41:32,744 - INFO - User 'Marcin' logged in to the system.
+2024-02-19 16:19:56,590 - INFO - User 'Sophia' logged in to the system.
+2024-02-19 16:40:04,516 - INFO - User 'admin' logged in to the system.
+2024-02-19 16:40:17,891 - INFO - User 'Marcin' logged in to the system.
+2024-02-19 16:41:30,803 - INFO - User 'Imperial Bank' logged in to the system.
+2024-02-19 16:42:14,467 - INFO - User 'Sophia' logged in to the system.
+2024-02-19 16:42:48,715 - INFO - User 'Imperial Bank' logged in to the system.
+2024-02-20 08:10:57,141 - INFO - User 'admin' logged in to the system.
+2024-02-20 08:11:14,475 - INFO - User 'Marcin' logged in to the system.
+2024-02-20 09:42:20,765 - INFO - User 'Marcin' logged in to the system.
+2024-02-20 18:23:16,057 - INFO - User 'Marcin' logged in to the system.
+2024-02-21 10:02:12,778 - INFO - User 'Marcin' logged in to the system.
+2024-02-21 10:02:38,615 - INFO - User 'Imperial Bank' logged in to the system.
+2024-02-21 10:03:47,398 - INFO - User 'Marcin' logged in to the system.
+2024-02-21 10:04:53,267 - ERROR - No access to the resource - /delete_all_loans  'Marcin' 
+2024-02-21 10:06:53,748 - ERROR - No access to the resource - /delete_all_loans  'Marcin' 
+2024-02-21 10:12:08,779 - INFO - User 'admin' logged in to the system.
+2024-02-21 10:12:26,200 - WARNING - User 'Marcin' tried to log in. Wrong password !
+2024-02-21 10:12:31,017 - INFO - User 'Marcin' logged in to the system.
+2024-02-21 12:29:37,535 - INFO - User 'admin' logged in to the system.
+2024-02-21 12:36:58,585 - INFO - User 'Marcin' logged in to the system.
+2024-02-21 12:37:59,288 - INFO - User 'admin' logged in to the system.
+2024-02-21 14:51:54,578 - INFO - User 'admin' logged in to the system.
+2024-02-21 15:01:29,408 - INFO - User 'Marcin' logged in to the system.
+2024-02-21 15:15:58,002 - INFO - User 'admin' logged in to the system.
+2024-02-21 15:51:01,289 - INFO - User 'Marcin' logged in to the system.
+2024-02-21 15:51:24,805 - INFO - User 'admin' logged in to the system.
+2024-02-21 16:00:24,061 - INFO - User 'Sophia' logged in to the system.
+2024-02-21 16:00:49,898 - WARNING - User 'Kasia' tried to log in. Wrong password !
+2024-02-21 16:00:54,668 - WARNING - User 'Kasia' tried to log in. Wrong password !
+2024-02-21 16:01:05,607 - INFO - User 'Kasia' logged in to the system.
+2024-02-21 16:01:36,056 - INFO - User 'admin' logged in to the system.
+2024-02-21 16:09:29,923 - INFO - User 'James' logged in to the system.
+2024-02-21 16:09:56,632 - INFO - User 'Paul' logged in to the system.
+2024-02-21 16:10:16,605 - INFO - User 'Kate' logged in to the system.
+2024-02-21 16:10:43,555 - INFO - User 'admin' logged in to the system.
+2024-02-21 16:30:16,301 - INFO - User 'Marcin' logged in to the system.
+2024-02-22 08:18:21,699 - INFO - User 'Marcin' logged in to the system.
+2024-02-22 08:19:40,185 - INFO - User 'admin' logged in to the system.
+2024-02-22 10:24:38,013 - INFO - User 'Marcin' logged in to the system.
+2024-02-22 11:08:03,033 - INFO - User 'admin' logged in to the system.
