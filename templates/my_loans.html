@@ -7,7 +7,6 @@
 {% block title %} Imperial Bank - My Loans {% endblock %}
 
 
-
 {% block precontent %}
 
 {% with messages = get_flashed_messages() %}
@@ -35,7 +34,6 @@
                 <th>Installments paid</th>
                 <th>Installments to paid</th>
             </tr>
-            
         </thead>
         <tbody>
             {% for loan in user_loans %}
@@ -57,7 +55,6 @@
                     <th>Next payment date</th>
                     <th>Loan end date</th>
                     <th>Loan status</th>
-                    
                 </tr>
                 <tr>
                     <td>£ {{ loan.total_amount_to_be_repaid }}</td>
@@ -68,14 +65,13 @@
                     <td>{{ loan.next_payment_date}} </td>
                     <td>{{ loan.loan_end_date}}</td>
                     <td>{{ loan.loan_status}}</td>
-                    
                 </tr>
             {% endfor %}
         </tbody>
     </table>
-    <h2><a href="{{ url_for('delete_all_loans') }}">Delete all loans</a> </h2>
-
-    <h3><a href="{{ url_for('add_one_day') }}">Add one day</a></h3>
+    
+    <!-- <h3><a href="{{ url_for('add_one_day') }}">Add one day</a></h3>  -->
+    
 {% else %}
     <h3>You have no loans.</h3>
 {% endif %}

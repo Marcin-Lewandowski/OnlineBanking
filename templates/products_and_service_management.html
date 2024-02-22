@@ -14,7 +14,6 @@
 <h2><a href="{{ url_for('delete_all_loans') }}">Delete all loans</a> </h2>
 
 
-
 <div class="container2">
    <div class="left2">
       <h3>Filter loans by product_id</h3>
@@ -34,12 +33,9 @@
          </select><br><br>
          <input type="submit" value="Find Loans"> <br><br>    
      </form> 
-   
-      
    </div>
 
    <div class="right2">
-
       <div>
          <h3>Loans available to customers:</h3>
          <table border="1" >
@@ -90,13 +86,9 @@
                      <td>2</td>
                      <td><a href="{{ url_for('test_loan') }}" > TEST LOAN - more info</a> <br></td>
                   </tr>
-                  
                </tbody>
             </table>
       </div>
-      
-
-
    </div>
 </div>
 
@@ -139,9 +131,6 @@
             {% endif %}
          </tbody>
       </table>
-
-
-
 </div>
 
 {% endblock %}

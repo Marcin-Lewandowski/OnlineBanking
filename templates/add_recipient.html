@@ -45,7 +45,7 @@
 <h2>Add New Recipient</h2>
     
 
-    <form action="{{ url_for('add_recipient') }}" method="post" role="form">
+    <form action="{{ url_for('add_recipient_bp.add_recipient') }}" method="post" role="form">
 
       <p><label for="name">Name</label>
       <input type="text" id="name" name="name" required></p>
@@ -65,9 +65,3 @@
 
 
 {% endblock %}
-
-{% block content %}
-
-
-{% endblock %}
-
