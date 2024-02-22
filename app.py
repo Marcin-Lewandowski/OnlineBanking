@@ -3,7 +3,7 @@ from flask_wtf.csrf import CSRFProtect
 from flask_login import LoginManager, logout_user, current_user, login_required
 from forms.forms import ChangePasswordForm, AddRecipientForm
 from datetime import timedelta, date, datetime
-from routes.transfer import transfer_bp, login_bp, ddso_bp, create_transaction_bp, edit_profile_bp
+from routes.transfer import transfer_bp, login_bp, ddso_bp, create_transaction_bp, edit_profile_bp, add_recipient_bp
 from routes.my_routes import grocery1_bp, grocery2_bp, grocery3_bp, grocery4_bp, gas_bp, power_bp, petrol_bp, clothes_bp, water_bp, add_customer_bp
 from routes.my_routes_hc import send_query_bp, process_query_bp, read_message_bp, send_message_for_query_bp, send_message_for_message_bp, delete_messages_for_query_bp
 from routes.my_routes_hc import delete_query_confirmation_bp, show_statement_for_customer_bp, edit_customer_information_bp
@@ -32,13 +32,13 @@ def process_ddso_payments():
         pending_payments = DDSO.query.filter(DDSO.next_payment_date <= today).all()
         
         if len(pending_payments) > 0:
-            # Wyświetl ilość rekordów w pending_payments
+            # Display the number of records in pending_payments
             print("Liczba oczekujących płatności:", len(pending_payments))
 
             for payment in pending_payments:
                 recipient_name = payment.recipient
                 
-                # Pobierz ID odbiorcy (użytkownika np. Global Cars, Bauron INC ) na podstawie recipient_name
+                # Get the recipient ID based on recipient_name
                 recipient_user = Users.query.filter_by(username=recipient_name).first()
                 print("Recipient: ", recipient_user.username)
                 sender = Users.query.filter_by(id = payment.user_id).first()
@@ -47,7 +47,7 @@ def process_ddso_payments():
                 if recipient_user:
                     recipient_id = recipient_user.id
 
-                    # Teraz możesz użyć recipient_id do dalszych operacji, np. do wyszukania transakcji
+                    # Now you can use recipient_id for further operations, e.g. to search for a transaction
                     last_recipient_transaction = Transaction.query.filter_by(user_id=recipient_id).order_by(Transaction.id.desc()).first()
                     
                     print("Recipient ID: ", last_recipient_transaction.user_id)
@@ -57,9 +57,9 @@ def process_ddso_payments():
                     print("Sender balance: ", last_sender_transaction.balance)
                     
 
-                    # Jeśli istnieje ostatnia transakcja, wykonaj dalsze działania
+                    # If there is a recent transaction, proceed further
                     if last_recipient_transaction:
-                        # Logika przetwarzania płatności
+                        # Payment processing logic
                         
                         print(last_recipient_transaction.balance)
                         try:
@@ -95,7 +95,7 @@ def process_ddso_payments():
                                                                     balance=new_recipient_balance)
                             db.session.add(new_recipient_transaction)
                             
-                            # (Załóżmy, że płatność jest miesięczna - timedelta(days=30), ale dla testów codziennie timedelta(days=1))
+                            #(Let's assume the payment is monthly - timedelta(days=30), but for tests daily timedelta(days=1))
                             if payment.frequency == 'daily':
                                 payment.next_payment_date = payment.next_payment_date + timedelta(days=1)
                                 
@@ -108,13 +108,14 @@ def process_ddso_payments():
                             
                         except Exception as e:
                             db.session.rollback()
-                            # Wydrukuj komunikat o błędzie i pełny stos wywołań
+                            # Print the error message and the full call stack
                             print('An error occurred. Transfer failed:', e)
                             traceback.print_exc()   
                 
         else:
             print("No pending payments.")
-            return  # Zakończenie funkcji jeśli nie ma płatności do przetworzenia
+            # End of function if there is no payment to process
+            return  
         
         
         
@@ -127,33 +128,33 @@ def process_loans_payments():
         pending_loans_payments = Loans.query.filter(Loans.next_payment_date <= today).all()
         
         if len(pending_loans_payments) > 0:
-            # Wyświetl ilość rekordów w pending_loans_payments
+            # Display the number of records in pending_loans_payments
             print()
             print('LOANS: ')
             print()
             print()
-            print("Liczba oczekujących płatności rat pożyczek: ", len(pending_loans_payments))
+            print("Number of loan installments pending: ", len(pending_loans_payments))
             
             for loan_payment in pending_loans_payments:
                 
-                # Pobierz ID odbiorcy (Imperial Bank ) na podstawie id
+                # Get the recipient ID (Imperial Bank ) based on id
                 recipient = Users.query.filter_by(id = 25).first()
                 print("Recipient: ", recipient.username)
                 
-                # Pobierz ID wysyłającego  na podstawie id jako user_id z tablicy Loans
+                # Get the sender ID based on id as user_id from the Loans table
                 sender = Users.query.filter_by(id = loan_payment.user_id).first()
                 print("Sender: ", sender.username)
                 
                 if recipient:
-                    # Wyszukuje ostatnią transakcję Imperial bank
+                    # Searches for the last Imperial bank transaction
                     last_recipient_transaction = Transaction.query.filter_by(user_id = 25).order_by(Transaction.id.desc()).first()
                     
-                    # Wyszukuje ostatnią transakcję wysyłającego ratę pożyczki
+                    # Search for the last sender's transaction of the loan installment
                     last_sender_transaction = Transaction.query.filter_by(user_id = loan_payment.user_id).order_by(Transaction.id.desc()).first()
                     
-                    # Jeśli istnieje ostatnia transakcja banku, wykonaj dalsze działania
+                    # If there is a recent bank transaction, proceed further
                     if last_recipient_transaction:
-                        # Logika przetwarzania płatności
+                        # Payment processing logic
                         try:
                             # Preparation of data for transactions
                             transaction_date = date.today()
@@ -187,12 +188,8 @@ def process_loans_payments():
                                                                     balance=new_recipient_balance)
                             db.session.add(new_recipient_transaction)
                             
-                            
-                            
-                            
-                            # (Załóżmy, że płatność jest miesięczna - timedelta(days=30), ale dla testów codziennie timedelta(days=1))
-                            
-                            # ustalenie daty kolejnego przelewu (1 dla TEST Loan)
+                            # update the number of paid and unpaid installments, update the remaining amount to be repaid
+                            # setting the date of the next transfer
                             
                             loan_payment.installments_paid += 1
                             loan_payment.installments_to_be_paid -= 1
@@ -203,25 +200,23 @@ def process_loans_payments():
                                 db.session.delete(loan_payment)
                                 print('Loan paid !!!')
                             
-                            
-                                
                             db.session.commit()
                             print('Loans standing orders sended successful!')
                             
                         except Exception as e:
                             db.session.rollback()
-                            # Wydrukuj komunikat o błędzie i pełny stos wywołań
+                            # Print the error message and the full call stack
                             print('An error occurred. Transfer failed:', e)
                             traceback.print_exc()
                             
                 else:
                     print('Recipient not found')
-                    return  # Zakończenie funkcji jeśli odbiorca - Bank - nie został znaleziony, co jest nierealne ;)
-                    
-                            
+                    # End of the function if the recipient - Bank - has not been found, which is unrealistic ;)
+                    return          
         else:
             print("No pending loan payments.")
-            return  # Zakończenie funkcji jeśli nie ma płatności do przetworzenia
+            # Terminate the function if there is no payment to process
+            return  
         
         
         
@@ -231,11 +226,8 @@ def process_loans_payments():
 def create_app():
     app = Flask(__name__)
     app.config['SECRET_KEY'] = 'bc684cf3981dbcacfd60fc34d6985095'
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///ib_database_users.db'  # Ustawienie nazwy bazy danych
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # Zalecane dla wydajności
-    
-    # Twoja konfiguracja CSP: wszystkie zasoby Twojego projektu bankowości online znajdują się lokalnie w katalogu na dysku C (np. C:\OnlineBanking) 
-    # i są serwowane bezpośrednio przez Twoją aplikację Flask
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///ib_database_users.db'  # Setting the database name
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # Recommended for performance
     
     
     csp = {
@@ -252,24 +244,19 @@ def create_app():
 }
 
 
-    # Inicjalizacja Talisman z twoją konfiguracją CSP
+    # Initialize Talisman with your CSP configuration
     
     Talisman(app, content_security_policy=None, 
              content_security_policy_nonce_in=['script-src'], 
-             session_cookie_secure=False, # Wymusza używanie cookies tylko przez HTTPS
-             force_https=False, # Przekierowuje wszystkie żądania do HTTPS
-             # force_https_permanent=True, # Dodaje nagłówek Strict-Transport-Security z includeSubDomains i max-age
-             frame_options='SAMEORIGIN', # Ustawia X-Frame-Options na SAMEORIGIN, chroniąc przed clickjackingiem
-             # strict_transport_security=True, # włącza HSTS
-             # strict_transport_security_max_age=31536000,  # na przykład na rok
-             # strict_transport_security_include_subdomains=True, # łącza HSTS również dla subdomen,
-             # strict_transport_security_preload=True  # dodaje dyrektywę preload do nagłówka HSTS
+             session_cookie_secure=False, # Forces cookies to be used only via HTTPS
+             force_https=False, # Redirects all requests to HTTPS if True
+             # force_https_permanent=True, # Adds a Strict-Transport-Security header with includeSubDomains and max-age
+             frame_options='SAMEORIGIN', # Sets X-Frame-Options to SAMEORIGIN, protecting against clickjacking
+             # strict_transport_security=True, # enables HSTS
+             # strict_transport_security_max_age=31536000,  # for example for a year
+             # strict_transport_security_include_subdomains=True, # HSTS links also for subdomains,
+             # strict_transport_security_preload=True  # adds a preload directive to the HSTS header
              )
-
-    
-
-
-
 
     app.permanent_session_lifetime = timedelta(minutes = 45)
     
@@ -278,29 +265,27 @@ def create_app():
     login_manager.init_app(app)
     csrf.init_app(app)
     
-    # Inicjalizacja db z obiektem app
+    # Initializing db with app object
     db.init_app(app)
     
-    # Inicjalizacja schedulera
+    # Scheduler initialization
     scheduler.init_app(app)
     scheduler.start()
     
-    # Dodaj zadanie do schedulera cyklicznie trigger='cron'
-    # Uruchom zadanie tylko raz, krótko po starcie aplikacji trigger='date'
-    #scheduler.add_job(id='process_ddso', func=process_ddso_payments, trigger='cron', hour=0, minute=0)
+    # Add a task to the scheduler cyclically trigger='cron'
     
-    
-    # Uruchom zadanie tylko raz, krótko po starcie aplikacji trigger='date'
+    # Run the task only once, shortly after starting the application trigger='date'
     scheduler.add_job(id='process_ddso', func=process_ddso_payments, trigger = 'date', run_date = datetime.now() + timedelta(seconds = 5))
     scheduler.add_job(id='process_loans', func=process_loans_payments, trigger = 'date', run_date = datetime.now() + timedelta(seconds = 10))
 
-    # ... Rejestracja Blueprintów, inne konfiguracje ...
+    # Blueprint registration
     app.register_blueprint(transfer_bp)
     app.register_blueprint(login_bp)
     app.register_blueprint(ddso_bp)
     app.register_blueprint(create_transaction_bp)
     app.register_blueprint(edit_profile_bp)
     app.register_blueprint(add_customer_bp)
+    app.register_blueprint(add_recipient_bp)
     app.register_blueprint(grocery1_bp)
     app.register_blueprint(grocery2_bp)
     app.register_blueprint(grocery3_bp)
@@ -362,13 +347,13 @@ def initialize_database():
 def load_user(user_id):
     return Users.query.get(int(user_id))
     
-# Poniższy kod jest opcjonalny i służy do dodania przykładowego użytkownika podczas inicjalizacji bazy danych
+# The following code is optional and is used to add an example user during database initialization
 def create_sample_user():
-    # Sprawdź, czy użytkownik już istnieje w bazie
+    # Check if the user already exists in the database
     existing_user = Users.query.filter_by(username='admin').first()
 
     if not existing_user:
-        # Tworzenie konta admina
+        # Creating an admin account
         admin = Users(username='admin', role='admin', email='admin@ib.co.uk', phone_number='+447710989456', country='UK')
         admin.set_password('admin_password')
         db.session.add(admin)
@@ -385,6 +370,26 @@ def index():
 def main():
     return render_template('index.html')
 
+@app.route('/about_the_project', methods=['GET', 'POST'])
+def about_the_project():
+    return render_template('about_the_project.html')
+
+@app.route('/author', methods=['GET', 'POST'])
+def author():
+    return render_template('author.html')
+
+@app.route('/privacy', methods=['GET', 'POST'])
+def privacy():
+    return render_template('privacy.html')
+
+@app.route('/contact_us', methods=['GET', 'POST'])
+def contact_us():
+    return render_template('contact_us.html')
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    return render_template('register.html')
+
 
 @app.route('/logout')
 @login_required
@@ -396,21 +401,11 @@ def logout():
 
 
 
-
-
-
-
-
-
-
-
 @app.route('/dashboard/', defaults={'page': 1})
 @app.route('/dashboard/<int:page>' , methods=['GET', 'POST'])
-
 @login_required
 def dashboard(page=1):
     PER_PAGE = 20
-    
     user_transactions = Transaction.query.filter_by(user_id=current_user.id).paginate(page=page, per_page=PER_PAGE, error_out=False)
     last_transaction = Transaction.query.filter_by(user_id=current_user.id).order_by(Transaction.id.desc()).first()
 
@@ -418,69 +413,15 @@ def dashboard(page=1):
 
 
 
-
-    
-
-
-
-
-
-
-
-
-
-
-
 @app.route('/make_payment' , methods=['GET', 'POST'])
 @login_required
 def make_payment():
-    
     user_transactions = Transaction.query.filter_by(user_id=current_user.id).all()
     last_transaction = Transaction.query.filter_by(user_id=current_user.id).order_by(Transaction.id.desc()).first()
     user_recipients = Recipient.query.filter_by(user_id=current_user.id).all()
 
     return render_template('make_payment.html', user=current_user, all_transactions=user_transactions, last_transaction=last_transaction, all_recipients=user_recipients)
     
-
-
-@app.route('/add_recipient', methods=['GET', 'POST'])
-@login_required
-def add_recipient():
-    form = AddRecipientForm()
-    if form.validate_on_submit():
-        # Sprawdź, czy istnieje użytkownik z danym sort_code i account_number w tabeli Users
-        user_exists = Transaction.query.filter_by(sort_code=form.sort_code.data, account_number=form.account_number.data).first()
-        
-        if user_exists:
-            # Użytkownik istnieje, więc dodajemy nowego odbiorcę
-            new_recipient = Recipient(
-                user_id=current_user.id,
-                name=form.name.data,
-                sort_code=form.sort_code.data,
-                account_number=form.account_number.data
-            )
-            db.session.add(new_recipient)
-            db.session.commit()
-            flash('New recipient added successfully!', 'success')
-            return redirect(url_for('add_recipient'))
-        else:
-            # Użytkownik nie istnieje, wyświetl komunikat o błędzie
-            flash('The user with the given sort code and account number does not exist.', 'danger')
-
-    # Pobierz transakcje i odbiorców użytkownika do wyświetlenia na stronie
-    user_transactions = Transaction.query.filter_by(user_id=current_user.id).all()
-    user_recipients = Recipient.query.filter_by(user_id=current_user.id).all()
-    last_transaction = Transaction.query.filter_by(user_id=current_user.id).order_by(Transaction.id.desc()).first()
-    
-    return render_template('add_recipient.html', form=form, user=current_user, all_transactions=user_transactions, last_transaction=last_transaction, all_recipients=user_recipients)
-
-
-
-
-
-
-
-
 
 
 @app.route('/loans', methods=['GET', 'POST'])
@@ -495,7 +436,6 @@ def loans():
 @login_required
 def my_loans():
     last_transaction = Transaction.query.filter_by(user_id=current_user.id).order_by(Transaction.id.desc()).first()
-    
     user_loans = Loans.query.filter_by(user_id=current_user.id).all()
     
     return render_template('my_loans.html', last_transaction=last_transaction, user_loans=user_loans)
@@ -533,41 +473,24 @@ def test_loan():
     return render_template('test_loan.html', last_transaction=last_transaction)
 
 
-
-
-
-
-
-
-
-
-
-
-
-@app.route('/delete_all_loans', methods=['GET', 'POST'])
+@app.route('/delete_all_loans', methods=['POST'])
 @login_required
-#@admin_required
+@admin_required
 def delete_all_loans():
     try:
-        # Usuwa wszystkie rekordy z tabeli Loans
+        # Deletes all records from the Loans table
         num_deleted = db.session.query(Loans).delete()
-        # Zatwierdza zmiany w bazie danych
         db.session.commit()
         print(f"Deleted {num_deleted} loans.")
+        return redirect(url_for('products_and_service_management'))
     except Exception as e:
-        # W przypadku błędu wycofuje zmiany
         db.session.rollback()
         print(f"Error deleting loans: {e}")
-        
-    if current_user.role == 'admin':
-        return redirect(url_for('products_and_service_management'))
-    else:
-        return redirect(url_for('my_loans'))
         
     
 
 
-
+# For testing purposes
 @app.route('/add_one_day', methods=['GET', 'POST'])
 @login_required
 def add_one_day():
@@ -577,11 +500,9 @@ def add_one_day():
         
         for loan in loans:
             loan.next_payment_date -= timedelta(days = 1)
-        
         db.session.commit()
         
     except Exception as e:
-        # W przypadku błędu wycofuje zmiany
         db.session.rollback()
         print(f"Error deleting loans: {e}")
         
@@ -589,14 +510,10 @@ def add_one_day():
 
 
 
-
-
-
 @app.route('/find_loans_by_product_id', methods=['GET', 'POST'])
 @login_required
 @admin_required
 def find_loans_by_product_id():
-    #loans = Transaction.query.all()
     
     if request.method == 'POST':
         product_id = request.form.get('product_id')
@@ -612,15 +529,6 @@ def find_loans_by_product_id():
         return render_template('products_and_service_management.html', loans = loans)
     
     return render_template('products_and_service_management.html', loans = loans)
-
-
-
-
-
-
-
-
-
 
 
  
@@ -642,11 +550,6 @@ def account_data():
     last_transaction = Transaction.query.filter_by(user_id=current_user.id).order_by(Transaction.id.desc()).first()
 
     return render_template('account_data.html', user=current_user, all_transactions=user_transactions, last_transaction=last_transaction)
-    
-
-@app.route('/register', methods=['GET', 'POST'])
-def register():
-    return render_template('register.html')
 
 
 
@@ -657,13 +560,13 @@ def register():
 def cwc():
     all_queries = SupportTickets.query.all()
     
-    # Podzapytanie do znalezienia najnowszej daty dla każdego reference_number
+    # A subquery to find the latest date for each reference number
     subquery = (db.session.query(SupportTickets.reference_number,
                                  func.max(SupportTickets.created_at).label('latest_date'))
                           .group_by(SupportTickets.reference_number)
                           .subquery())
 
-    # Zewnętrzne zapytanie do pobrania pełnych rekordów
+    # External query to retrieve full records
     latest_tickets_query = (db.session.query(SupportTickets)
                             .join(subquery, and_(SupportTickets.reference_number == subquery.c.reference_number,
                                                  SupportTickets.created_at == subquery.c.latest_date))
@@ -674,6 +577,7 @@ def cwc():
 
     return render_template('communication_with_clients.html', all_queries = all_queries, latest_tickets=latest_tickets_query)
     
+    
 @app.route('/communication_with_clients_sorting', methods=['GET', 'POST'])
 @login_required
 @admin_required
@@ -682,36 +586,30 @@ def cwcs():
     return render_template('communication_with_clients_sorting.html')
     
     
-    
-
 @app.route('/admin_dashboard_cm', methods=['GET', 'POST'])
 @login_required
 @admin_required
 def admin_dashboard_cm():
-    
     all_users = Users.query.all()
     all_transactions = Transaction.query.all()
 
     return render_template('admin_dashboard_cm.html', all_users=all_users, all_transactions=all_transactions)
 
+
 @app.route('/admin_dashboard_cam', methods=['GET', 'POST'])
 @login_required
 @admin_required
 def admin_dashboard_cam():
-    
     all_users = Users.query.all()
     all_locked_users = LockedUsers.query.all()
 
     return render_template('admin_dashboard_cam.html', all_users=all_users, all_locked_users = all_locked_users)
          
 
-    
-
 @app.route('/transaction_management', methods=['GET', 'POST'])
 @login_required
 @admin_required
 def transaction_management():
-    
     all_users = Users.query.all()
     all_transactions = Transaction.query.all()
     ddso_transactions = DDSO.query.all()
@@ -719,24 +617,17 @@ def transaction_management():
     return render_template('transaction_management.html', all_users=all_users, all_transactions=all_transactions, ddso_transactions=ddso_transactions)
 
     
-    
-
 @app.route('/help_center', methods=['GET', 'POST']) 
 @login_required
 def help_center():
-    #user_queries = SupportTickets.query.filter_by(user_id=current_user.id).all()
-    
-    # Najpierw tworzymy subzapytanie, aby znaleźć najnowsze daty dla każdego unikalnego numeru referencyjnego
+    # First, we create a subquery to find the latest dates for each unique reference number
     subquery = db.session.query(SupportTickets.reference_number,func.max(SupportTickets.created_at).label('max_date')).group_by(SupportTickets.reference_number).subquery()
 
-    # Następnie dołączamy to subzapytanie do głównego zapytania, aby pobrać ostatnie rekordy
+    # We then append this subquery to the main query to retrieve the latest records
     user_queries = db.session.query(SupportTickets).join(subquery,(SupportTickets.reference_number == subquery.c.reference_number) &
         (SupportTickets.created_at == subquery.c.max_date)).filter(SupportTickets.user_id == current_user.id).all()
 
-    
     return render_template('help_center.html', all_queries = user_queries)
-
-
 
 
 @app.route('/find_customer_by_role', methods=['GET', 'POST'])
@@ -751,8 +642,6 @@ def find_customer_by_role():
 
     return render_template('admin_dashboard_cam.html', users = users, all_locked_users = all_locked_users)
         
-
-
 
 
 @app.route('/products_and_service_management', methods=['GET', 'POST'])
@@ -771,15 +660,11 @@ def safety_settings():
     return render_template('safety_settings.html')
 
 
-
-
 @app.route('/team', methods=['GET', 'POST'])
 @login_required
 @admin_required
 def team():
-    
-    # Widok wyświetla członków zarządu, management, pracowników banku, logika na stronie html
-    # Pobierz wszystkich użytkowników z bazy danych
+    # The view displays board members, management and bank employees
     all_users = Users.query.all()
     
     return render_template('team.html', all_users=all_users)
@@ -808,36 +693,6 @@ def change_password(user_id):
 
     return render_template('change_password.html', form=form, user=user)
 
-
-
-
-
-
-@app.route('/about_the_project', methods=['GET', 'POST'])
-def about_the_project():
-    return render_template('about_the_project.html')
-
-
-@app.route('/author', methods=['GET', 'POST'])
-def author():
-    return render_template('author.html')
-
-
-
-
-
-@app.route('/privacy', methods=['GET', 'POST'])
-def privacy():
-    return render_template('privacy.html')
-
-
-@app.route('/contact_us', methods=['GET', 'POST'])
-def contact_us():
-    return render_template('contact_us.html')
-
-'''
-528
-'''
 
 if __name__ == "__main__":
     initialize_app()
