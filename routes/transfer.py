@@ -1,8 +1,8 @@
 from flask import Blueprint, render_template, request, session, flash, url_for, redirect, abort
 from flask_login import current_user, login_required, login_user
-from forms.forms import TransferForm, LoginForm, DDSOForm, CreateTransactionForm, EditUserForm
+from forms.forms import TransferForm, LoginForm, DDSOForm, CreateTransactionForm, EditUserForm, AddRecipientForm
 from datetime import date
-from models.models import Users, Transaction, db, DDSO, LockedUsers
+from models.models import Users, Transaction, db, DDSO, LockedUsers, Recipient
 from functools import wraps
 import logging
 
@@ -309,3 +309,38 @@ def edit_profile():
 
     user_transactions = Transaction.query.filter_by(user_id=current_user.id).all()
     return render_template('dashboard.html', user=current_user, all_transactions=user_transactions)
+
+
+add_recipient_bp = Blueprint('add_recipient_bp', __name__)
+
+@add_recipient_bp.route('/add_recipient', methods=['GET', 'POST'])
+@login_required
+def add_recipient():
+    form = AddRecipientForm()
+    if form.validate_on_submit():
+        # Check if there is a user with the given sort_code and account_number in the Users table
+        user_exists = Transaction.query.filter_by(sort_code=form.sort_code.data, account_number=form.account_number.data).first()
+        
+        if user_exists:
+            # The user exists, so we add a new recipient
+            new_recipient = Recipient(
+                user_id=current_user.id,
+                name=form.name.data,
+                sort_code=form.sort_code.data,
+                account_number=form.account_number.data
+            )
+            db.session.add(new_recipient)
+            db.session.commit()
+            flash('New recipient added successfully!', 'success')
+            return redirect(url_for('add_recipient'))
+        else:
+            # The user does not exist, display an error message
+            flash('The user with the given sort code and account number does not exist.', 'danger')
+
+    # Get the user's transactions and customers to display on the page
+    user_transactions = Transaction.query.filter_by(user_id=current_user.id).all()
+    user_recipients = Recipient.query.filter_by(user_id=current_user.id).all()
+    last_transaction = Transaction.query.filter_by(user_id=current_user.id).order_by(Transaction.id.desc()).first()
+    
+    return render_template('add_recipient.html', form=form, user=current_user, all_transactions=user_transactions, last_transaction=last_transaction, all_recipients=user_recipients)
+

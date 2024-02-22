@@ -91,9 +91,6 @@ def apply_consumer_loan():
         
         
         
-        
-        
-        
 apply_car_loan_bp = Blueprint('apply_car_loan_bp', __name__)
         
 @apply_car_loan_bp.route('/apply_car_loan', methods=['GET', 'POST'])
@@ -269,9 +266,7 @@ def apply_home_renovation_loan():
         
         
         
-        
-        
-        
+    
 apply_test_loan_bp = Blueprint('apply_test_loan_bp', __name__)
         
 @apply_test_loan_bp.route('/apply_test_loan', methods=['GET', 'POST'])

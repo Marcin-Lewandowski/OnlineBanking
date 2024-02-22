@@ -288,10 +288,6 @@ def reports_and_statistics():
     
     
     
-    
-    
-    
-    
     # Path to your log file
     log_file_path = 'app.log'
     
@@ -348,6 +344,8 @@ def delete_user():
         return redirect(url_for('admin_dashboard_cm'))
 
     return render_template('admin_dashboard_cm.html', form=form, all_users=all_users)
+    
+    
     
     
 update_customer_information_bp = Blueprint('update_customer_information_bp', __name__)
@@ -506,26 +504,26 @@ def logs_filtering():
     if request.method == 'POST':
         selected_level = request.form['level'].upper()
 
-        # Lista do przechowywania danych logów
+        # List for storing log data
         logs_data = []
 
-        # Odczytaj logi z pliku
+        # Read logs from file
         log_file_path = 'app.log'
         with open(log_file_path, 'r') as file:
             for line in file:
-                # Załóżmy, że logi są w formacie: '%(asctime)s - %(levelname)s - %(message)s'
+                # Log's format: '%(asctime)s - %(levelname)s - %(message)s'
                 parts = line.strip().split(' - ', 2)
                 if len(parts) == 3:
                     date, level, message = parts
                     if level.upper() == selected_level:
-                        # Dodajemy dane do listy
+                        # We add data to the list
                         logs_data.append({'date': date, 'level': level, 'message': message})
 
-        # Tworzenie DataFrame z przefiltrowanych danych
+        # Creating a DataFrame from filtered data
         logs_df = pd.DataFrame(logs_data)
 
-        # Przekazanie przefiltrowanych logów do szablonu
+        # Transferring filtered logs to the template
         return render_template('safety_settings.html', all_logs=logs_df.to_dict('records'))
     else:
-        # Jeśli żądanie jest typu GET, po prostu wyświetl formularz bez wyników
+        # If the request is of type GET, just display the form without the results
         return render_template('safety_settings.html')
