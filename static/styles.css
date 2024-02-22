@@ -267,7 +267,7 @@ font-size: 22px;
   display: flex;
   justify-content: space-between;
   margin: 0 auto;
-  max-width: 97%;
+  max-width: 100%;
   border-color: orange; 
   border-style: solid;
   padding-bottom: 10px;
