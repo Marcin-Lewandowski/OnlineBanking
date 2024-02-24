@@ -420,6 +420,11 @@ def initialize_app():
     with app.app_context():
         db.create_all()
         create_sample_user()
+        recipienci = Recipient.query.all()
+        for recipient in recipienci:
+            print(recipient.id)
+            if recipient.id == 6:
+                print(recipient.user_id)
         
         
 @app.before_request
@@ -1063,27 +1068,20 @@ def admin_dashboard_cam():
 @admin_required
 def transaction_management():
     """
-    Presents a dashboard for authenticated administrators to manage Direct Debit Standing Orders (DDSO) transactions.
+    Renders the transaction management page.
 
-    Secured through the '/transaction_management' URL, this function is accessible only to users with administrator
-    privileges, as ensured by the @login_required and @admin_required decorators.
+    This view is accessible only to logged-in users with administrative privileges. It's intended to display the transaction
+    management interface, where administrators can view, filter, and manage transactions. The function handles only GET requests
+    and serves as the entry point for transaction management within the application.
 
-    The primary operation within this function involves querying the database for all DDSO transactions, providing
-    a comprehensive list of these transactions to the 'transaction_management.html' template. This enables
-    administrators to oversee and interact with DDSO transactions in a centralized manner.
+    No transaction data is fetched or passed to the template by this function itself; rather, it sets up the framework for other
+    functions or client-side scripts to populate the page dynamically or through subsequent form submissions for filtering.
 
     Returns:
-        The 'transaction_management.html' template, rendered with the list of DDSO transactions as a context variable.
-
-    Note:
-        - Focusing exclusively on DDSO transactions highlights the specific need for oversight in this area of
-          financial management, potentially due to the complexities and implications of standing order transactions.
-        - Future enhancements could introduce more sophisticated features, such as transaction filtering, search
-          capabilities, and detailed transaction audits, to further aid administrators in transaction management tasks.
+        render_template: The 'transaction_management.html' template without any initial transaction data. The template is expected
+        to provide functionalities for displaying and filtering transactions based on various criteria.
     """
-    ddso_transactions = DDSO.query.all()
-
-    return render_template('transaction_management.html', ddso_transactions=ddso_transactions)
+    return render_template('transaction_management.html')
 
     
     
@@ -1135,23 +1133,27 @@ def help_center():
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 @app.route('/find_customer_by_role', methods=['GET', 'POST'])
 @login_required
 @admin_required    
 def find_customer_by_role():
+    """
+    Handle the retrieval and display of users based on their role for an admin dashboard.
+
+    This route is protected and requires the user to be logged in and have administrative privileges.
+    It supports both GET and POST requests. On a POST request, it fetches users that match a specific
+    role provided by the client through a form submission. It always retrieves all locked users
+    regardless of the request method.
+
+    The function queries the database for users with the specified role (via POST request) and
+    for all locked users. It then renders the admin dashboard template, passing the queried users
+    and all locked users to the template.
+
+    Returns:
+        A rendered template ('admin_dashboard_cam.html') with two contexts:
+        - users: A list of users that match the specified role (empty if the request method is GET).
+        - all_locked_users: A list of all users who are currently locked.
+    """
     if request.method == 'POST':
         role = request.form.get('role')
         
@@ -1166,7 +1168,19 @@ def find_customer_by_role():
 @login_required
 @admin_required
 def products_and_service_management():
-    
+    """
+    Display the products and service management page for administrators.
+
+    This route is protected and requires the user to be logged in with administrative privileges.
+    It serves as a management interface for products and services, allowing administrators to
+    view and manage them. This function handles both GET and POST requests but does not differentiate
+    between them, as its primary purpose is to display the management page.
+
+    Returns:
+        A rendered template ('products_and_service_management.html') for managing products and services.
+        This template is intended to be used by administrators for overseeing product and service listings,
+        modifications, and other related administrative tasks.
+    """
     return render_template('products_and_service_management.html')
 
 
@@ -1174,7 +1188,19 @@ def products_and_service_management():
 @login_required
 @admin_required
 def safety_settings():
-    
+    """
+    Renders the safety settings page for administrators.
+
+    This route is secured and accessible only to users who are logged in with administrative rights.
+    It is designed to provide an interface for administrators to access and manage safety-related
+    settings of the application. 
+    The function's primary role is to render a template for the safety settings page, where administrators
+    can view and modify settings related to the safety and security of the application and its users.
+
+    Returns:
+        A rendered template ('safety_settings.html') for the safety settings page, intended for administrative
+        use in managing application safety and security settings.
+    """
     return render_template('safety_settings.html')
 
 
@@ -1182,7 +1208,18 @@ def safety_settings():
 @login_required
 @admin_required
 def team():
-    # The view displays board members, management and bank employees
+    """
+    Serve the team management page, displaying board members, management, and bank employees.
+
+    This route is protected, requiring the user to be logged in and have administrative privileges
+    to access. It is designed to provide an overview of all the team members, including board members,
+    management, and bank employees, to the administrators. The function fetches all users from the
+    database and passes them to the 'team.html' template for display.
+
+    Returns:
+        A rendered template ('team.html'). This enables administrators to view and manage team members across different
+        roles and departments.
+    """
     all_users = Users.query.all()
     
     return render_template('team.html', all_users=all_users)
@@ -1192,6 +1229,14 @@ def team():
 @login_required
 @admin_required
 def list_users():
+    """
+    This wiev presents usernames of users and link to website to change user's password
+
+    Returns:
+        A rendered template ('list_users.html') with the context 'all_users', containing a list of
+        all users fetched from the database. This list is intended for administrative purposes, offering
+        a comprehensive overview of users for management and oversight.
+    """
     all_users = Users.query.all()
     return render_template('list_users.html', all_users=all_users)
 
@@ -1200,6 +1245,27 @@ def list_users():
 @login_required
 @admin_required
 def change_password(user_id):
+    """
+    Allows administrators to change the password for a specific user.
+
+    This route is secured and can only be accessed by users who are logged in with administrative
+    privileges. It is designed to facilitate the process of changing a user's password from the
+    administrative dashboard. The function identifies the user by their unique ID, which is passed
+    in the URL. If the user does not exist, a 404 error is raised.
+
+    The function uses a form (ChangePasswordForm) to collect the new password. If the form is
+    successfully validated upon submission (indicating a POST request and valid form data), the
+    user's password is updated in the database. A flash message is displayed to confirm the update,
+    and the administrator is redirected back to the list of users.
+
+    Parameters:
+        user_id (int): The unique identifier of the user whose password is being changed.
+
+    Returns:
+        On GET request: A rendered template ('change_password.html') with the form for entering a new password.
+        On successful POST request (form submission and validation): A redirection to the 'list_users' view,
+        along with a success message indicating that the password has been updated.
+    """
     user = Users.query.get_or_404(user_id)
     form = ChangePasswordForm()
 
@@ -1212,7 +1278,98 @@ def change_password(user_id):
     return render_template('change_password.html', form=form, user=user)
 
 
+
+
+@app.route('/find_ddso_by_user_id', methods=['POST'])
+@login_required
+@admin_required
+def find_ddso_by_user_id():
+    """
+    Filters and displays Direct Debits and Standing Orders (DDSO) for a specific user.
+
+    This view is accessible only to logged-in users with administrative privileges and handles POST requests to filter DDSO
+    transactions based on a provided user ID. It retrieves the user's name from the Users model to display alongside their
+    transactions for a more personalized management experience.
+
+    The function collects the user ID from the form submission, uses it to filter DDSO transactions from the database, and
+    retrieves the corresponding user's name for display. It then renders the 'products_and_service_management.html' template,
+    passing the filtered DDSO transactions and the user's name for presentation.
+
+    Parameters:
+        None directly; relies on form data submitted via POST request.
+
+    Returns:
+        render_template: Renders the 'products_and_service_management.html' template with context variables 'ddso_transactions',
+        containing the list of filtered DDSO transactions, and 'name', the username associated with the provided user ID. If
+        accessed without a POST request or if no user ID is provided, it renders the template without DDSO transactions.
+    """
+    if request.method == 'POST':
+        user_id = request.form.get('user_id')
+        query = DDSO.query
+        sender = Users.query.filter_by(id = user_id).first()
+        name = sender.username
+        
+        # Filtering by user id 
+        if user_id:
+            query = query.filter(DDSO.user_id == user_id)
+
+        # Results
+        ddso_transactions = query.all()
+        
+        return render_template('products_and_service_management.html', ddso_transactions = ddso_transactions, name = name)
+    
+    return render_template('products_and_service_management.html')
+
+
+
+
+@app.route('/delete_recipient/<int:id>', methods=['GET', 'POST'])
+@login_required
+def delete_recipient(id):
+    recipient = Recipient.query.get_or_404(id) 
+
+    try:
+        db.session.delete(recipient)  
+        db.session.commit()  
+        flash('Recipient successfully deleted.', 'success') 
+        return redirect(url_for('add_recipient_bp.add_recipient'))
+    except Exception as e:
+        db.session.rollback()  
+        flash('Error deleting recipient.', 'error')
+        print(e)  
+        return redirect(url_for('add_recipient_bp.add_recipient'))
+    
+
+
+
+@app.route('/delete_ddso/<int:id>', methods=['GET', 'POST'])
+@login_required
+def delete_ddso(id):
+    
+    ddso_to_delete = DDSO.query.get_or_404(id)
+    reference_number = ddso_to_delete.reference_number
+    recipient_name = ddso_to_delete.recipient
+    
+    try:
+        db.session.delete(ddso_to_delete)
+        db.session.commit()
+        flash(f'Direct debit / standing order {reference_number} for {recipient_name} successfully deleted.', 'success')
+        return redirect(url_for('ddso_bp.ddso'))
+    except Exception as e:
+        db.session.rollback()  
+        flash('Error deleting recipient.', 'error')
+        print(e)  
+        return redirect(url_for('ddso_bp.ddso'))
+    
+ 
+
+
+
+
+
+
 if __name__ == "__main__":
     initialize_app()
+    
     
     app.run(debug=True)
