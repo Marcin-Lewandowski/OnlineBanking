@@ -12,7 +12,7 @@ from routes.my_routes_admin import transactions_filter_bp, reports_and_statistic
 from routes.my_routes_admin import admin_dashboard_bp, logs_filtering_bp, cwc_bp
 from routes.my_routes_loans import apply_consumer_loan_bp, apply_car_loan_bp, apply_home_renovation_loan_bp, apply_test_loan_bp
 from models.models import Users, Transaction, db, Recipient, DDSO, SupportTickets, LockedUsers, Loans
-from sqlalchemy import func, and_, case
+from sqlalchemy import func
 from routes.transfer import admin_required
 from flask_apscheduler import APScheduler
 from flask_talisman import Talisman
@@ -1326,6 +1326,25 @@ def find_ddso_by_user_id():
 @app.route('/delete_recipient/<int:id>', methods=['GET', 'POST'])
 @login_required
 def delete_recipient(id):
+    """
+    Delete a recipient record from the database.
+
+    This route handler will attempt to delete a recipient based on the given ID. If the recipient is found,
+    it will be deleted from the database. On successful deletion, the user will be redirected to the add_recipient
+    page with a success message. If an error occurs during the deletion process, a rollback is performed, and
+    the user is redirected back to the add_recipient page with an error message.
+
+    Parameters:
+    - id (int): The ID of the recipient to be deleted.
+
+    Returns:
+    - Redirect: A redirection to the 'add_recipient' route. The redirection will be accompanied by a flash message
+      indicating either the successful deletion of the recipient or an error in the process.
+
+    Note:
+    This function requires the user to be logged in to access this route. If not logged in, the user will be redirected
+    to the login page.
+    """
     recipient = Recipient.query.get_or_404(id) 
 
     try:
@@ -1345,7 +1364,27 @@ def delete_recipient(id):
 @app.route('/delete_ddso/<int:id>', methods=['GET', 'POST'])
 @login_required
 def delete_ddso(id):
-    
+    """
+    Delete a Direct Debit/Standing Order (DDSO) record from the database.
+
+    This route handler will attempt to delete a DDSO based on the given ID. It first retrieves the DDSO
+    by ID and, if found, proceeds to delete it from the database. Upon successful deletion, the user is redirected
+    to the DDSO page with a success message indicating the specific DDSO (by reference number and recipient name)
+    that was deleted. If an error occurs during the deletion process, the transaction is rolled back, and
+    the user is redirected back to the DDSO page with an error message.
+
+    Parameters:
+    - id (int): The ID of the DDSO to be deleted.
+
+    Returns:
+    - Redirect: A redirection to the 'ddso_bp.ddso' route. The redirection will be accompanied by a flash message
+      indicating either the successful deletion of the DDSO or an error in the process.
+
+    Note:
+    This function requires the user to be logged in to access this route. If not logged in, the user will be
+    redirected to the login page. The function extracts and utilizes the DDSO's reference number and recipient's
+    name for a more descriptive success message upon deletion.
+    """
     ddso_to_delete = DDSO.query.get_or_404(id)
     reference_number = ddso_to_delete.reference_number
     recipient_name = ddso_to_delete.recipient
@@ -1363,13 +1402,6 @@ def delete_ddso(id):
     
  
 
-
-
-
-
-
 if __name__ == "__main__":
     initialize_app()
-    
-    
     app.run(debug=True)
