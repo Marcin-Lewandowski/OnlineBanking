@@ -26,17 +26,21 @@
 <table border="1" class="center-table">
   <thead>
       <tr>
-          <th>Name</th>
-          <th>Sort Code</th>
-          <th>Account Number</th>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Sort Code</th>
+        <th>Account Number</th>
+        <th>Action</th>
       </tr>
   </thead>
   <tbody>
       {% for recipient in all_recipients %}
           <tr>
-              <td>{{ recipient.name }}</td>
-              <td>{{ recipient.sort_code }}</td>
-              <td>{{ recipient.account_number }}</td>
+            <td>{{ recipient.id}}</td>
+            <td>{{ recipient.name }}</td>
+            <td>{{ recipient.sort_code }}</td>
+            <td>{{ recipient.account_number }}</td>
+            <td><a href="{{ url_for('delete_recipient', id = recipient.id) }}" >Delete recipient</a></td>
           </tr>
       {% endfor %}
   </tbody>

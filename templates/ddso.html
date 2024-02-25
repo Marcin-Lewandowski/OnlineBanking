@@ -24,6 +24,7 @@
 <table border="1" class="center-table">
     <thead>
     <tr>
+        <th>ID</th>
         <th>User ID</th>
         <th>Recipient name</th>
         <th>Ref number</th>
@@ -31,18 +32,21 @@
         <th>Type</th>
         <th>Frequency</th>
         <th>Next payment date</th>
+        <th>Action</th>
     </tr>
     </thead>
     <tbody>
     {% for dd_so in all_dd_so %}
         <tr>
+            <td>{{ dd_so.id}}</td>
             <td>{{ dd_so.user_id }}</td>
             <td>{{ dd_so.recipient }}</td>
             <td>{{ dd_so.reference_number }}</td>
-            <td>{{ dd_so.amount }}</td>
+            <td>£ {{ dd_so.amount }}</td>
             <td>{{ dd_so.transaction_type }}</td>
             <td>{{ dd_so.frequency }}</td>
             <td>{{ dd_so.next_payment_date }}</td>
+            <td><a href="{{ url_for('delete_ddso', id = dd_so.id) }}" >Delete DD / SO</a></td>
         </tr>
     {% endfor %}
     </tbody>

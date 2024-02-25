@@ -9,6 +9,7 @@
 {% block content %}
 
 <center>
+    <h2>Filter transactions for specific user: </h2>
 <form action="{{ url_for('transactions_filter_bp.transactions_filter') }}" method="post" role="form">
     
     <!-- Hidden field with CSRF token -->
@@ -36,7 +37,7 @@
     <option value="FPI">Faster Payment Incoming</option>
     <option value="FPO">Faster Payment Outgoing</option>
     <option value="MTG">Mortgage</option>
-    </select><br>
+    </select><br><br>
 
     <input type="submit" value="Show transactions">
     
@@ -73,77 +74,6 @@
         {% endif %}
     </tbody>
 </table>
-
-
-
-<!-- Table with DD / SO transactions -->
-<h3>DD / SO transaction List</h3>
-
-
-<table border="1">
-    <thead>
-        <tr>
-            <th>User ID</th>
-            <th>Recipient</th>
-            <th>Reference number</th>
-            <th>Amount</th>
-            <th>Transaction type</th>
-            <th>Frequency</th>
-            <th>Next payment date</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for transaction in ddso_transactions %}
-            <tr>
-                <td>{{ transaction.user_id }}</td>
-                <td>{{ transaction.recipient }}</td>
-                <td>{{ transaction.reference_number }}</td>
-                <td>{{ transaction.amount }}</td>
-                <td>{{ transaction.transaction_type }}</td>
-                <td>{{ transaction.frequency }}</td>
-                <td>{{ transaction.next_payment_date }}</td>
-            </tr>
-        {% endfor %}
-    </tbody>
-</table>
-
-
-<!-- Table with all created transactions -->
-<h3>Transaction List</h3>
-
-<table border="1">
-    <thead>
-        <tr>
-            <th>Transaction ID</th>
-            <th>User ID</th>
-            <th>Transaction Date</th>
-            <th>Transaction Type</th>
-            <th>Sort Code</th>
-            <th>Account Number</th>
-            <th>Description</th>
-            <th>Debit Amount</th>
-            <th>Credit Amount</th>
-            <th>Balance</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for transaction in all_transactions %}
-            <tr>
-                <td>{{ transaction.id }}</td>
-                <td>{{ transaction.user_id }}</td>
-                <td>{{ transaction.transaction_date }}</td>
-                <td>{{ transaction.transaction_type }}</td>
-                <td>{{ transaction.sort_code }}</td>
-                <td>{{ transaction.account_number }}</td>
-                <td>{{ transaction.transaction_description }}</td>
-                <td>{{ transaction.debit_amount }}</td>
-                <td>{{ transaction.credit_amount }}</td>
-                <td>{{ transaction.balance }}</td>
-            </tr>
-        {% endfor %}
-    </tbody>
-</table>
-
 
 </center>
 {% endblock %}

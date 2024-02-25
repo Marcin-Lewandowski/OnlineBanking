@@ -11,9 +11,6 @@
 
 <h3>Products and service management </h3>
 
-<h2><a href="{{ url_for('delete_all_loans') }}">Delete all loans</a> </h2>
-
-
 <div class="container2">
    <div class="left2">
       <h3>Filter loans by product_id</h3>
@@ -131,6 +128,64 @@
             {% endif %}
          </tbody>
       </table>
+</div>
+<br><br>
+
+
+
+<div class="container2">
+   <div class="left2">
+      <h3>Filter direct debit / standing orders by user id</h3>
+
+     <form action="{{ url_for('find_ddso_by_user_id') }}" method="post" role="form">
+    
+      <!-- Hidden field with CSRF token -->
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+  
+      <!-- Input field for entering user ID -->
+      <label for="user_id">User ID:</label>
+      <input type="text" id="user_id" name="user_id" required>
+      <br><br>
+  
+      <input type="submit" value="Submit"> 
+      <br><br>    
+      </form>
+
+
+   </div>
+
+   <div class="right2">
+
+      <!-- Table with DD / SO transactions -->
+      <h3>DD / SO transaction list for {{ name }}</h3>
+
+      <table border="1">
+         <thead>
+            <tr>
+                  <th>User ID</th>
+                  <th>Recipient</th>
+                  <th>Reference number</th>
+                  <th>Amount</th>
+                  <th>Transaction type</th>
+                  <th>Frequency</th>
+                  <th>Next payment date</th>
+            </tr>
+         </thead>
+         <tbody>
+            {% for transaction in ddso_transactions %}
+                  <tr>
+                     <td>{{ transaction.user_id }}</td>
+                     <td>{{ transaction.recipient }}</td>
+                     <td>{{ transaction.reference_number }}</td>
+                     <td>£ {{ transaction.amount }}</td>
+                     <td>{{ transaction.transaction_type }}</td>
+                     <td>{{ transaction.frequency }}</td>
+                     <td>{{ transaction.next_payment_date }}</td>
+                  </tr>
+            {% endfor %}
+         </tbody>
+      </table>
+   </div>
 </div>
 
 {% endblock %}
