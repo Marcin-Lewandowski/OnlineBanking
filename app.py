@@ -420,11 +420,7 @@ def initialize_app():
     with app.app_context():
         db.create_all()
         create_sample_user()
-        recipienci = Recipient.query.all()
-        for recipient in recipienci:
-            print(recipient.id)
-            if recipient.id == 6:
-                print(recipient.user_id)
+        
         
         
 @app.before_request
