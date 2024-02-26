@@ -10,7 +10,32 @@ apply_consumer_loan_bp = Blueprint('apply_consumer_loan_bp', __name__)
 @apply_consumer_loan_bp.route('/apply_consumer_loan', methods=['GET', 'POST'])
 @login_required
 def apply_consumer_loan():
-    
+    """
+    Processes applications for consumer loans by logged-in users.
+
+    This route allows logged-in users to apply for a consumer loan. It first checks if the user already has
+    a loan with the status 'granted' to prevent multiple active loans. If an active loan exists, the user is
+    notified and redirected to a relevant page.
+
+    If no active loan exists, the function creates a new loan with predefined parameters (such as the loan amount,
+    interest rate, and repayment terms) and assigns it to the user. It also performs financial transactions to
+    simulate the disbursement of the loan amount from Imperial Bank to the user, updating the respective balances
+    in the transactions table.
+
+    The process involves:
+    - Checking for existing active loans.
+    - Creating a new loan record with 'granted' status if no active loan exists.
+    - Simulating the loan disbursement by creating transaction records for both the bank and the user,
+      updating their balances accordingly.
+
+    In case of successful loan grant, a success message is flashed, and the user is redirected. If any part
+    of the transaction fails (e.g., due to a database error), the operation is rolled back, an error message
+    is flashed, and the user is redirected to a fallback page.
+
+    Returns:
+        A redirect to a specified page depending on the outcome of the loan application process (my_loans.html or
+        consumer_loan in case of error).
+    """
     in_progress_customer_loan = Loans.query.filter_by(user_id=current_user.id, loan_status='granted').first()
     
     if in_progress_customer_loan:
@@ -96,7 +121,32 @@ apply_car_loan_bp = Blueprint('apply_car_loan_bp', __name__)
 @apply_car_loan_bp.route('/apply_car_loan', methods=['GET', 'POST'])
 @login_required
 def apply_car_loan():
-    
+    """
+    Facilitates the application process for a car loan for logged-in users.
+
+    Just like the `apply_consumer_loan` function, this route checks if the user already has an active
+    loan marked as 'granted' to prevent the accumulation of multiple concurrent loans. If an existing
+    loan is found, it notifies the user and redirects them to a relevant page without proceeding with
+    the application.
+
+    If no active loan is detected, the function initiates the creation of a new car loan with predefined
+    parameters such as the loan amount, interest rate, repayment schedule, and loan duration. These
+    parameters are specifically tailored to meet the conditions of a car loan product. It then simulates
+    the financial transaction that disburses the loan amount from the bank to the user, updating the
+    transaction records for both parties to reflect this change.
+
+    The function encapsulates the following steps:
+    - Verifying the absence of an in-progress loan for the user.
+    - Creating a new loan record with the 'granted' status and car loan-specific terms.
+    - Executing the disbursement transaction, including updating the bank's and user's balance.
+    - Handling any exceptions that occur during the process to ensure data integrity.
+
+    On successful loan approval and disbursement, the user is informed via a success message. In case of
+    any failures during the process, the operation is rolled back, and the user is notified of the failure.
+
+    Returns:
+        A redirect to a specified route - my_loans.html or to a fallback page car_loan.html.
+    """
     in_progress_customer_loan = Loans.query.filter_by(user_id=current_user.id, loan_status='granted').first()
     
     if in_progress_customer_loan:
@@ -184,7 +234,29 @@ apply_home_renovation_loan_bp = Blueprint('apply_home_renovation_loan_bp', __nam
 @apply_home_renovation_loan_bp.route('/apply_home_renovation_loan', methods=['GET', 'POST'])
 @login_required
 def apply_home_renovation_loan():
-    
+    """
+    Processes applications for home renovation loans for logged-in users.
+
+    This function operates similarly to the `apply_consumer_loan` and `apply_car_loan` functions but is tailored for home renovation loans. 
+    It checks if the user already has an active loan marked as 'granted' to prevent overlapping loans. If such a loan exists, 
+    the user is notified and redirected to a specific page without processing a new application.
+
+    If no active loan exists, a new home renovation loan application is initiated with predefined parameters, including the loan amount, 
+    interest rate, and repayment terms specific to home renovation projects. The function then simulates the financial transaction for 
+    the loan amount's disbursement from Imperial Bank to the user, updating transaction records to reflect the new balances.
+
+    Key steps include:
+    - Verifying the absence of an in-progress loan for the user.
+    - Creating a new loan record with 'granted' status and terms specific to home renovation loans.
+    - Executing the disbursement transaction, updating both the bank's and the user's balance records.
+
+    Success or failure of the loan application process is communicated to the user through flash messages, 
+    and appropriate redirection is performed to either view the loan status or retry the application in case of failure.
+
+    Returns:
+        A redirect to a specified route (my_loans or home_renovation_loan), guiding the user to view their loan status or to 
+        retry the application if the process encounters an error.
+    """
     in_progress_customer_loan = Loans.query.filter_by(user_id=current_user.id, loan_status='granted').first()
     
     if in_progress_customer_loan:
@@ -272,7 +344,26 @@ apply_test_loan_bp = Blueprint('apply_test_loan_bp', __name__)
 @apply_test_loan_bp.route('/apply_test_loan', methods=['GET', 'POST'])
 @login_required
 def apply_test_loan():
-    
+    """
+    Facilitates the application and processing of a test loan for logged-in users.
+
+    Similar to other loan application functions, this route checks for the existence of any active loan marked as 'granted' 
+    to ensure users do not have multiple loans in progress simultaneously. If an active loan is detected, the user is informed 
+    and redirected appropriately without proceeding with a new test loan application.
+
+    In the absence of any active loan, this function initiates the creation of a new test loan with specific parameters designed 
+    for testing purposes. These parameters include a nominal amount significantly lower than typical loans, a high-interest rate, 
+    a very short repayment period, and immediate repayment frequency. The purpose of such a loan setup is to allow for the testing 
+    of the loan processing system without engaging substantial financial resources or long-term commitments.
+
+    The function simulates the financial transaction for disbursing the loan amount from Imperial Bank to the user, including updating 
+    the transaction records for both the bank and the user to reflect the new balances. In the event of successful loan approval and 
+    disbursement, the user is notified. If the transaction encounters any issues, the operation is rolled back, and the user is informed of the failure.
+
+    Returns:
+        A redirect to a specified route (my_loans or test_loan), typically allowing the user to view their loan status or to attempt 
+        the application again in case of a process failure.
+    """
     in_progress_customer_loan = Loans.query.filter_by(user_id=current_user.id, loan_status='granted').first()
     
     if in_progress_customer_loan:

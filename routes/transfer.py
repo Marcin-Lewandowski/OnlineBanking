@@ -25,6 +25,23 @@ logger.addHandler(handler)
 
 
 def admin_required(func):
+    """
+    Decorator function to restrict access to routes to only administrators.
+
+    This decorator checks if the current user is authenticated and has an 'admin' role. If the user
+    does not meet these criteria, it logs an unauthorized access attempt with the user's username and
+    the attempted access path. Then, it aborts the request with a 403 Forbidden HTTP status code, indicating
+    that the server understands the request but refuses to authorize it.
+
+    Usage:
+        Simply decorate view functions that should be accessible only to administrators with `@admin_required`.
+
+    Args:
+        func (function): The view function to be decorated.
+
+    Returns:
+        function: The decorated view function with admin access control.
+    """
     @wraps(func)
     def decorated_view(*args, **kwargs):
         if not current_user.is_authenticated or current_user.role != 'admin':
@@ -42,6 +59,32 @@ transfer_bp = Blueprint('transfer_bp', __name__)
 @transfer_bp.route('/transfer', methods=['GET', 'POST'])
 @login_required
 def transfer():
+    """
+    Handles money transfer operations between users.
+
+    This route allows authenticated users to transfer money to another user's account. 
+    It requires users to fill out a form providing details of the recipient's sort code 
+    and account number, the amount to transfer, a description of the transaction, 
+    and confirmation of the user's password for security purposes.
+
+    The function performs several checks to ensure the security and validity of the transfer:
+    - Validates the user's password to confirm their identity.
+    - Checks if the recipient account exists based on the provided sort code and account number.
+    - Ensures the user cannot transfer money to their own account.
+    - Verifies the sender has sufficient funds for the transfer.
+
+    If any of these checks fail, appropriate error messages are flashed, and the user is 
+    redirected to a dashboard. Upon a successful transfer, the transaction details 
+    are recorded for both the sender and recipient, balances are updated accordingly, 
+    and the user is notified of the successful transfer.
+
+    Args:
+        None
+
+    Returns:
+        A redirection to the dashboard with a success message on successful transfer, 
+        or back to the transfer form with an error message if the transfer cannot be completed.
+    """
     form = TransferForm()
 
     if form.validate_on_submit():
@@ -137,62 +180,60 @@ login_bp = Blueprint('login_bp', __name__)
 def login():
     form = LoginForm()
     if request.method == "POST":
-        # Set the session to be persistent
-        session.permanent = True 
         if form.validate_on_submit():
-            user = Users.query.filter_by(username=form.username.data).first()
-            if user and user.check_password(form.password.data):
-                # Check if a user with this name is locked
+            username = form.username.data
             
-                locked_user = LockedUsers.query.filter_by(username=user.username).first()
+            # Sprawdź, czy zmienił się użytkownik próbujący się zalogować
+            if session.get('last_login_attempt_user') != username:
+                session['login_attempts'] = 0  # Resetuj licznik prób logowania dla nowego użytkownika
+                session['last_login_attempt_user'] = username  # Zapisz nazwę użytkownika próbującego się zalogować
+            
+            # Najpierw sprawdź, czy użytkownik jest zablokowany
+            locked_user = LockedUsers.query.filter_by(username=username).first()
+            if locked_user:
+                # Jeśli użytkownik jest zablokowany, od razu przekieruj do strony zablokowanego konta
+                return render_template('account_locked.html', locked_user=locked_user)
 
-                if locked_user:
-                    return render_template('account_locked.html', locked_user = locked_user)
-                else:
+            user = Users.query.filter_by(username=username).first()
+            if user:
+                if user.check_password(form.password.data): 
+                    # Kontynuuj proces logowania, jeśli hasło jest poprawne
                     login_user(user)
-                    flash("Login succesful!")
+                    flash("Login successful!", 'success')
                     logger.info(f"User '{user.username}' logged in to the system.")
+                    # Resetuj licznik prób logowania
                     session['login_attempts'] = 0
-                    
-                    # Redirect to the admin dashboard page for the administrator
-                    if user.role == 'admin':
-                        return redirect(url_for('admin_dashboard_bp.admin_dashboard'))
-                    # Redirect to the customer dashboard page
-                    else:
-                        return redirect(url_for('dashboard'))
+                    return redirect(url_for('admin_dashboard_bp.admin_dashboard') if user.role == 'admin' else url_for('dashboard'))
+                else:
+                    flash('Invalid username or password.', 'danger')
+                    # Zwiększ licznik prób logowania
+                    session['login_attempts'] = session.get('login_attempts', 0) + 1
+                    logger.warning(f"Failed login attempt for user '{user.username}'.")
+                    if session['login_attempts'] >= 3 and user:
+                        locked_user = LockedUsers(username=user.username)
+                        db.session.add(locked_user)
+                        db.session.commit()
+                        logger.critical(f"Account for user '{user.username}' has been locked.")
+                        session['login_attempts'] = 0
+                        flash("Your account has been locked after exceeding the maximum number of failed login attempts.")
+                        return render_template('account_locked.html', locked_user=locked_user)
             else:
-                flash('Login unsuccessful. Please check your username and password.', 'danger')     
-                # Increased number of failed login attempts
-                session['login_attempts'] += 1
-                
-                logger.warning(f"User '{user.username}' tried to log in. Wrong password !")
-                
-                # Check whether the maximum number of login attempts has been exceeded
-                if session['login_attempts'] >= 3:
-                    # Lock the bank account
-                    locked_user = LockedUsers(username=user.username)
-                    logger.critical(f"Bank account for user  '{user.username}' has been blocked !!!")
-                    session['login_attempts'] = 0
-                    
-                    db.session.add(locked_user)
-                    db.session.commit()
-                    
-                    flash("Your account has been locked after exceeding the maximum number of failed login attempts.")
-                    return render_template('account_locked.html', locked_user = locked_user)
-                
-                  
-        return render_template('login.html', form = form)   
-        
-    # If the user is already logged in, redirect him to the appropriate page
+                flash('User not found.', 'danger')
+
+        # W przypadku błędów walidacji lub nieznalezienia użytkownika, renderuj formularz ponownie
+        return render_template('login.html', form=form)
+    
+    # Jeśli użytkownik jest już zalogowany, przekieruj do odpowiedniej strony
     if current_user.is_authenticated:
-        flash("Already Logged In")
-        if current_user.role == 'admin':
-            return redirect(url_for('admin_dashboard_bp.admin_dashboard'))
-        else:
-            return redirect(url_for('dashboard'))
+        flash("You are already logged in.", 'info')
+        return redirect(url_for('admin_dashboard_bp.admin_dashboard') if current_user.role == 'admin' else url_for('dashboard'))
+
+    return render_template('login.html', form=form)
 
 
-    return render_template('login.html', form = form)
+
+
+
 
 
 
