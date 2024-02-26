@@ -298,7 +298,7 @@ def edit_profile():
         flash('Your profile has been updated.')
         
         logger.warning(f"Change of personal data -  '{current_user.username}' ")
-        return redirect(url_for('dashboard'))
+        return redirect(url_for('account_data'))
 
     elif request.method == 'GET':
         form.email.data = current_user.email
@@ -332,7 +332,7 @@ def add_recipient():
             db.session.add(new_recipient)
             db.session.commit()
             flash('New recipient added successfully!', 'success')
-            return redirect(url_for('add_recipient'))
+            return redirect(url_for('add_recipient_bp.add_recipient'))
         else:
             # The user does not exist, display an error message
             flash('The user with the given sort code and account number does not exist.', 'danger')
