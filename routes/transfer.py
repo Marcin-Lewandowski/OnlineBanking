@@ -178,35 +178,60 @@ login_bp = Blueprint('login_bp', __name__)
 
 @login_bp.route('/login', methods=['GET', 'POST'])
 def login():
+    """
+    Handles the login process for users.
+
+    This function serves the login page and processes login attempts. On a GET request, it simply renders the login form. 
+    On a POST request, it validates the submitted form and attempts to log the user in. It checks if the user exists and 
+    whether their password matches. It also handles cases where the user has been locked out due to too many failed login 
+    attempts by checking against the `LockedUsers` table.
+
+    If the user is already logged in, it redirects them to the appropriate dashboard based on their role. For an admin, it 
+    redirects to the admin dashboard, otherwise to the user dashboard.
+
+    The function implements a security measure to prevent brute force attacks by tracking the number of failed login attempts. 
+    If a user exceeds a predefined number of failed attempts, their account is locked, and they are redirected to an account 
+    locked page. The counter of failed attempts is reset when a user successfully logs in or when a different user attempts to 
+    log in.
+
+    Returns:
+        On GET: Renders and returns the login form.
+        On POST: If form validation fails, or if the user cannot be authenticated, re-renders the login form with an error message.
+                 If the user is authenticated, redirects to the appropriate dashboard based on the user's role.
+                 If the user's account is locked, renders and returns the account locked page.
+        If the user is already logged in, redirects to the appropriate dashboard immediately without rendering the login form.
+    """
     form = LoginForm()
     if request.method == "POST":
         if form.validate_on_submit():
             username = form.username.data
             
-            # Sprawdź, czy zmienił się użytkownik próbujący się zalogować
+            # Check if the user trying to log in has changed
             if session.get('last_login_attempt_user') != username:
-                session['login_attempts'] = 0  # Resetuj licznik prób logowania dla nowego użytkownika
-                session['last_login_attempt_user'] = username  # Zapisz nazwę użytkownika próbującego się zalogować
+                # Reset login attempt counter for new user
+                session['login_attempts'] = 0  
+                # Record the name of the user trying to log in
+                session['last_login_attempt_user'] = username  
             
-            # Najpierw sprawdź, czy użytkownik jest zablokowany
+            # First, check if the user is blocked
             locked_user = LockedUsers.query.filter_by(username=username).first()
             if locked_user:
-                # Jeśli użytkownik jest zablokowany, od razu przekieruj do strony zablokowanego konta
+                # If the user is blocked, immediately redirect to the blocked account page
                 return render_template('account_locked.html', locked_user=locked_user)
 
             user = Users.query.filter_by(username=username).first()
             if user:
                 if user.check_password(form.password.data): 
-                    # Kontynuuj proces logowania, jeśli hasło jest poprawne
+                    # Continue the login process if your password is correct
                     login_user(user)
                     flash("Login successful!", 'success')
                     logger.info(f"User '{user.username}' logged in to the system.")
-                    # Resetuj licznik prób logowania
+                    # Reset login attempt counter
                     session['login_attempts'] = 0
                     return redirect(url_for('admin_dashboard_bp.admin_dashboard') if user.role == 'admin' else url_for('dashboard'))
                 else:
                     flash('Invalid username or password.', 'danger')
-                    # Zwiększ licznik prób logowania
+                    #Increase the login attempt counter
                     session['login_attempts'] = session.get('login_attempts', 0) + 1
                     logger.warning(f"Failed login attempt for user '{user.username}'.")
                     if session['login_attempts'] >= 3 and user:
@@ -220,10 +245,10 @@ def login():
             else:
                 flash('User not found.', 'danger')
 
-        # W przypadku błędów walidacji lub nieznalezienia użytkownika, renderuj formularz ponownie
+        # In case of validation errors or user not found, re-render the form
         return render_template('login.html', form=form)
     
-    # Jeśli użytkownik jest już zalogowany, przekieruj do odpowiedniej strony
+    # If the user is already logged in, redirect to the appropriate page
     if current_user.is_authenticated:
         flash("You are already logged in.", 'info')
         return redirect(url_for('admin_dashboard_bp.admin_dashboard') if current_user.role == 'admin' else url_for('dashboard'))
@@ -233,17 +258,34 @@ def login():
 
 
 
-
-
-
-
-
 ddso_bp = Blueprint('ddso_bp', __name__)
 
 @ddso_bp.route('/direct_debit_standing_orders', methods=['GET', 'POST'])
 @login_required
 def ddso():
-    
+    """
+    Handles the creation and display of direct debits and standing orders (DDSO) for the current user.
+
+    This view function performs multiple tasks based on the HTTP method:
+    - GET: Retrieves and displays a list of the user's transactions, direct debits, and standing orders,
+           along with a form to create a new DDSO.
+    - POST: Processes the submitted form to create a new DDSO. It performs several checks such as
+           validating the form data, verifying the user's password, and ensuring the recipient exists.
+           If validation passes, a new DDSO is created and saved to the database.
+
+    Form validation and submission:
+    - Upon form submission, the function checks if the provided password matches the current user's password.
+    - It then checks if the specified recipient exists in the database.
+    - If both checks pass, it attempts to create and save a new DDSO record.
+    - Successful creation of a DDSO results in a redirection to the DDSO page with a success message.
+    - If any step fails, the user is redirected back to the DDSO page with an appropriate error message.
+
+    Returns:
+        - A rendered template ('ddso.html') displaying the DDSO form and the user's existing DDSOs and transactions
+          if the method is GET.
+        - A redirection to the DDSO page, either with a success message upon successful DDSO creation or
+          with an error message if any part of the process fails when the method is POST.
+    """
     user_transactions = Transaction.query.filter_by(user_id=current_user.id).all()
     user_dd_so = DDSO.query.filter_by(user_id=current_user.id).all()
     last_transaction = Transaction.query.filter_by(user_id=current_user.id).order_by(Transaction.id.desc()).first()
@@ -257,7 +299,7 @@ def ddso():
         # Check if the password is correct
         if not current_user.check_password(confirm_password):
             flash('Invalid password.', 'danger')
-            return redirect(url_for('dashboard'))
+            return redirect(url_for('ddso_bp.ddso'))
         
         # Check if the recipient exists
         recipient_exist = Users.query.filter_by(username=form.recipient.data).first()
@@ -265,26 +307,36 @@ def ddso():
         
         if not recipient_exist:
             flash('Recipient account not found.', 'danger')
-            return redirect(url_for('dashboard')) 
+            return redirect(url_for('ddso_bp.ddso')) 
         
+        try:
+            # Creating a new order based on data from the form
+            new_dd_so = DDSO(
+                            user_id=current_user.id,  
+                            recipient=form.recipient.data,
+                            reference_number=form.reference_number.data,
+                            amount=form.amount.data,
+                            next_payment_date=form.next_payment_date.data,
+                            transaction_type=form.transaction_type.data,
+                            frequency=form.frequency.data)
+            
+            db.session.add(new_dd_so)
+            db.session.commit()
+            flash('New Direct Debit / Standing Order added successfully!')
+            return redirect(url_for('ddso_bp.ddso'))  
         
-        # Creating a new order based on data from the form
-        new_dd_so = DDSO(
-                        user_id=current_user.id,  
-                        recipient=form.recipient.data,
-                        reference_number=form.reference_number.data,
-                        amount=form.amount.data,
-                        next_payment_date=form.next_payment_date.data,
-                        transaction_type=form.transaction_type.data,
-                        frequency=form.frequency.data)
-        
-        db.session.add(new_dd_so)
-        db.session.commit()
-        flash('New Direct Debit / Standing Order added successfully!')
-        return redirect(url_for('dashboard'))  
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Failed to add DDSO: {e}")
+            flash('An error occurred. Please try again.', 'danger')
+            return redirect(url_for('ddso_bp.ddso')) 
 
     return render_template('ddso.html', form=form, user=current_user, all_transactions=user_transactions, all_dd_so=user_dd_so,  last_transaction=last_transaction)
     
+
+
+
+
 
 
 create_transaction_bp = Blueprint('create_transaction_bp', __name__)
@@ -293,7 +345,33 @@ create_transaction_bp = Blueprint('create_transaction_bp', __name__)
 @login_required
 @admin_required
 def create_transaction():
-    
+    """
+    Allows administrators to create new transactions for users within the system.
+
+    This function is accessible only to administrators, as indicated by the @admin_required decorator.
+    It handles both the display of a transaction creation form and the processing of its submission.
+
+    - GET method: Displays a form to the administrator for creating a new transaction. The form includes
+      fields such as user selection, transaction date, type, sort code, account number, description,
+      debit amount, credit amount and balance.
+
+    - POST method: Processes the submitted form. If the form validates successfully, a new transaction
+      is created with the provided details and saved to the database. Upon successful creation, the administrator
+      is redirected to the admin dashboard with a success message. If the form submission fails validation,
+      the form is re-rendered with validation error messages.
+
+    Process:
+    1. Retrieve all users and transactions to display in the form for selection and overview.
+    2. Validate the submitted form data.
+    3. Create and save the new transaction to the database.
+    4. Redirect the administrator to the dashboard with a success message upon successful transaction creation.
+
+    Returns:
+        - A rendered template ('admin_dashboard_cm.html') with the transaction creation form, list of all users,
+          and all transactions if the HTTP method is GET.
+        - A redirection to the admin dashboard with a success message upon successful transaction creation,
+          or with validation error messages if the form submission fails.
+    """
     all_users = Users.query.all()
     all_transactions = Transaction.query.all()
     form = CreateTransactionForm()
@@ -323,33 +401,72 @@ def create_transaction():
     return render_template('admin_dashboard_cm.html', all_users=all_users, form=form, all_transactions=all_transactions) 
 
 
+
 edit_profile_bp = Blueprint('edit_profile_bp', __name__)
 
 @edit_profile_bp.route('/edit_profile', methods=['GET', 'POST'])
 @login_required  
 def edit_profile():
+    """
+    Allows the current logged-in user to edit and update their profile information.
+
+    This route handler supports two HTTP methods: GET and POST. On a GET request, it pre-populates the 
+    EditUserForm with the current user's existing profile information, including email, phone number, 
+    and country. On a POST request, it processes the submitted form to update the user's profile data.
+
+    Steps:
+    1. On GET request: The form fields are pre-filled with the current user's profile information for
+       email, phone number, and country, allowing the user to see their current settings and make any
+       desired changes.
+    2. On POST request: The form is validated, and if the validation is successful, the current user's
+       profile information is updated in the database with the provided values. A flash message is shown
+       to inform the user of the successful update. In case of an exception (e.g., database error), the
+       transaction is rolled back, an error flash message is shown, and the error is logged.
+
+    Parameters:
+    - None directly, but operates on the data submitted through the EditUserForm and the current user's 
+      session information.
+
+    Returns:
+    - On GET request: displaying the form pre-filled with the current user's profile data.
+    - On POST request (successful update): Redirects to the 'account_data' route with a success flash message.
+    - On POST request (validation failure or exception): Redirects to the 'account_data' route with an 
+      error flash message and does not update the user's profile.
+
+    Security:
+    - The route is protected with the @login_required decorator, ensuring that only authenticated users 
+      can access and modify their own profile information.
+    - Input validation is performed through the EditUserForm to protect against invalid or malicious data.
+    - Changes in personal data are logged for auditing purposes.
+    """
     form = EditUserForm()
+    if request.method == 'GET':
+        form.email.data = current_user.email
+        form.phone_number.data = current_user.phone_number
+        form.country.data = current_user.country
 
     if form.validate_on_submit():
         current_user.email = form.email.data
         current_user.phone_number = form.phone_number.data
         current_user.country = form.country.data
         
-        db.session.commit()
-        flash('Your profile has been updated.')
-        
-        logger.warning(f"Change of personal data -  '{current_user.username}' ")
-        return redirect(url_for('account_data'))
+        try:
+            db.session.commit()
+            flash('Your profile has been updated.')
+            logger.warning(f"Change of personal data -  '{current_user.username}' ")
+            return redirect(url_for('account_data'))
+            
+        except Exception as e:
+            db.session.rollback()
+            flash('An error occurred. Please try again.')
+            logger.error(f"Error updating profile: {e}")
+            return redirect(url_for('account_data'))
+    
 
-    elif request.method == 'GET':
-        form.email.data = current_user.email
-        form.phone.data = current_user.phone
-        form.country.data = current_user.country
-    else:
-        print(form.errors) 
+    #user_transactions = Transaction.query.filter_by(user_id=current_user.id).all()
+    #return render_template('dashboard.html', user=current_user, all_transactions=user_transactions)
 
-    user_transactions = Transaction.query.filter_by(user_id=current_user.id).all()
-    return render_template('dashboard.html', user=current_user, all_transactions=user_transactions)
+
 
 
 add_recipient_bp = Blueprint('add_recipient_bp', __name__)
@@ -357,31 +474,61 @@ add_recipient_bp = Blueprint('add_recipient_bp', __name__)
 @add_recipient_bp.route('/add_recipient', methods=['GET', 'POST'])
 @login_required
 def add_recipient():
+    """
+    Add a new recipient for the current user.
+
+    This view function handles both GET and POST requests to add a new recipient
+    to the current user's list of recipients. It utilizes an `AddRecipientForm` 
+    to collect recipient details from the user. Upon submission, the function
+    checks for the existence of both the specified user and transaction in the database 
+    to ensure the recipient's details are valid and associated with a known transaction.
+
+    If the recipient's details are valid and the user and transaction exist, 
+    a new `Recipient` instance is created and added to the database. The user 
+    is then redirected back to the same page with a success message. If there are 
+    errors, such as the user or transaction not existing, or a database error during 
+    the creation of the new recipient, appropriate error messages are displayed to the user.
+
+    Additionally, the function retrieves and displays all recipients associated with 
+    the current user.
+
+    Returns:
+        A rendered template (`add_recipient.html`) displaying the form for adding a
+        new recipient, along with a list of existing recipients. Flash messages are used 
+        to convey the outcome of the form submission (success or error).
+    """
     form = AddRecipientForm()
     if form.validate_on_submit():
-        # Check if there is a user with the given sort_code and account_number in the Users table
-        user_exists = Transaction.query.filter_by(sort_code=form.sort_code.data, account_number=form.account_number.data).first()
+        # Check if there is a transaction with the given sort_code and account_number 
+        transaction_exists = Transaction.query.filter_by(sort_code=form.sort_code.data, account_number=form.account_number.data).first()
+        # Check if user exist in Users table
+        user_exists = Users.query.filter_by(username = form.name.data).first()
         
-        if user_exists:
-            # The user exists, so we add a new recipient
-            new_recipient = Recipient(
-                user_id=current_user.id,
-                name=form.name.data,
-                sort_code=form.sort_code.data,
-                account_number=form.account_number.data
-            )
-            db.session.add(new_recipient)
-            db.session.commit()
-            flash('New recipient added successfully!', 'success')
-            return redirect(url_for('add_recipient_bp.add_recipient'))
+        if user_exists and transaction_exists:
+            try:
+                new_recipient = Recipient(
+                    user_id=current_user.id,
+                    name=form.name.data,
+                    sort_code=form.sort_code.data,
+                    account_number=form.account_number.data
+                )
+                db.session.add(new_recipient)
+                db.session.commit()
+                flash('New recipient added successfully!', 'success')
+                return redirect(url_for('add_recipient_bp.add_recipient'))
+            except Exception as e:
+                db.session.rollback()
+                flash('An error occurred. Please try again.', 'danger')
+                logger.error(f"Error adding new recipient: {e}")
         else:
             # The user does not exist, display an error message
             flash('The user with the given sort code and account number does not exist.', 'danger')
+            
+   
 
     # Get the user's transactions and customers to display on the page
-    user_transactions = Transaction.query.filter_by(user_id=current_user.id).all()
     user_recipients = Recipient.query.filter_by(user_id=current_user.id).all()
     last_transaction = Transaction.query.filter_by(user_id=current_user.id).order_by(Transaction.id.desc()).first()
     
-    return render_template('add_recipient.html', form=form, user=current_user, all_transactions=user_transactions, last_transaction=last_transaction, all_recipients=user_recipients)
+    return render_template('add_recipient.html', form=form, user=current_user, last_transaction=last_transaction, all_recipients=user_recipients)
 
