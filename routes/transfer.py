@@ -5,6 +5,7 @@ from datetime import date
 from models.models import Users, Transaction, db, DDSO, LockedUsers, Recipient
 from functools import wraps
 import logging
+import re
 
 
 # Creating a logger
@@ -346,42 +347,54 @@ create_transaction_bp = Blueprint('create_transaction_bp', __name__)
 @admin_required
 def create_transaction():
     """
-    Allows administrators to create new transactions for users within the system.
+    Creates first transaction with specified details, ensuring uniqueness.
 
-    This function is accessible only to administrators, as indicated by the @admin_required decorator.
-    It handles both the display of a transaction creation form and the processing of its submission.
+    This route handles the creation of first transaction by an admin. It presents a form to input transaction details,
+    and upon submission, performs several validations: it checks that the 'sort_code' is in the format XX-XX-XX,
+    the 'account_number' consists of 8 digits, and that no existing transaction matches the provided 'user_id',
+    'sort_code', or 'account_number' to ensure the uniqueness of the transaction.
 
-    - GET method: Displays a form to the administrator for creating a new transaction. The form includes
-      fields such as user selection, transaction date, type, sort code, account number, description,
-      debit amount, credit amount and balance.
+    If the submitted form data passes all validations, a new Transaction object is created and saved to the database.
+    A success message is flashed, and the admin is redirected to the dashboard. If the form submission fails any validation,
+    an error message is flashed, and the form is re-rendered for correction.
 
-    - POST method: Processes the submitted form. If the form validates successfully, a new transaction
-      is created with the provided details and saved to the database. Upon successful creation, the administrator
-      is redirected to the admin dashboard with a success message. If the form submission fails validation,
-      the form is re-rendered with validation error messages.
-
-    Process:
-    1. Retrieve all users and transactions to display in the form for selection and overview.
-    2. Validate the submitted form data.
-    3. Create and save the new transaction to the database.
-    4. Redirect the administrator to the dashboard with a success message upon successful transaction creation.
+    The function is accessible only to logged-in users with admin privileges, enforced by decorators.
 
     Returns:
-        - A rendered template ('admin_dashboard_cm.html') with the transaction creation form, list of all users,
-          and all transactions if the HTTP method is GET.
-        - A redirection to the admin dashboard with a success message upon successful transaction creation,
-          or with validation error messages if the form submission fails.
+        On GET request: Renders and returns the transaction creation form with a list of all users.
+        On POST request: If form validation is successful and the transaction is unique, redirects to the admin dashboard.
+                         If form validation fails or the transaction is not unique, re-renders the form with an error message.
     """
     all_users = Users.query.all()
-    all_transactions = Transaction.query.all()
     form = CreateTransactionForm()
 
     # Loading users to choose from
     form.user_id.choices = [(user.id, user.username) for user in Users.query.all()]
 
     if form.validate_on_submit():
-        # Creating a transaction object
+        # Checking the sort_code format
+        if not re.match(r'^\d{2}-\d{2}-\d{2}$', form.sort_code.data):
+            flash('Sort code must be in the format XX-XX-XX.', 'error')
+            return render_template('admin_dashboard_cm.html', all_users=all_users, form=form)
         
+        # Checking the account_number format
+        if not re.match(r'^\d{8}$', form.account_number.data):
+            flash('Account number must be 8 digits format.', 'error')
+            return render_template('admin_dashboard_cm.html', all_users=all_users, form=form)
+        
+        
+        # Checking if transaction with the same user_id, sort_code, or account_number already exists
+        existing_transaction = Transaction.query.filter(
+            (Transaction.user_id == form.user_id.data) |
+            (Transaction.sort_code == form.sort_code.data) |
+            (Transaction.account_number == form.account_number.data)).first()
+
+        if existing_transaction:
+            flash('A transaction with the provided user ID, sort code, or account number already exists.', 'error')
+            return render_template('admin_dashboard_cm.html', all_users=all_users, form=form)
+        
+        
+        # Creating a transaction object
         new_transaction = Transaction(user_id=form.user_id.data,
                                         transaction_date=form.transaction_date.data,
                                         transaction_type=form.transaction_type.data,
@@ -398,7 +411,7 @@ def create_transaction():
         flash('Transaction created successfully!', 'success')
         return redirect(url_for('admin_dashboard_cm')) 
 
-    return render_template('admin_dashboard_cm.html', all_users=all_users, form=form, all_transactions=all_transactions) 
+    return render_template('admin_dashboard_cm.html', all_users=all_users, form=form) 
 
 
 
