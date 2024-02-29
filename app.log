@@ -158,3 +158,91 @@ INFO:werkzeug: * Restarting with stat
 2024-02-22 08:19:40,185 - INFO - User 'admin' logged in to the system.
 2024-02-22 10:24:38,013 - INFO - User 'Marcin' logged in to the system.
 2024-02-22 11:08:03,033 - INFO - User 'admin' logged in to the system.
+2024-02-22 15:47:57,200 - INFO - User 'admin' logged in to the system.
+2024-02-23 10:27:29,173 - INFO - User 'Marcin' logged in to the system.
+2024-02-23 11:24:21,644 - WARNING - User 'admin' tried to log in. Wrong password !
+2024-02-23 11:24:28,709 - INFO - User 'admin' logged in to the system.
+2024-02-23 11:53:58,128 - INFO - User 'Marcin' logged in to the system.
+2024-02-24 07:54:47,065 - INFO - User 'admin' logged in to the system.
+2024-02-24 11:42:10,723 - INFO - User 'Marcin' logged in to the system.
+2024-02-24 12:27:01,605 - INFO - User 'admin' logged in to the system.
+2024-02-24 14:20:04,898 - INFO - User 'Marcin' logged in to the system.
+2024-02-24 15:18:49,422 - INFO - User 'Sophia' logged in to the system.
+2024-02-24 15:19:15,914 - INFO - User 'Tomek' logged in to the system.
+2024-02-24 15:19:47,569 - INFO - User 'Kate' logged in to the system.
+2024-02-24 15:20:05,678 - INFO - User 'Paul' logged in to the system.
+2024-02-24 15:20:31,932 - INFO - User 'Mary' logged in to the system.
+2024-02-24 15:20:45,653 - INFO - User 'Bauron INC' logged in to the system.
+2024-02-24 15:21:16,562 - INFO - User 'Peter' logged in to the system.
+2024-02-24 15:21:39,310 - INFO - User 'Kasia' logged in to the system.
+2024-02-24 15:28:21,487 - INFO - User 'Marcin' logged in to the system.
+2024-02-24 15:29:50,153 - WARNING - User 'Fashion International' tried to log in. Wrong password !
+2024-02-24 15:29:58,226 - INFO - User 'Fashion International' logged in to the system.
+2024-02-24 15:30:27,122 - INFO - User 'Marcin' logged in to the system.
+2024-02-25 08:05:07,017 - INFO - User 'admin' logged in to the system.
+2024-02-25 08:26:11,687 - INFO - User 'Marcin' logged in to the system.
+2024-02-25 08:29:18,297 - WARNING - Change of personal data -  'Marcin' 
+2024-02-25 08:35:37,207 - WARNING - Change of personal data -  'Marcin' 
+2024-02-25 08:36:07,940 - WARNING - Change of personal data -  'Marcin' 
+2024-02-25 12:44:30,815 - INFO - User 'admin' logged in to the system.
+2024-02-25 18:12:44,533 - INFO - User 'Marcin' logged in to the system.
+2024-02-25 18:55:24,341 - INFO - User 'admin' logged in to the system.
+2024-02-26 08:12:54,444 - INFO - User 'admin' logged in to the system.
+2024-02-26 19:21:05,054 - WARNING - Failed login attempt for user 'Marcin'.
+2024-02-26 19:21:11,575 - INFO - User 'Marcin' logged in.
+2024-02-26 19:21:49,094 - INFO - User 'admin' logged in.
+2024-02-26 19:22:19,224 - WARNING - Failed login attempt for user 'Bauron INC'.
+2024-02-26 19:22:23,229 - WARNING - Failed login attempt for user 'Bauron INC'.
+2024-02-26 19:22:28,075 - WARNING - Failed login attempt for user 'Bauron INC'.
+2024-02-26 19:22:28,090 - CRITICAL - Account for user 'Bauron INC' has been locked.
+2024-02-26 19:23:33,346 - WARNING - Failed login attempt for user 'Bauron INC'.
+2024-02-26 19:24:21,299 - INFO - User 'admin' logged in.
+2024-02-26 19:24:39,241 - WARNING - Failed login attempt for user 'Bauron INC'.
+2024-02-26 19:24:52,269 - WARNING - Failed login attempt for user 'Bauron INC'.
+2024-02-26 19:24:55,281 - WARNING - Failed login attempt for user 'Bauron INC'.
+2024-02-26 19:25:10,917 - WARNING - Failed login attempt for user 'Kate'.
+2024-02-26 19:25:10,929 - CRITICAL - Account for user 'Kate' has been locked.
+2024-02-26 19:32:10,550 - INFO - User 'admin' logged in.
+2024-02-26 19:32:38,103 - WARNING - Failed login attempt for user 'Kate'.
+2024-02-26 19:33:33,933 - WARNING - Failed login attempt for user 'Kate'.
+2024-02-26 19:33:38,277 - WARNING - Failed login attempt for user 'Kate'.
+2024-02-26 19:42:48,605 - INFO - User 'admin' logged in to the system.
+2024-02-26 19:43:15,160 - INFO - User 'Marcin' logged in to the system.
+2024-02-26 19:43:25,648 - WARNING - Failed login attempt for user 'Marcin'.
+2024-02-26 19:43:43,885 - WARNING - Failed login attempt for user 'Marcin'.
+2024-02-26 19:43:47,306 - WARNING - Failed login attempt for user 'Marcin'.
+2024-02-26 19:43:52,641 - WARNING - Failed login attempt for user 'Marcin'.
+2024-02-26 19:43:59,490 - WARNING - Failed login attempt for user 'Marcin'.
+2024-02-26 19:48:47,977 - WARNING - Failed login attempt for user 'Marcin'.
+2024-02-26 19:48:47,989 - CRITICAL - Account for user 'Marcin' has been locked.
+2024-02-26 19:54:06,578 - INFO - User 'admin' logged in to the system.
+2024-02-26 19:54:33,195 - WARNING - Failed login attempt for user 'James'.
+2024-02-26 19:54:37,945 - WARNING - Failed login attempt for user 'James'.
+2024-02-26 19:54:45,352 - WARNING - Failed login attempt for user 'James'.
+2024-02-26 19:54:45,364 - CRITICAL - Account for user 'James' has been locked.
+2024-02-26 19:55:50,059 - WARNING - Failed login attempt for user 'Kate'.
+2024-02-26 19:55:55,145 - INFO - User 'Kate' logged in to the system.
+2024-02-26 19:58:15,867 - WARNING - Failed login attempt for user 'Tomek'.
+2024-02-26 19:58:20,624 - WARNING - Failed login attempt for user 'Tomek'.
+2024-02-26 19:58:31,728 - WARNING - Failed login attempt for user 'Bauron INC'.
+2024-02-26 19:58:31,739 - CRITICAL - Account for user 'Bauron INC' has been locked.
+2024-02-26 19:59:36,265 - INFO - User 'admin' logged in to the system.
+2024-02-26 20:11:59,023 - WARNING - Failed login attempt for user 'Marcin'.
+2024-02-26 20:12:03,605 - WARNING - Failed login attempt for user 'Marcin'.
+2024-02-26 20:12:10,859 - WARNING - Failed login attempt for user 'Sophia'.
+2024-02-26 20:12:14,645 - WARNING - Failed login attempt for user 'Sophia'.
+2024-02-26 20:12:20,873 - WARNING - Failed login attempt for user 'James'.
+2024-02-26 20:12:25,079 - WARNING - Failed login attempt for user 'James'.
+2024-02-26 20:12:28,576 - WARNING - Failed login attempt for user 'James'.
+2024-02-26 20:12:28,588 - CRITICAL - Account for user 'James' has been locked.
+2024-02-27 07:30:08,105 - INFO - User 'Marcin' logged in to the system.
+2024-02-27 13:18:10,511 - INFO - User 'Marcin' logged in to the system.
+2024-02-27 13:55:54,107 - INFO - User 'Sophia' logged in to the system.
+2024-02-27 13:57:20,942 - WARNING - Change of personal data -  'Sophia' 
+2024-02-27 13:57:28,799 - WARNING - Change of personal data -  'Sophia' 
+2024-02-27 14:02:33,804 - WARNING - Change of personal data -  'Sophia' 
+2024-02-27 14:06:14,145 - WARNING - Change of personal data -  'Sophia' 
+2024-02-27 17:50:52,044 - INFO - User 'admin' logged in to the system.
+2024-02-28 09:09:02,915 - INFO - User 'admin' logged in to the system.
+2024-02-28 16:34:51,431 - WARNING - Failed login attempt for user 'admin'.
+2024-02-28 16:34:59,219 - INFO - User 'admin' logged in to the system.
