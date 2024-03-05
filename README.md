@@ -38,7 +38,7 @@ Files in the main application directory: app.py (main execution file), app.log (
 ## Main features of the application
 On the bank's client side.
 
-Login to the banking system:
+__Login to the banking system:__
 
 The login function handles the user login process in the web application. 
 When a user submits a login form (POST method), the function checks whether the login information is valid using the form data. 
@@ -56,7 +56,7 @@ and disabling accounts when the allowed number of failed attempts is exceeded.
 
 
 
-Transferring money to an external account:
+__Transferring money to an external account:__
 
 The transfer function carries out the process of transferring funds between user accounts in the web application. 
 This process is protected by a login requirement (@login_required). 
@@ -79,7 +79,7 @@ Finally, if the form is not completed correctly or has not been submitted yet, t
 This feature ensures that funds are transferred securely between accounts by password-protecting transactions and checking the availability of funds.
 
 
-Recurring payment processing:
+__Recurring payment processing:__
 
 The process_ddso_payments function is used to process pending Direct Debit Standing Order (DDSO) payments in the web application. 
 It works in the application context (app.app_context()), which allows access to the database and application models from a script 
@@ -122,7 +122,7 @@ If all installments are repaid, the loan record is deleted from the database.
 The function is an example of automating the processing of loan installments, enabling timely repayment of liabilities and updating 
 of credit data without the need for manual intervention by the user or a bank employee. The function is activated when the application is launched.
 
-Editing user data:
+__Editing user data:__
 
 The edit_profile function in the web application allows logged-in users to edit and update their profile information, such as email address, 
 phone number, and country. It is available at '/edit_profile' and supports HTTP GET and POST methods.
@@ -139,7 +139,7 @@ Additionally, the function logs profile data update operations and possible erro
 which allows tracking important changes made by users and diagnosing problems.
 
 
-Help Center:
+__Help Center:__
 
 There is a help center where the customer/user can create a message/request with a unique reference number 
 which is needed to track all messages in the current thread. 
