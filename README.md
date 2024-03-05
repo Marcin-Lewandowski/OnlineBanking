@@ -251,6 +251,116 @@ Access to this feature is restricted only to logged in users with administrator 
 
 This function works similarly to the update_profile function, thanks to which the system user can change his/her personal data.
 
+This feature is an important tool for administrators to manage customer information, allowing easy and quick updates to user profiles, 
+which is crucial to keeping customer data in the system current and accurate.
+
+
+
+__View customer transactions in table and chart form:__
+
+The show_statement_for_customer function allows administrators to display a summary of transactions for a specific customer, 
+identified by username. It is available under the URL path /show_statement_for_customer/<username> and supports HTTP GET and POST methods. 
+The function requires the user to be logged in and have administrator privileges, which is provided by the @login_required and @admin_required decorators.
+
+Retrieving User Data: First, the function searches the database for a user based on their username. 
+Then, it retrieves the financial transactions associated with that user.
+
+Preparing data for analysis: User transaction data is converted into a list of dictionaries, 
+which are then used to create a DataFrame using the pandas library. 
+In the DataFrame, a new amount column is created, which is the sum of the debit and credit amounts.
+
+Data analysis and visualization: Data is grouped by transaction type and then aggregated to show the total transaction value by type. 
+Based on this data, a pie chart is created that visualizes the distribution of customer transactions by type.
+
+Presentation of results: The chart is converted to an HTML image using the plot_to_html_img helper function and passed to the HTML template 
+(admin_dashboard_cam.html), where it is displayed in the browser. 
+The template also receives information about blocked users, all transactions of the selected user, the user himself and a list of users with the same role.
+
+This feature is a useful tool for administrators to analyze customer financial activity, 
+allowing for quick and intuitive data visualization, which can support risk management, monitor transaction behavior, and provide customer support.
+
+
+
+__Filtering customer transactions based on various criteria:__
+
+The transactions_filter function is used to filter transactions in the admin panel based on various criteria such as: 
+user ID, date range (from-to), and transaction type. It is available under the URL path /transactions_filter and supports HTTP GET and POST methods. 
+Access to this feature is restricted only to logged in users with administrator privileges, which is provided by the @login_required and @admin_required decorators.
+
+POST request handling: When the function receives a POST request, it means that the administrator has submitted a form with filter criteria. 
+The function retrieves these criteria from the form data (request.form.get).
+
+Query Building: The database query is progressively built based on the filtering criteria. 
+If a user ID is provided, the query is limited to that user's transactions. 
+Similarly, the date range and transaction type are used to further limit the query results, if provided.
+
+Filtering results: Finally, based on the constructed query, transactions that meet specific criteria are retrieved 
+and transferred to the HTML template (transaction_management.html), where they can be displayed.
+
+Handling a GET request: If the method is GET, this means you are entering a page with no specific filter criteria, 
+and the function simply renders the transaction_management.html template, displaying a filter form with no results.
+
+This feature is a useful tool for administrators to view and manage transactions in the system, allowing them to easily search 
+and analyze transactions based on various criteria.
+
+
+__Handling customer complaints (help center):__
+
+The administrator has full insight into all messages that users send through the help center. 
+The administrator can reply to messages, change their status and sort them by priority.
+
+
+
+__Viewing banking system statistics:__
+
+In the Reports and statistics section, the administrator has access to system data displayed in the form of charts and text.
+
+Charts: 
+
+- Distribution of user roles in the system, 
+- Distribution of user nationalities in the system, 
+- Distribution of the number of messages with a specific priority in the system, 
+- Distribution of transaction types in the transaction system, 
+- Average transaction value for each transaction type, 
+- Distribution of log types / levels in the system, 
+- Distribution of loan types in the system.
+
+
+
+__Filtering direct debit, standing orders and loans:__
+
+In the Products and service management section, the administrator can filter loans by product ID and filter standing orders by user ID. 
+After filtering, the data is displayed in tables.
+
+
+
+In the __Safety settings section__ the administrator has access to the system log database and can filter them by log level (INFO, WARNING, ERROR and CRITICAL). 
+A list of implemented security systems is also displayed here.
+
+
+__List of implemented security systems:__
+
+
+1. Account blocking after 3 failed login attempts
+
+2. Session time set to e.g. 10 minutes, now it is 45 minutes.
+
+3. Saving logs during login attempts.
+
+4. Password encryption, hashing: password_hash = generate_password_hash(password, method='pbkdf2:sha256')
+
+5. Resource security via @login_required and @admin_required decorator
+
+6. Flask-WTF - CSRF protection
+
+7. ORM - Object-Relational Mapping - I use SQLAlchemy which prevents SQL attacks
+
+8. Content Security Policy (CSP) CSP helps protect against cross-site scripting (XSS) and other attacks. I use Flask-Talisman. Due to java script loading, CSP is currently disabled
+
+
+The project can be developed and improved in many directions. This project provides a solid basis for further development.
+
+
 
 
 
