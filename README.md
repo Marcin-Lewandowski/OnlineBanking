@@ -146,9 +146,9 @@ which is needed to track all messages in the current thread.
 The user can also add messages to an existing thread and delete messages from a thread with a specific reference number.
 
 
-Main functions available in the admin panel.
+__Main functions available in the admin panel.__
 
-Adding clients to the banking system:
+__Adding clients to the banking system:__
 
 The add_customer function in the web application allows administrators to add new users (customers). 
 It is available at '/add_customer' and supports HTTP GET and POST methods. 
@@ -168,6 +168,94 @@ If form data validation fails, the user is informed about the error and also red
 
 This feature is a key part of the user management system, allowing administrators to easily 
 add new accounts without direct access to the database, which increases the security and efficiency of working with the system.
+
+__Creating a bank account for a user:__
+
+The create_transaction function allows administrators to create new financial transactions in the 
+web application - creating a bank account with the first transaction. It is available at '/create_transaction' and supports 
+HTTP GET and POST methods, requires login and administrator privileges (checked by @login_required and @admin_required decorators).
+
+GET method: Used to display the transaction creation form.
+
+POST method: It is used when the form is submitted and validated. 
+The function validates the format of the sort code (sort_code) and account number (account_number) using regular expressions. 
+If the data is correct and there is no transaction with the specified user_id, sort_code or account_number yet, 
+a new transaction object is created with the data from the form and added to the database.
+In case of errors validating the format of the sort code or account number, or if a transaction with the provided 
+data already exists, the user receives an appropriate error message and is asked to correct the data in the form.
+After successfully creating a transaction, the user is informed about the success via a message and redirected to the administrator dashboard.
+
+This feature is crucial for administrators to manage financial transactions in the system, allowing them to manually 
+add transactions in the context of the financial management application.
+
+
+__Deleting a user account:__
+
+The delete_user function allows administrators to delete existing users from the system. 
+It is available via the '/delete_user' path and supports HTTP GET and POST methods. 
+Requires the user to be logged in and have administrator privileges, which is checked by the @login_required and @admin_required decorators.
+
+Displaying the form: When calling the GET method, a form (DeleteUserForm) is displayed, which allows you to enter the username to be deleted. 
+A list of all users (all_users) is passed to the template, which can help identify accounts to delete.
+
+Form processing: After submitting the form using the POST method, the function checks whether the entered username exists in the database. 
+If so, the user is deleted and the operation is committed to the database. If successful, a positive message is displayed via the flash function.
+
+Error handling: If an exception occurs while deleting a user (e.g. due to database integrity constraints), 
+the transaction is rolled back and the user is informed of the error via a flash message. 
+Additionally, the error is logged using print, which makes it easier to diagnose the problem. 
+If the user has at least one transaction on his bank account, deleting it from the database is impossible in this version of the application. 
+This is a protection against excessive and uncontrolled removal of users from the database.
+
+Redirection: Regardless of the result of the operation, the user is redirected back to the admin panel (admin_dashboard_cm) where he can continue managing the system.
+
+This feature plays a key role in system user management, allowing administrators to stay organized by removing inactive or unnecessary accounts.
+
+
+__Changing the password for a user account:__
+
+The change_password function allows administrators to change the password for a selected user in the system. 
+It is available at the URL /admin/change-password/<int:user_id> and supports HTTP GET and POST methods. 
+Requires that the user is logged in and has administrator privileges, which is verified by the @login_required and @admin_required decorators.
+
+User Search: First, the function tries to find the user based on the user_id passed in using the Users.query.get_or_404(user_id) method. 
+If a user with a given ID does not exist, a 404 (Not Found) error is automatically returned.
+
+Form handling: The user (administrator) is presented with a form (ChangePasswordForm) through which he can enter a new password for the selected user. 
+After submitting the form via POST and successfully validating the data, the user's password is updated by calling 
+the user.set_password(form.new_password.data) method, and the change is saved to the database.
+
+Communication and Redirection: If the password is changed successfully, the user (administrator) receives a success 
+message via flash and is redirected to the user list (url_for('list_users')) where he can continue managing user accounts.
+
+Form Display: If the method is GET or the form validation fails, the user is shown 
+the password change form again, this time with possible validation error messages.
+
+This feature is an important tool for administrators to manage the security of user accounts, 
+allowing them to quickly and effectively change passwords, which is especially useful in the event of a 
+suspected security breach or at the user's request.
+
+
+
+__Blocking and unblocking access to your account:__
+
+Account blocking is accomplished by adding a record with the username to the LockedUsers table in the database. 
+Unlocking access to the account is done by deleting the record with the username from the LockedUsers table.
+
+
+__Change of customer personal data:__
+
+The update_customer_information function allows administrators to update customer information based on the customer's username. 
+It is available under the URL path /update_customer_information/<username> and supports HTTP GET and POST methods. 
+Access to this feature is restricted only to logged in users with administrator privileges, which is provided by the @login_required and @admin_required decorators.
+
+This function works similarly to the update_profile function, thanks to which the system user can change his/her personal data.
+
+
+
+
+
+
 
 
 
