@@ -2,14 +2,6 @@
 ![Imperial Bank](https://github.com/Marcin-Lewandowski/OnlineBanking/blob/master/static/imperialbankmini.jpg )
 
 
-
-1. Project description
-2. Project structure
-3. Main features of the application
-4. Usage examples
-5. Instructions for starting the application
-6. License
-
 1. [Project description](#project-description)
 2. [Project structure](#project-structure)
 3. [Main features of the application](#main-features-of-the-application)
