@@ -34,14 +34,14 @@
 <form action="{{ url_for('update_customer_information_bp.update_customer_information', username=user.username) }}" method="post" role="form">
 
     <label for="email">Email:</label>
-    <input type="text" id="email" name="email" required><br>
+    <input type="text" id="email" name="email" value="{{ user.email }}" required><br>
 
     <label for="phone_number">Phone number:</label>
-    <input type="text" id="phone_number" name="phone_number" required><br>
+    <input type="text" id="phone_number" name="phone_number" value="{{ user.phone_number }}" required><br>
 
 
     <label for="country">Country:</label>
-    <input type="text" id="country" name="country" required><br><br>
+    <input type="text" id="country" name="country" value="{{ user.country }}" required><br><br>
 
     <!-- Hidden field with CSRF token -->
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>

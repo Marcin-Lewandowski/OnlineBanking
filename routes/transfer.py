@@ -476,9 +476,6 @@ def edit_profile():
             return redirect(url_for('account_data'))
     
 
-    #user_transactions = Transaction.query.filter_by(user_id=current_user.id).all()
-    #return render_template('dashboard.html', user=current_user, all_transactions=user_transactions)
-
 
 
 

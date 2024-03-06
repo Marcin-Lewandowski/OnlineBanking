@@ -462,9 +462,7 @@ def delete_user():
     - The DeleteUserForm to capture the username of the user to be deleted.
     """
     all_users = Users.query.all()
-    if current_user.role != 'admin':
-        flash('You do not have permission to perform this operation.', 'danger')
-        return redirect(url_for('index'))
+    
 
     form = DeleteUserForm()
     if form.validate_on_submit():
@@ -472,9 +470,14 @@ def delete_user():
         user_to_delete = Users.query.filter_by(username=username).first()
 
         if user_to_delete:
-            db.session.delete(user_to_delete)
-            db.session.commit()
-            flash('The user has been successfully deleted.', 'success')
+            try:
+                db.session.delete(user_to_delete)
+                db.session.commit()
+                flash('The user has been successfully deleted.', 'success')
+            except Exception as e:
+                db.session.rollback()
+                print(f'Error deleting user: {e}')
+                flash('An error occurred. The user could not be deleted.', 'danger')
         else:
             flash('User not found.', 'danger')
 

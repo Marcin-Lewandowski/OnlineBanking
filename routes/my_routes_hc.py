@@ -437,6 +437,9 @@ def show_statement_for_customer(username):
     all_locked_users = LockedUsers.query.all()
     # Get user based on username
     user = Users.query.filter_by(username=username).first()
+    
+    role = user.role
+    users = Users.query.filter_by(role=role).all()
     user_transactions = Transaction.query.filter_by(user_id = user.id).all()  
 
     # Data preparation do DataFrame
@@ -466,7 +469,7 @@ def show_statement_for_customer(username):
     # Convert chart to HTML img
     plot_html_img = plot_to_html_img(plt)
     
-    return render_template('admin_dashboard_cam.html',  all_locked_users = all_locked_users, all_transactions = user_transactions, user = user, plot_html_img = plot_html_img)
+    return render_template('admin_dashboard_cam.html',  all_locked_users = all_locked_users, all_transactions = user_transactions, user = user, users=users, plot_html_img = plot_html_img)
 
 
 
