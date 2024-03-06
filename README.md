@@ -8,6 +8,7 @@
 4. [Usage examples](#usage-examples)
 5. [Instructions for starting the application](#instructions-for-starting-the-application)
 6. [License](#license)
+7. [Contact](#contact)
 
 
 
@@ -33,7 +34,8 @@ Flask-Talisman, Pandas, Matplotlib, io, base64, csv, reportlab, Werkzeug.
 The project is divided into directories [modules] and files. 
 Forms (stores the classes of forms used in the project), instance (database), models (declarations of tables from the database), 
 routes (routes in the form of functions) static (static files, images, css files, JavaScript scripts), templates (html templates). 
-Files in the main application directory: app.py (main execution file), app.log (banking system log file), config.py and README.md
+Files in the main application directory: app.py (main execution file), app.log (banking system log file), config.py, README.md,
+LICENSE.txt and accounts_data.pdf. The entire project should be placed on drive c in a directory called OnlineBanking
 
 ## Main features of the application
 On the bank's client side.
@@ -362,11 +364,11 @@ The project can be developed and improved in many directions. This project provi
 
 
 
-
 ## Usage examples
 
 
-Link YT
+[Online banking simulation](https://www.youtube.com/watch?v=FWCzTZCoGdg)
+
 
 
 ## Instructions for starting the application
@@ -380,7 +382,11 @@ Virtual environment activation:
 
 environment name\Scripts\activate
 
-After finishing your work, deactivate the virtual environment with the deactivate command
+Use that command to launch aplication:
+
+(ib) PS C:\OnlineBanking> & c:/OnlineBanking/ib/Scripts/python.exe c:/OnlineBanking/app.py
+
+After finishing your work, deactivate the virtual environment with the deactivate command.
 
 
 
@@ -407,3 +413,11 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+## Contact
+
+telfordmarcin(at)gmail.com
+
+[LinkedIn](https://www.linkedin.com/in/marcinlewandowski2)
+
+[Github](https://github.com/Marcin-Lewandowski/OnlineBanking)
