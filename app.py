@@ -1,3 +1,9 @@
+# Copyright (c) 2024 Marcin Lewandowski
+# 
+# This software is licensed under the MIT License. See the LICENSE file in the
+# top-level directory of this distribution for the full license text.
+
+
 from flask import Flask, render_template, flash, request, url_for, redirect, session
 from flask_wtf.csrf import CSRFProtect
 from flask_login import LoginManager, logout_user, current_user, login_required
@@ -19,7 +25,6 @@ from flask_talisman import Talisman
 import traceback
 
 scheduler = APScheduler()
-
 
 login_manager = LoginManager()
 login_manager.login_view = 'login_bp.login'
@@ -788,6 +793,7 @@ def test_loan():
 @admin_required
 def delete_all_loans():
     """
+    For testing purposes only !!!
     Deletes all loan records from the database, accessible only by authenticated administrators via a POST request.
 
     Upon invocation, the function attempts to delete all records from the Loans table. It then commits the

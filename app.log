@@ -246,3 +246,18 @@ INFO:werkzeug: * Restarting with stat
 2024-02-28 09:09:02,915 - INFO - User 'admin' logged in to the system.
 2024-02-28 16:34:51,431 - WARNING - Failed login attempt for user 'admin'.
 2024-02-28 16:34:59,219 - INFO - User 'admin' logged in to the system.
+2024-02-29 19:09:55,316 - INFO - User 'Marcin' logged in to the system.
+2024-02-29 19:10:54,611 - INFO - User 'admin' logged in to the system.
+2024-03-01 16:08:20,938 - INFO - User 'Marcin' logged in to the system.
+2024-03-01 16:11:26,185 - INFO - User 'Marcin' logged in to the system.
+2024-03-02 15:47:56,985 - WARNING - Failed login attempt for user 'Marcin'.
+2024-03-02 15:48:08,967 - WARNING - Failed login attempt for user 'Marcin'.
+2024-03-02 15:48:15,608 - INFO - User 'Marcin' logged in to the system.
+2024-03-04 07:02:51,838 - INFO - User 'Marcin' logged in to the system.
+2024-03-04 07:30:56,923 - INFO - User 'admin' logged in to the system.
+2024-03-04 13:06:44,323 - INFO - User 'Marcin' logged in to the system.
+2024-03-04 14:38:58,537 - INFO - User 'admin' logged in to the system.
+2024-03-04 17:56:18,658 - INFO - User 'admin' logged in to the system.
+2024-03-05 16:17:13,233 - INFO - User 'admin' logged in to the system.
+2024-03-05 16:17:46,646 - INFO - User 'Marcin' logged in to the system.
+2024-03-05 16:18:58,316 - INFO - User 'admin' logged in to the system.

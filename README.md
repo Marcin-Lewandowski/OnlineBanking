@@ -363,28 +363,28 @@ The project can be developed and improved in many directions. This project provi
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ## Usage examples
-Przykłady użycia tutaj...
+
+
+Link YT
+
 
 ## Instructions for starting the application
-Instrukcje dotyczące uruchamiania aplikacji tutaj...
+
+You need to create and run a virtual environment.
+Creating a virtual environment in the application root directory:
+
+python3 -m venv environment name
+
+Virtual environment activation:
+
+environment name\Scripts\activate
+
+After finishing your work, deactivate the virtual environment with the deactivate command
+
+
 
 ## License
-
 
 The MIT License (MIT)
 
