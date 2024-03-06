@@ -22,7 +22,7 @@
     </nav>
 
     <main>
-        <h2>Admin Dashboard  {% block subtitle %}{% endblock %} <a href="{{ url_for('logout') }}" class="link"> ----->> Log out  <<-----</a> <br></h2>
+        <h2>Admin Dashboard  {% block subtitle %}{% endblock %} <a href="{{ url_for('logout') }}"><img src="{{ url_for('static', filename='logout3.jpg') }}"> </a> <br></h2>
         {% with messages = get_flashed_messages() %}
             {% if messages %}
             {% for message in messages %}
