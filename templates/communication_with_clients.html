@@ -46,40 +46,4 @@
 
 
 <br><br><br>
-
-
-<h3>All queries, messages history: </h3>
-<table border="1" class="center-table" width = "100%">
-  <thead>
-      <tr>
-          <th>ID</th>
-          <th>User ID</th>
-          <th>Title</th>
-          <th>Description</th>
-          <th>Reference number</th>
-          <th>Category</th>
-          <th>Status</th>
-          <th>Priority</th>
-          <th>Created at</th>
-          <th>Process</th>
-      </tr>
-  </thead>
-  <tbody>
-      {% for query in all_queries %}
-          <tr>
-              <td>{{ query.id }}</td>
-              <td>{{ query.user_id }}</td>
-              <td>{{ query.title }}</td>
-              <td class="messages-table" style="font-size: 16px;"><pre style="white-space: pre-wrap;">{{ query.description }}</pre></td>
-              <td>{{ query.reference_number }}</td>
-              <td>{{ query.category }}</td>
-              <td>{{ query.status }}</td>
-              <td>{{ query.priority }}</td>
-              <td>{{ query.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
-              <td><a href="{{ url_for('process_query_bp.process_query', query_ref=query.reference_number) }}">Process Query</a></td>
-          </tr>
-      {% endfor %}
-  </tbody>
-</table>
-
 {% endblock %}

@@ -149,6 +149,26 @@
 
             <input type="submit" value="Delete user">
         </form>
+        <br><br>
+
+        {% if user_to_delete and transactions_count > 0 %}
+        <form action="{{ url_for('delete_transactions_bp.delete_transactions', user_id=user_to_delete.id) }}" method="post">
+            <input type="submit" value="Delete all user's transactions">
+            <!-- Hidden field with CSRF token -->
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        </form>
+        <br><br>
+
+        <form action="{{ url_for('admin_dashboard_cm') }}" method="post">
+            <input type="submit" value="Back to admin's panel">
+            <!-- Hidden field with CSRF token -->
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        </form>
+
+
+
+        {% endif %}
+
         <hr>
 
 
@@ -158,5 +178,5 @@
         
     </div>
 </div>
-
+    
 {% endblock %}
